@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Plus, Search, Edit, Trash2, Eye, MoreHorizontal, User, Clock, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { WorkOrderDetails } from '@/components/WorkOrderDetails';
 import { WorkOrderWizard } from '@/components/workorder-wizard/WorkOrderWizard';
-// Force rebuild to clear Select cache
 
 interface WorkOrderForm {
   title: string;
@@ -68,11 +70,11 @@ export default function WorkOrders() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending': return 'bg-warning/10 text-warning border-warning/20';
+      case 'in_progress': return 'bg-primary/10 text-primary border-primary/20';
+      case 'completed': return 'bg-success/10 text-success border-success/20';
+      case 'cancelled': return 'bg-destructive/10 text-destructive border-destructive/20';
+      default: return 'bg-muted/10 text-muted-foreground border-muted/20';
     }
   };
 
@@ -86,6 +88,48 @@ export default function WorkOrders() {
     }
   };
 
+  const WorkOrderSkeleton = () => (
+    <Card className="animate-pulse">
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-6 w-16 rounded-full" />
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="h-8 w-8" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const EmptyState = () => (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <div className="w-24 h-24 bg-muted/20 rounded-full flex items-center justify-center mb-6">
+        <Search className="w-12 h-12 text-muted-foreground" />
+      </div>
+      <h3 className="text-lg font-semibold mb-2">Ingen arbeidsordrer funnet</h3>
+      <p className="text-muted-foreground mb-6 max-w-sm">
+        {search ? 'Prøv å justere søkekriteriene dine.' : 'Kom i gang ved å opprette din første arbeidsordre.'}
+      </p>
+      {!search && (
+        <Button onClick={() => setIsCreateDialogOpen(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Opprett arbeidsordre
+        </Button>
+      )}
+    </div>
+  );
+
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-background">
       <TopBar 
@@ -93,77 +137,149 @@ export default function WorkOrders() {
         onCreateClick={() => setIsCreateDialogOpen(true)}
       />
       
-      <div className="flex-1 p-8">
-        {/* Search and Filters */}
-        <div className="flex gap-4 mb-8">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Søk etter arbeidsordrer..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
-            />
+      <div className="flex-1 p-4 md:p-8">
+        {/* Enhanced Search and Filters */}
+        <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 z-10 pb-6 mb-6 border-b">
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Søk etter arbeidsordrer, kunder eller beskrivelser..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10 h-11"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-48 h-11">
+                <SelectValue placeholder="Filtrer etter status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle statuser</SelectItem>
+                <SelectItem value="pending">Venter</SelectItem>
+                <SelectItem value="in_progress">Pågår</SelectItem>
+                <SelectItem value="completed">Fullført</SelectItem>
+                <SelectItem value="cancelled">Avbrutt</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filtrer etter status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Alle statuser</SelectItem>
-              <SelectItem value="pending">Venter</SelectItem>
-              <SelectItem value="in_progress">Pågår</SelectItem>
-              <SelectItem value="completed">Fullført</SelectItem>
-              <SelectItem value="cancelled">Avbrutt</SelectItem>
-            </SelectContent>
-          </Select>
+
+          {/* Quick Status Tabs */}
+          <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">
+            <TabsList className="grid w-full grid-cols-5 h-auto">
+              <TabsTrigger value="all" className="text-xs sm:text-sm">
+                Alle ({workOrders?.length || 0})
+              </TabsTrigger>
+              <TabsTrigger value="pending" className="text-xs sm:text-sm">
+                Venter ({workOrders?.filter((o: any) => o.status === 'pending').length || 0})
+              </TabsTrigger>
+              <TabsTrigger value="in_progress" className="text-xs sm:text-sm">
+                Pågår ({workOrders?.filter((o: any) => o.status === 'in_progress').length || 0})
+              </TabsTrigger>
+              <TabsTrigger value="completed" className="text-xs sm:text-sm">
+                Fullført ({workOrders?.filter((o: any) => o.status === 'completed').length || 0})
+              </TabsTrigger>
+              <TabsTrigger value="cancelled" className="text-xs sm:text-sm">
+                Avbrutt ({workOrders?.filter((o: any) => o.status === 'cancelled').length || 0})
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         {/* Work Orders Grid */}
         {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <WorkOrderSkeleton key={i} />
+            ))}
           </div>
+        ) : filteredWorkOrders?.length === 0 ? (
+          <EmptyState />
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
             {filteredWorkOrders?.map((order: any) => (
-              <Card key={order.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="text-lg">{order.title}</CardTitle>
-                    <Badge className={getStatusColor(order.status)}>
+              <Card 
+                key={order.id} 
+                className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer"
+                onClick={() => handleViewDetails(order)}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-lg font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                        {order.title}
+                      </CardTitle>
+                      <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                        <Calendar className="w-4 h-4" />
+                        <span>ID: #{order.id?.slice(-6)}</span>
+                      </div>
+                    </div>
+                    <Badge 
+                      variant="outline" 
+                      className={`${getStatusColor(order.status)} shrink-0 text-xs font-medium`}
+                    >
                       {getStatusText(order.status)}
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-4 line-clamp-2">
-                    {order.description}
-                  </p>
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <span className="font-medium">Kunde:</span> {order.customer?.name || 'Ikke tildelt'}
+                <CardContent className="space-y-4">
+                  {order.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                      {order.description}
+                    </p>
+                  )}
+                  
+                  <div className="grid grid-cols-1 gap-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-muted-foreground shrink-0" />
+                      <span className="text-muted-foreground">Kunde:</span>
+                      <span className="font-medium truncate">{order.customer?.name || 'Ikke tildelt'}</span>
                     </div>
-                    <div>
-                      <span className="font-medium">Tildelt:</span> {order.assigned_user?.full_name || 'Ikke tildelt'}
+                    
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-muted-foreground shrink-0" />
+                      <span className="text-muted-foreground">Tildelt:</span>
+                      <span className="font-medium truncate">{order.assigned_user?.full_name || 'Ikke tildelt'}</span>
                     </div>
-                    <div>
-                      <span className="font-medium">Estimert tid:</span> {order.estimated_hours || 0} timer
+                    
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
+                      <span className="text-muted-foreground">Estimert:</span>
+                      <span className="font-medium">{order.estimated_hours || 0} timer</span>
                     </div>
                   </div>
-                  <div className="flex gap-2 mt-4">
-                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(order)}>
-                      <Eye className="h-4 w-4 mr-1" />
+
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewDetails(order);
+                      }}
+                      className="flex-1 mr-2"
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
                       Vis detaljer
                     </Button>
-                    <Button variant="outline" size="sm">
-                      <Edit className="h-4 w-4 mr-1" />
-                      Rediger
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-destructive">
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Slett
-                    </Button>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <Button variant="outline" size="sm" className="px-2">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem className="flex items-center gap-2">
+                          <Edit className="w-4 h-4" />
+                          Rediger arbeidsordre
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-2 text-destructive focus:text-destructive">
+                          <Trash2 className="w-4 h-4" />
+                          Slett arbeidsordre
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </CardContent>
               </Card>
