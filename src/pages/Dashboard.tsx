@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, Truck, Users, Package, LogOut } from 'lucide-react';
+import { FieldWorkerDashboard } from '@/components/FieldWorkerDashboard';
 
 interface WorkOrder {
   id: string;
@@ -17,14 +19,37 @@ interface WorkOrder {
   };
 }
 
+interface UserProfile {
+  role: string;
+}
+
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchWorkOrders();
-  }, []);
+    if (user) {
+      fetchUserProfile();
+      fetchWorkOrders();
+    }
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error) throw error;
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   const fetchWorkOrders = async () => {
     try {
@@ -63,6 +88,15 @@ const Dashboard = () => {
     const statusInfo = statusMap[status as keyof typeof statusMap] || statusMap.pending;
     return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
   };
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  // Show field worker dashboard for field workers
+  if (userProfile?.role === 'field_worker') {
+    return <FieldWorkerDashboard />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
