@@ -4,7 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Clock, MapPin, ChevronRight, Play, Pause, CheckCircle } from 'lucide-react';
+import { Clock, MapPin, ChevronRight, Play, Pause, CheckCircle, Plus } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useForm } from 'react-hook-form';
+import { useCustomers, useCreateWorkOrder, useStartTimeEntry } from '@/hooks/useApi';
 import { toast } from 'sonner';
 
 interface WorkOrder {
@@ -15,6 +21,13 @@ interface WorkOrder {
   customer_name: string;
   estimated_hours?: number | null;
   gps_location?: any;
+}
+
+interface QuickWorkOrderForm {
+  title: string;
+  description: string;
+  customer_id: string;
+  estimated_hours: number;
 }
 
 interface ActiveTimer {
@@ -31,6 +44,13 @@ export const MobileFieldWorker = () => {
   const [activeTimer, setActiveTimer] = useState<ActiveTimer | null>(null);
   const [loading, setLoading] = useState(true);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
+
+  const { data: customers } = useCustomers();
+  const createWorkOrder = useCreateWorkOrder();
+  const startTimeEntry = useStartTimeEntry();
+  
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<QuickWorkOrderForm>();
 
   useEffect(() => {
     if (user) {
@@ -179,6 +199,31 @@ export const MobileFieldWorker = () => {
     }
   };
 
+  const handleQuickSubmit = async (data: QuickWorkOrderForm) => {
+    try {
+      const workOrderData = {
+        ...data,
+        pricing_type: 'hourly' as const,
+        assigned_to: user?.id,
+        user_id: user?.id
+      };
+
+      const result = await createWorkOrder.mutateAsync(workOrderData);
+      if (result.success) {
+        toast.success('Raskt oppdrag opprettet - starter automatisk timer...');
+        setIsQuickCreateOpen(false);
+        reset();
+        
+        // Auto-start the work order
+        await startWork(result.data);
+      } else {
+        toast.error(result.error?.message || 'Kunne ikke opprette raskt oppdrag');
+      }
+    } catch (error) {
+      toast.error('Kunne ikke opprette raskt oppdrag');
+    }
+  };
+
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -215,10 +260,95 @@ export const MobileFieldWorker = () => {
       {/* Header */}
       <div className="bg-card border-b sticky top-0 z-10">
         <div className="p-4">
-          <h1 className="text-xl font-bold">Dagens Arbeid</h1>
-          <p className="text-sm text-muted-foreground">
-            {workOrders.length} ordrer tildelt
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold">Dagens Arbeid</h1>
+              <p className="text-sm text-muted-foreground">
+                {workOrders.length} ordrer tildelt
+              </p>
+            </div>
+            <Dialog open={isQuickCreateOpen} onOpenChange={setIsQuickCreateOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="h-9">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Raskt oppdrag
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-sm mx-4">
+                <DialogHeader>
+                  <DialogTitle>Opprett raskt oppdrag</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit(handleQuickSubmit)} className="space-y-4">
+                  <div>
+                    <Input
+                      placeholder="Tittel"
+                      {...register('title', { required: 'Tittel er påkrevd' })}
+                    />
+                    {errors.title && (
+                      <p className="text-destructive text-xs mt-1">{errors.title.message}</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <Textarea
+                      placeholder="Kort beskrivelse"
+                      {...register('description')}
+                      className="min-h-[60px] text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <Select onValueChange={(value) => setValue('customer_id', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Velg kunde" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white">
+                        {customers?.map((customer: any) => (
+                          <SelectItem key={customer.id} value={customer.id}>
+                            {customer.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <input type="hidden" {...register('customer_id', { required: 'Kunde er påkrevd' })} />
+                    {errors.customer_id && (
+                      <p className="text-destructive text-xs mt-1">Kunde er påkrevd</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Input
+                      type="number"
+                      step="0.5"
+                      placeholder="Estimerte timer"
+                      {...register('estimated_hours', { 
+                        required: 'Estimerte timer er påkrevd',
+                        valueAsNumber: true,
+                        min: { value: 0.5, message: 'Minimum 0.5 timer' }
+                      })}
+                    />
+                    {errors.estimated_hours && (
+                      <p className="text-destructive text-xs mt-1">{errors.estimated_hours.message}</p>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button type="submit" disabled={createWorkOrder.isPending} className="flex-1 h-10">
+                      {createWorkOrder.isPending ? 'Oppretter...' : 'Opprett & Start'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsQuickCreateOpen(false)}
+                      className="h-10"
+                    >
+                      Avbryt
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </div>
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useWorkOrders, useCreateWorkOrder, useUpdateWorkOrder, useDeleteWorkOrder } from '@/hooks/useApi';
+import { useWorkOrders, useCreateWorkOrder, useUpdateWorkOrder, useDeleteWorkOrder, useCustomers, useFieldWorkers } from '@/hooks/useApi';
 import { TopBar } from '@/components/TopBar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
-import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { WorkOrderDetails } from '@/components/WorkOrderDetails';
 
 interface WorkOrderForm {
   title: string;
@@ -27,14 +28,23 @@ export default function WorkOrders() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState<any>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   const { data: workOrders, isLoading } = useWorkOrders();
+  const { data: customers } = useCustomers();
+  const { data: fieldWorkers } = useFieldWorkers();
   const createWorkOrder = useCreateWorkOrder();
   const updateWorkOrder = useUpdateWorkOrder();
   const deleteWorkOrder = useDeleteWorkOrder();
   const { toast } = useToast();
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<WorkOrderForm>();
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<WorkOrderForm>({
+    defaultValues: {
+      status: 'pending',
+      pricing_type: 'hourly'
+    }
+  });
 
   const filteredWorkOrders = workOrders?.filter((order: any) => {
     const matchesSearch = order.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -56,6 +66,11 @@ export default function WorkOrders() {
     } catch (error) {
       toast({ title: 'Feil', description: 'Kunne ikke opprette arbeidsordre', variant: 'destructive' });
     }
+  };
+
+  const handleViewDetails = (workOrder: any) => {
+    setSelectedWorkOrder(workOrder);
+    setIsDetailsOpen(true);
   };
 
   const getStatusColor = (status: string) => {
@@ -144,6 +159,10 @@ export default function WorkOrders() {
                     </div>
                   </div>
                   <div className="flex gap-2 mt-4">
+                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(order)}>
+                      <Eye className="h-4 w-4 mr-1" />
+                      Vis detaljer
+                    </Button>
                     <Button variant="outline" size="sm">
                       <Edit className="h-4 w-4 mr-1" />
                       Rediger
@@ -171,6 +190,8 @@ export default function WorkOrders() {
                   placeholder="Tittel"
                   {...register('title', { required: 'Tittel er påkrevd' })}
                 />
+                {/* Hidden field to ensure customer_id is registered */}
+                <input type="hidden" {...register('customer_id', { required: 'Kunde er påkrevd' })} />
                 {errors.title && (
                   <p className="text-destructive text-sm mt-1">{errors.title.message}</p>
                 )}
@@ -184,11 +205,44 @@ export default function WorkOrders() {
               </div>
 
               <div>
-                <Select onValueChange={(value) => register('pricing_type').onChange({ target: { value } })}>
+                <Select onValueChange={(value) => setValue('customer_id', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg kunde" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    {customers?.map((customer: any) => (
+                      <SelectItem key={customer.id} value={customer.id}>
+                        {customer.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.customer_id && (
+                  <p className="text-destructive text-sm mt-1">Kunde er påkrevd</p>
+                )}
+              </div>
+
+              <div>
+                <Select onValueChange={(value) => setValue('assigned_to', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Tildel til (valgfritt)" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    {fieldWorkers?.map((worker: any) => (
+                      <SelectItem key={worker.user_id} value={worker.user_id}>
+                        {worker.full_name || worker.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Select onValueChange={(value) => setValue('pricing_type', value as any)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Pristype" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="hourly">Timebasert</SelectItem>
                     <SelectItem value="fixed">Fast pris</SelectItem>
                     <SelectItem value="material_only">Kun materialer</SelectItem>
@@ -219,6 +273,13 @@ export default function WorkOrders() {
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Work Order Details Dialog */}
+        <WorkOrderDetails 
+          workOrder={selectedWorkOrder}
+          isOpen={isDetailsOpen}
+          onClose={() => setIsDetailsOpen(false)}
+        />
       </div>
     </div>
   );

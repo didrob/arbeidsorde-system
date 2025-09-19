@@ -1,42 +1,146 @@
+import { useState, useEffect } from 'react';
+import { useWorkOrders } from '@/hooks/useApi';
+import { supabase } from '@/integrations/supabase/client';
 import { TopBar } from '@/components/TopBar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, DollarSign, Clock, Users, FileText, Download, Calendar } from 'lucide-react';
+import { TrendingUp, TrendingDown, Clock, DollarSign, Users, BarChart, Download, Eye } from 'lucide-react';
+import { WorkOrderDetails } from '@/components/WorkOrderDetails';
 
-// Mock data for reports
-const mockStats = {
-  revenue: {
-    current: 125000,
-    previous: 98000,
-    change: 27.6
-  },
-  hours: {
-    current: 324,
-    previous: 298,
-    change: 8.7
-  },
-  projects: {
-    current: 15,
-    previous: 12,
-    change: 25
-  },
-  efficiency: {
-    current: 87,
-    previous: 82,
-    change: 6.1
-  }
-};
-
-const mockProjects = [
-  { name: 'Reparasjon av tak', hours: 45, revenue: 22500, efficiency: 92 },
-  { name: 'Installasjon av vinduer', hours: 32, revenue: 16000, efficiency: 88 },
-  { name: 'Maling av fasade', hours: 28, revenue: 14000, efficiency: 75 },
-  { name: 'Renovering kjøkken', hours: 65, revenue: 32500, efficiency: 95 }
-];
+interface ProjectStats {
+  id: string;
+  title: string;
+  customer_name: string;
+  estimated_hours: number;
+  actual_hours: number;
+  efficiency: number;
+  status: string;
+  revenue: number;
+}
 
 export default function Reports() {
+  const [timeFilter, setTimeFilter] = useState('last_30_days');
+  const [userFilter, setUserFilter] = useState('all');
+  const [projectStats, setProjectStats] = useState<ProjectStats[]>([]);
+  const [overallStats, setOverallStats] = useState({
+    totalRevenue: 0,
+    totalHours: 0,
+    totalProjects: 0,
+    avgEfficiency: 0
+  });
+  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const { data: workOrders } = useWorkOrders();
+
+  useEffect(() => {
+    calculateStats();
+  }, [timeFilter]);
+
+  const calculateStats = async () => {
+    try {
+      setLoading(true);
+      
+      const { data: workOrdersWithTime, error } = await supabase
+        .from('work_orders')
+        .select(`
+          *,
+          customers (name),
+          work_order_time_entries (
+            start_time,
+            end_time
+          )
+        `)
+        .eq('status', 'completed');
+
+      if (error) throw error;
+
+      const stats: ProjectStats[] = [];
+      let totalRevenue = 0;
+      let totalActual = 0;
+      let totalEfficiencies = 0;
+      let projectCount = 0;
+
+      workOrdersWithTime?.forEach((order: any) => {
+        const estimatedHours = order.estimated_hours || 0;
+        let actualHours = 0;
+
+        if (order.work_order_time_entries) {
+          actualHours = order.work_order_time_entries.reduce((total: number, entry: any) => {
+            if (entry.start_time && entry.end_time) {
+              const start = new Date(entry.start_time);
+              const end = new Date(entry.end_time);
+              const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+              return total + hours;
+            }
+            return total;
+          }, 0);
+        }
+
+        const efficiency = actualHours > 0 ? Math.round((estimatedHours / actualHours) * 100) : 0;
+        const revenue = order.price_value || (estimatedHours * 800);
+
+        stats.push({
+          id: order.id,
+          title: order.title,
+          customer_name: order.customers?.name || 'Ukjent kunde',
+          estimated_hours: estimatedHours,
+          actual_hours: actualHours,
+          efficiency,
+          status: order.status,
+          revenue
+        });
+
+        totalRevenue += revenue;
+        totalActual += actualHours;
+        if (efficiency > 0) {
+          totalEfficiencies += efficiency;
+          projectCount++;
+        }
+      });
+
+      setProjectStats(stats);
+      setOverallStats({
+        totalRevenue,
+        totalHours: totalActual,
+        totalProjects: stats.length,
+        avgEfficiency: projectCount > 0 ? Math.round(totalEfficiencies / projectCount) : 0
+      });
+    } catch (error) {
+      console.error('Error calculating stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewDetails = async (projectStat: ProjectStats) => {
+    try {
+      const { data, error } = await supabase
+        .from('work_orders')
+        .select(`
+          *,
+          customers (*),
+          work_order_time_entries (*),
+          work_order_materials (
+            *,
+            materials (*)
+          )
+        `)
+        .eq('id', projectStat.id)
+        .single();
+
+      if (error) throw error;
+      
+      setSelectedProject(data);
+      setIsDetailsOpen(true);
+    } catch (error) {
+      console.error('Error fetching work order details:', error);
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('nb-NO', {
       style: 'currency',
@@ -44,28 +148,36 @@ export default function Reports() {
     }).format(amount);
   };
 
-  const StatCard = ({ title, value, change, icon: Icon, prefix = '', suffix = '' }: any) => (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{prefix}{value}{suffix}</div>
-        <div className="flex items-center text-xs text-muted-foreground">
-          {change > 0 ? (
-            <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-          ) : (
-            <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
-          )}
-          <span className={change > 0 ? 'text-green-500' : 'text-red-500'}>
-            {Math.abs(change)}%
-          </span>
-          <span className="ml-1">fra forrige periode</span>
-        </div>
-      </CardContent>
-    </Card>
-  );
+  const getEfficiencyColor = (efficiency: number) => {
+    if (efficiency >= 90) return 'text-green-600 bg-green-50';
+    if (efficiency >= 70) return 'text-yellow-600 bg-yellow-50';
+    return 'text-red-600 bg-red-50';
+  };
+
+  const StatCard = ({ title, value, icon: Icon, format = 'number' }: {
+    title: string;
+    value: number;
+    icon: any;
+    format?: 'number' | 'currency' | 'percentage';
+  }) => {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">{title}</p>
+              <p className="text-2xl font-bold">
+                {format === 'currency' ? formatCurrency(value) : 
+                 format === 'percentage' ? `${value}%` : 
+                 value.toLocaleString('nb-NO')}
+              </p>
+            </div>
+            <Icon className="h-8 w-8 text-muted-foreground" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-background">
@@ -74,185 +186,115 @@ export default function Reports() {
       <div className="flex-1 p-8">
         {/* Filters */}
         <div className="flex gap-4 mb-8">
-          <Select defaultValue="month">
+          <Select value={timeFilter} onValueChange={setTimeFilter}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Velg tidsperiode" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="week">Denne uken</SelectItem>
-              <SelectItem value="month">Denne måneden</SelectItem>
-              <SelectItem value="quarter">Dette kvartalet</SelectItem>
-              <SelectItem value="year">Dette året</SelectItem>
+              <SelectItem value="last_7_days">Siste 7 dager</SelectItem>
+              <SelectItem value="last_30_days">Siste 30 dager</SelectItem>
+              <SelectItem value="last_90_days">Siste 90 dager</SelectItem>
+              <SelectItem value="year_to_date">År til dato</SelectItem>
             </SelectContent>
           </Select>
-
-          <Select defaultValue="all">
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Velg medarbeider" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Alle medarbeidere</SelectItem>
-              <SelectItem value="ole">Ole Hansen</SelectItem>
-              <SelectItem value="kari">Kari Nordmann</SelectItem>
-              <SelectItem value="lars">Lars Pettersen</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Button variant="outline" className="ml-auto">
+          <Button variant="outline">
             <Download className="h-4 w-4 mr-2" />
-            Eksporter rapport
+            Eksporter
           </Button>
         </div>
 
-        {/* Overview Stats */}
+        {/* Overview Statistics */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          <StatCard
-            title="Omsetning"
-            value={mockStats.revenue.current.toLocaleString('nb-NO')}
-            change={mockStats.revenue.change}
+          <StatCard 
+            title="Total omsetning" 
+            value={overallStats.totalRevenue} 
             icon={DollarSign}
-            prefix="kr "
+            format="currency"
           />
-          
-          <StatCard
-            title="Timer arbeidet"
-            value={mockStats.hours.current}
-            change={mockStats.hours.change}
+          <StatCard 
+            title="Total timer arbeidet" 
+            value={overallStats.totalHours} 
             icon={Clock}
-            suffix=" t"
           />
-          
-          <StatCard
-            title="Aktive prosjekter"
-            value={mockStats.projects.current}
-            change={mockStats.projects.change}
-            icon={FileText}
+          <StatCard 
+            title="Fullførte prosjekter" 
+            value={overallStats.totalProjects} 
+            icon={BarChart}
           />
-          
-          <StatCard
-            title="Effektivitet"
-            value={mockStats.efficiency.current}
-            change={mockStats.efficiency.change}
+          <StatCard 
+            title="Gjennomsnittlig effektivitet" 
+            value={overallStats.avgEfficiency} 
             icon={TrendingUp}
-            suffix="%"
+            format="percentage"
           />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Project Performance */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Prosjektytelse</CardTitle>
-            </CardHeader>
-            <CardContent>
+        {/* Project Performance */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Prosjektytelse med effektivitetsanalyse</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : projectStats.length > 0 ? (
               <div className="space-y-4">
-                {mockProjects.map((project, index) => (
-                  <div key={index} className="border rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <h4 className="font-medium">{project.name}</h4>
-                      <Badge variant={project.efficiency >= 90 ? 'default' : project.efficiency >= 80 ? 'secondary' : 'destructive'}>
-                        {project.efficiency}% effektivitet
+                <div className="grid grid-cols-6 gap-4 pb-2 border-b font-medium text-sm text-muted-foreground">
+                  <div>Prosjekt</div>
+                  <div>Estimert tid</div>
+                  <div>Faktisk tid</div>
+                  <div>Effektivitet</div>
+                  <div>Omsetning</div>
+                  <div>Handlinger</div>
+                </div>
+                {projectStats.map((project) => (
+                  <div key={project.id} className="grid grid-cols-6 gap-4 py-3 border-b last:border-b-0">
+                    <div>
+                      <div className="font-medium">{project.title}</div>
+                      <div className="text-sm text-muted-foreground">{project.customer_name}</div>
+                    </div>
+                    <div className="text-sm">
+                      {project.estimated_hours.toFixed(1)}t
+                    </div>
+                    <div className="text-sm">
+                      {project.actual_hours.toFixed(1)}t
+                    </div>
+                    <div>
+                      <Badge className={`${getEfficiencyColor(project.efficiency)} border-0`}>
+                        {project.efficiency}%
                       </Badge>
                     </div>
-                    
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <div className="text-muted-foreground">Timer</div>
-                        <div className="font-semibold">{project.hours} t</div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">Omsetning</div>
-                        <div className="font-semibold">{formatCurrency(project.revenue)}</div>
-                      </div>
+                    <div className="text-sm font-medium">
+                      {formatCurrency(project.revenue)}
+                    </div>
+                    <div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewDetails(project)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Detaljer
+                      </Button>
                     </div>
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Time Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Tidsfordeling</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Produktivt arbeid</span>
-                    <span>78%</span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div className="bg-green-500 h-2 rounded-full" style={{ width: '78%' }}></div>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Reise/transport</span>
-                    <span>15%</span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '15%' }}></div>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Administrativt</span>
-                    <span>7%</span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '7%' }}></div>
-                  </div>
-                </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                Ingen fullførte prosjekter funnet for valgt periode.
               </div>
-              
-              <div className="mt-6 pt-4 border-t">
-                <div className="text-sm text-muted-foreground mb-2">Totalt denne måneden</div>
-                <div className="text-2xl font-bold">{mockStats.hours.current} timer</div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Activity */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Siste aktivitet</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-4 p-3 border rounded-lg">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <div className="flex-1">
-                  <div className="font-medium">Prosjekt fullført</div>
-                  <div className="text-sm text-muted-foreground">Reparasjon av tak - Ole Hansen</div>
-                </div>
-                <div className="text-sm text-muted-foreground">2 timer siden</div>
-              </div>
-              
-              <div className="flex items-center gap-4 p-3 border rounded-lg">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div className="flex-1">
-                  <div className="font-medium">Timer registrert</div>
-                  <div className="text-sm text-muted-foreground">8.5 timer - Kari Nordmann</div>
-                </div>
-                <div className="text-sm text-muted-foreground">4 timer siden</div>
-              </div>
-              
-              <div className="flex items-center gap-4 p-3 border rounded-lg">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <div className="flex-1">
-                  <div className="font-medium">Nytt prosjekt startet</div>
-                  <div className="text-sm text-muted-foreground">Installasjon av vinduer - Lars Pettersen</div>
-                </div>
-                <div className="text-sm text-muted-foreground">1 dag siden</div>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
+
+        <WorkOrderDetails 
+          workOrder={selectedProject}
+          isOpen={isDetailsOpen}
+          onClose={() => setIsDetailsOpen(false)}
+        />
       </div>
     </div>
   );
