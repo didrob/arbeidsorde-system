@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Clock, MapPin, ChevronRight, Play, Pause, CheckCircle, Plus } from 'lucide-react';
+import { Clock, MapPin, ChevronRight, Play, Pause, CheckCircle, Plus, Camera, Paperclip } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useForm } from 'react-hook-form';
 import { useCustomers, useCreateWorkOrder, useStartTimeEntry } from '@/hooks/useApi';
 import { toast } from 'sonner';
+import { AttachmentUpload } from './AttachmentUpload';
 
 interface WorkOrder {
   id: string;
@@ -45,6 +46,7 @@ export const MobileFieldWorker = () => {
   const [loading, setLoading] = useState(true);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
+  const [showAttachments, setShowAttachments] = useState(false);
 
   const { data: customers } = useCustomers();
   const createWorkOrder = useCreateWorkOrder();
@@ -370,14 +372,33 @@ export const MobileFieldWorker = () => {
                 <h3 className="font-medium">{activeOrder.title}</h3>
                 <p className="text-sm text-muted-foreground">{activeOrder.customer_name}</p>
               </div>
-              <Button 
-                onClick={completeWork} 
-                className="w-full h-12 text-base"
-                size="lg"
-              >
-                <CheckCircle className="h-5 w-5 mr-2" />
-                Fullfør Arbeid
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => setShowAttachments(!showAttachments)}
+                  variant="outline"
+                  className="flex-1 h-12"
+                  size="lg"
+                >
+                  <Paperclip className="h-5 w-5 mr-2" />
+                  Vedlegg
+                </Button>
+                <Button 
+                  onClick={completeWork} 
+                  className="flex-1 h-12 text-base"
+                  size="lg"
+                >
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  Fullfør
+                </Button>
+              </div>
+              {showAttachments && (
+                <div className="mt-4">
+                  <AttachmentUpload 
+                    workOrderId={activeOrder.id}
+                    onUploadComplete={() => {}}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
