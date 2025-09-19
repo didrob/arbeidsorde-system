@@ -55,16 +55,11 @@ export default function WorkOrders() {
 
   const onSubmit = async (data: WorkOrderForm) => {
     try {
-      const result = await createWorkOrder.mutateAsync(data);
-      if (result.success) {
-        toast({ title: 'Arbeidsordre opprettet', description: 'Ny arbeidsordre er opprettet' });
-        setIsCreateDialogOpen(false);
-        reset();
-      } else {
-        toast({ title: 'Feil', description: result.error?.message, variant: 'destructive' });
-      }
-    } catch (error) {
-      toast({ title: 'Feil', description: 'Kunne ikke opprette arbeidsordre', variant: 'destructive' });
+      await createWorkOrder.mutateAsync(data);
+      setIsCreateDialogOpen(false);
+      reset();
+    } catch (error: any) {
+      toast({ title: 'Feil', description: error?.message || 'Kunne ikke opprette arbeidsordre', variant: 'destructive' });
     }
   };
 
@@ -217,6 +212,11 @@ export default function WorkOrders() {
                     ))}
                   </SelectContent>
                 </Select>
+                {!customers || customers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Ingen kunder tilgjengelig. Opprett en kunde først.
+                  </p>
+                ) : null}
                 {errors.customer_id && (
                   <p className="text-destructive text-sm mt-1">Kunde er påkrevd</p>
                 )}
@@ -259,7 +259,10 @@ export default function WorkOrders() {
               </div>
 
               <div className="flex gap-2 pt-4">
-                <Button type="submit" disabled={createWorkOrder.isPending}>
+                <Button
+                  type="submit"
+                  disabled={createWorkOrder.isPending || !customers || customers.length === 0}
+                >
                   {createWorkOrder.isPending ? 'Oppretter...' : 'Opprett'}
                 </Button>
                 <Button
