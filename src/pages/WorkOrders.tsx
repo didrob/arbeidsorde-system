@@ -25,7 +25,7 @@ interface WorkOrderForm {
 
 export default function WorkOrders() {
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   
   const { data: workOrders, isLoading } = useWorkOrders();
@@ -39,7 +39,7 @@ export default function WorkOrders() {
   const filteredWorkOrders = workOrders?.filter((order: any) => {
     const matchesSearch = order.title.toLowerCase().includes(search.toLowerCase()) ||
                          order.description?.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = !statusFilter || order.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -102,7 +102,7 @@ export default function WorkOrders() {
               <SelectValue placeholder="Filtrer etter status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Alle statuser</SelectItem>
+              <SelectItem value="all">Alle statuser</SelectItem>
               <SelectItem value="pending">Venter</SelectItem>
               <SelectItem value="in_progress">Pågår</SelectItem>
               <SelectItem value="completed">Fullført</SelectItem>

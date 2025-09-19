@@ -41,12 +41,12 @@ const mockTimeEntries = [
 export default function TimeTracking() {
   const [search, setSearch] = useState('');
   const [dateFilter, setDateFilter] = useState('');
-  const [userFilter, setUserFilter] = useState('');
+  const [userFilter, setUserFilter] = useState('all');
 
   const filteredEntries = mockTimeEntries.filter((entry) => {
     const matchesSearch = entry.work_order_title.toLowerCase().includes(search.toLowerCase()) ||
                          entry.user_name.toLowerCase().includes(search.toLowerCase());
-    const matchesUser = !userFilter || entry.user_name === userFilter;
+    const matchesUser = userFilter === 'all' || entry.user_name === userFilter;
     return matchesSearch && matchesUser;
   });
 
@@ -139,7 +139,7 @@ export default function TimeTracking() {
               <SelectValue placeholder="Filtrer etter medarbeider" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Alle medarbeidere</SelectItem>
+              <SelectItem value="all">Alle medarbeidere</SelectItem>
               <SelectItem value="Ole Hansen">Ole Hansen</SelectItem>
               <SelectItem value="Kari Nordmann">Kari Nordmann</SelectItem>
               <SelectItem value="Lars Pettersen">Lars Pettersen</SelectItem>
