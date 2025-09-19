@@ -10,6 +10,7 @@ import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { WorkOrderDetails } from '@/components/WorkOrderDetails';
 import { WorkOrderWizard } from '@/components/workorder-wizard/WorkOrderWizard';
+// Force rebuild to clear Select cache
 
 interface WorkOrderForm {
   title: string;
