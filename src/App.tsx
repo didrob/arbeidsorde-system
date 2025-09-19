@@ -4,8 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
+import { SimpleSidebar } from "@/components/SimpleSidebar";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import FieldWorker from "./pages/FieldWorker";
@@ -49,9 +48,9 @@ const App = () => (
               path="/*" 
               element={
                 <ProtectedRoute>
-                  <SidebarProvider>
-                    <div className="flex min-h-screen w-full">
-                      <AppSidebar />
+                  <div className="flex min-h-screen w-full">
+                    <SimpleSidebar />
+                    <div className="flex-1 flex flex-col">
                       <Routes>
                         <Route path="/" element={<Index />} />
                         <Route path="/work-orders" element={<Index />} />
@@ -64,7 +63,7 @@ const App = () => (
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </div>
-                  </SidebarProvider>
+                  </div>
                 </ProtectedRoute>
               } 
             />

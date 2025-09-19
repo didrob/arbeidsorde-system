@@ -4,10 +4,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Users, Package, Plus, Clock, MapPin, AlertCircle, TrendingUp, CheckCircle, Timer } from 'lucide-react';
+import { FileText, Users, Package, Plus, Clock, AlertCircle, CheckCircle } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 import { FieldWorkerDashboard } from '@/components/FieldWorkerDashboard';
-import { PageLayout } from '@/components/layout/PageLayout';
+import { TopBar } from '@/components/TopBar';
 
 interface WorkOrder {
   id: string;
@@ -169,121 +169,104 @@ const Dashboard = () => {
 
   // Admin/Manager Dashboard
   return (
-    <PageLayout
-      title="Dashboard"
-      description="Velkommen tilbake! Her er dagens oversikt."
-      showCreateButton
-      onCreateClick={() => console.log('Opprett ny arbeidsordre')}
-    >
-      <div className="bg-gradient-surface min-h-full">
-        <div className="space-y-8">
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-            <Card className="bg-gradient-primary text-primary-foreground shadow-elegant hover:shadow-hover transition-all duration-300">
+    <>
+      <TopBar 
+        title="Dashboard" 
+        onCreateClick={() => console.log('Opprett ny arbeidsordre')} 
+      />
+      <div className="flex-1 p-8 bg-background overflow-auto">
+        <div className="max-w-7xl mx-auto space-y-8">
+          
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-primary-foreground/80 text-sm font-medium">Totale ordrer</p>
-                    <p className="text-3xl font-bold">{stats.totalWorkOrders}</p>
-                    <p className="text-primary-foreground/80 text-xs mt-1">
-                      <TrendingUp className="inline h-3 w-3 mr-1" />
-                      +12% fra forrige måned
-                    </p>
+                    <p className="text-sm font-medium text-muted-foreground">Totale ordrer</p>
+                    <p className="text-2xl font-bold">{stats.totalWorkOrders}</p>
                   </div>
-                  <FileText className="h-12 w-12 text-primary-foreground/80" />
+                  <FileText className="h-8 w-8 text-primary" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="shadow-card hover:shadow-hover transition-all duration-300">
+            <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-muted-foreground text-sm font-medium">Fullført i dag</p>
-                    <p className="text-3xl font-bold text-success">{stats.completedToday}</p>
-                    <p className="text-muted-foreground text-xs mt-1">
-                      <CheckCircle className="inline h-3 w-3 mr-1" />
-                      Av {stats.totalWorkOrders} totalt
-                    </p>
+                    <p className="text-sm font-medium text-muted-foreground">Fullført i dag</p>
+                    <p className="text-2xl font-bold text-green-600">{stats.completedToday}</p>
                   </div>
-                  <CheckCircle className="h-12 w-12 text-success" />
+                  <CheckCircle className="h-8 w-8 text-green-600" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="shadow-card hover:shadow-hover transition-all duration-300">
+            <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-muted-foreground text-sm font-medium">Ventende ordrer</p>
-                    <p className="text-3xl font-bold text-warning">{stats.pendingOrders}</p>
-                    <p className="text-muted-foreground text-xs mt-1">
-                      <Timer className="inline h-3 w-3 mr-1" />
-                      Krever oppmerksomhet
-                    </p>
+                    <p className="text-sm font-medium text-muted-foreground">Ventende ordrer</p>
+                    <p className="text-2xl font-bold text-orange-600">{stats.pendingOrders}</p>
                   </div>
-                  <AlertCircle className="h-12 w-12 text-warning" />
+                  <AlertCircle className="h-8 w-8 text-orange-600" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="shadow-card hover:shadow-hover transition-all duration-300">
+            <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-muted-foreground text-sm font-medium">Aktive arbeidere</p>
-                    <p className="text-3xl font-bold text-foreground">{stats.activeWorkers}</p>
-                    <p className="text-muted-foreground text-xs mt-1">
-                      <Users className="inline h-3 w-3 mr-1" />
-                      I felt akkurat nå
-                    </p>
+                    <p className="text-sm font-medium text-muted-foreground">Aktive arbeidere</p>
+                    <p className="text-2xl font-bold">{stats.activeWorkers}</p>
                   </div>
-                  <Users className="h-12 w-12 text-primary" />
+                  <Users className="h-8 w-8 text-primary" />
                 </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <Card className="hover:shadow-hover transition-all duration-300 cursor-pointer group">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
-                  <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
-                    <FileText className="h-8 w-8 text-primary" />
+                  <div className="p-3 bg-primary/10 rounded-lg">
+                    <FileText className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground">Ny arbeidsordre</h3>
-                    <p className="text-muted-foreground">Opprett en ny arbeidsordre</p>
+                    <h3 className="font-semibold">Ny arbeidsordre</h3>
+                    <p className="text-sm text-muted-foreground">Opprett en ny arbeidsordre</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-hover transition-all duration-300 cursor-pointer group">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
-                  <div className="p-3 bg-secondary/10 rounded-xl group-hover:bg-secondary/20 transition-colors">
-                    <Users className="h-8 w-8 text-secondary" />
+                  <div className="p-3 bg-blue-100 rounded-lg">
+                    <Users className="h-6 w-6 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground">Administrer kunder</h3>
-                    <p className="text-muted-foreground">Kundedatabase og kontakter</p>
+                    <h3 className="font-semibold">Administrer kunder</h3>
+                    <p className="text-sm text-muted-foreground">Kundedatabase og kontakter</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-hover transition-all duration-300 cursor-pointer group">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
-                  <div className="p-3 bg-accent/10 rounded-xl group-hover:bg-accent/20 transition-colors">
-                    <Package className="h-8 w-8 text-accent" />
+                  <div className="p-3 bg-green-100 rounded-lg">
+                    <Package className="h-6 w-6 text-green-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground">Lagerstyring</h3>
-                    <p className="text-muted-foreground">Materialer og inventar</p>
+                    <h3 className="font-semibold">Lagerstyring</h3>
+                    <p className="text-sm text-muted-foreground">Materialer og inventar</p>
                   </div>
                 </div>
               </CardContent>
@@ -291,47 +274,41 @@ const Dashboard = () => {
           </div>
 
           {/* Recent Work Orders */}
-          <Card className="shadow-card">
-            <CardHeader className="border-b border-border">
-              <CardTitle className="flex items-center gap-3 text-xl">
-                <Clock className="h-6 w-6 text-primary" />
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
                 Siste arbeidsordrer
               </CardTitle>
               <CardDescription>
                 Oversikt over de nyeste arbeidsordene i systemet
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent>
               {loadingOrders ? (
-                <div className="flex items-center justify-center py-12">
+                <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
               ) : workOrders.length > 0 ? (
-                <div className="divide-y divide-border">
+                <div className="space-y-4">
                   {workOrders.map((order, index) => (
                     <div
                       key={order.id}
-                      className="flex items-center justify-between p-6 hover:bg-accent/50 transition-colors group"
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
                           <span className="text-primary font-bold text-sm">#{index + 1}</span>
                         </div>
                         <div>
-                          <h3 className="font-semibold text-foreground text-lg">{order.title}</h3>
-                          <p className="text-muted-foreground">{order.customer_name}</p>
+                          <h3 className="font-semibold">{order.title}</h3>
+                          <p className="text-sm text-muted-foreground">{order.customer_name}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-6">
-                        <div className="text-right hidden sm:block">
-                          <div className="text-sm font-medium text-foreground">
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <div className="text-sm font-medium">
                             {new Date(order.created_at).toLocaleDateString('nb-NO')}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {new Date(order.created_at).toLocaleTimeString('nb-NO', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}
                           </div>
                         </div>
                         {getStatusBadge(order.status)}
@@ -340,24 +317,17 @@ const Dashboard = () => {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <AlertCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-foreground mb-2">Ingen arbeidsordrer</h3>
+                <div className="text-center py-8">
+                  <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Ingen arbeidsordrer</h3>
                   <p className="text-muted-foreground">Start ved å opprette din første arbeidsordre</p>
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
-
-        {/* Mobile FAB */}
-        <div className="md:hidden fixed bottom-6 right-6">
-          <Button size="lg" className="h-14 w-14 rounded-full shadow-elegant hover:shadow-hover transition-all duration-300">
-            <Plus className="h-6 w-6" />
-          </Button>
-        </div>
       </div>
-    </PageLayout>
+    </>
   );
 };
 
