@@ -1,13 +1,9 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useSmartRouting } from '@/hooks/useSmartRouting';
-import Dashboard from './Dashboard';
+import { MobileFieldWorker } from '@/components/MobileFieldWorker';
 
-const Index = () => {
+const FieldWorker = () => {
   const { user, loading } = useAuth();
-  
-  // Handle smart routing for mobile field workers
-  useSmartRouting();
 
   // Show loading state
   if (loading) {
@@ -26,8 +22,8 @@ const Index = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  // Show dashboard if authenticated
-  return <Dashboard />;
+  // Show mobile-optimized field worker interface
+  return <MobileFieldWorker />;
 };
 
-export default Index;
+export default FieldWorker;
