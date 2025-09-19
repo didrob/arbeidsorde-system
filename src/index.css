@@ -34,8 +34,8 @@ All colors MUST be HSL.
     --muted-foreground: 215 16% 45%;
 
     /* Accent colors */
-    --accent: 215 84% 16%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 215 16% 96%;
+    --accent-foreground: 215 25% 15%;
 
     /* Status colors */
     --destructive: 0 84% 60%;
@@ -105,7 +105,7 @@ All colors MUST be HSL.
     --muted-foreground: 215 16% 65%;
 
     /* Dark accent colors */
-    --accent: 215 25% 18%;
+    --accent: 215 25% 22%;
     --accent-foreground: 210 25% 92%;
 
     /* Dark status colors */
