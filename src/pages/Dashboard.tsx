@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { FileText, Users, Package, Plus, Clock, MapPin, AlertCircle, TrendingUp, CheckCircle, Timer } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 import { FieldWorkerDashboard } from '@/components/FieldWorkerDashboard';
-import { AdminSidebar } from '@/components/AdminSidebar';
+import { PageLayout } from '@/components/layout/PageLayout';
 
 interface WorkOrder {
   id: string;
@@ -30,7 +30,7 @@ const Dashboard = () => {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loadingOrders, setLoadingOrders] = useState(true);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
   const [stats, setStats] = useState({
     totalWorkOrders: 0,
     completedToday: 0,
@@ -169,33 +169,14 @@ const Dashboard = () => {
 
   // Admin/Manager Dashboard
   return (
-    <div className="flex min-h-screen bg-gradient-surface">
-      {/* Sidebar */}
-      <AdminSidebar 
-        collapsed={sidebarCollapsed} 
-        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
-      />
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="p-6 md:p-8">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-4xl font-bold text-foreground mb-2">Dashboard</h1>
-                <p className="text-lg text-muted-foreground">
-                  Velkommen tilbake! Her er dagens oversikt.
-                </p>
-              </div>
-              <div className="hidden md:flex items-center space-x-3">
-                <Button size="lg" className="shadow-elegant hover:shadow-hover transition-all duration-300">
-                  <Plus className="h-5 w-5 mr-2" />
-                  Ny arbeidsordre
-                </Button>
-              </div>
-            </div>
-          </div>
+    <PageLayout
+      title="Dashboard"
+      description="Velkommen tilbake! Her er dagens oversikt."
+      showCreateButton
+      onCreateClick={() => console.log('Opprett ny arbeidsordre')}
+    >
+      <div className="bg-gradient-surface min-h-full">
+        <div className="space-y-8">
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
@@ -368,15 +349,15 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
-      </div>
 
-      {/* Mobile FAB */}
-      <div className="md:hidden fixed bottom-6 right-6">
-        <Button size="lg" className="h-14 w-14 rounded-full shadow-elegant hover:shadow-hover transition-all duration-300">
-          <Plus className="h-6 w-6" />
-        </Button>
+        {/* Mobile FAB */}
+        <div className="md:hidden fixed bottom-6 right-6">
+          <Button size="lg" className="h-14 w-14 rounded-full shadow-elegant hover:shadow-hover transition-all duration-300">
+            <Plus className="h-6 w-6" />
+          </Button>
+        </div>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

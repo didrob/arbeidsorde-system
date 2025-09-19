@@ -1,16 +1,47 @@
-import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useSmartRouting } from '@/hooks/useSmartRouting';
+import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState } from 'react';
+import { FieldWorkerDashboard } from '@/components/FieldWorkerDashboard';
 import Dashboard from './Dashboard';
+
+interface UserProfile {
+  role: string;
+}
 
 const Index = () => {
   const { user, loading } = useAuth();
-  
-  // Handle smart routing for mobile field workers
-  useSmartRouting();
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) throw error;
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    } else {
+      setProfileLoading(false);
+    }
+  }, [user]);
 
   // Show loading state
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
@@ -21,12 +52,12 @@ const Index = () => {
     );
   }
 
-  // Redirect to auth if not logged in
-  if (!user) {
-    return <Navigate to="/auth" replace />;
+  // Show field worker dashboard if user is a field worker
+  if (userProfile?.role === 'field_worker') {
+    return <FieldWorkerDashboard />;
   }
 
-  // Show dashboard if authenticated
+  // Show dashboard for admin/manager users
   return <Dashboard />;
 };
 
