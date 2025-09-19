@@ -34,6 +34,81 @@ export interface Material {
 
 export type WorkOrderStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
 export type PricingType = 'hourly' | 'fixed' | 'material_only';
+export type PricingModel = 'fixed' | 'resource_based';
+export type EquipmentPricingType = 'hourly' | 'daily' | 'fixed';
+export type AgreementType = 'personnel' | 'equipment' | 'material' | 'general';
+export type ResourceType = 'personnel' | 'equipment' | 'material';
+
+export interface Personnel {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  standard_hourly_rate?: number;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Equipment {
+  id: string;
+  name: string;
+  category: string;
+  pricing_type: EquipmentPricingType;
+  standard_rate?: number;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CustomerPricingAgreement {
+  id: string;
+  customer_id: string;
+  agreement_type: AgreementType;
+  resource_id?: string;
+  resource_type?: ResourceType;
+  custom_rate: number;
+  pricing_type: string;
+  valid_from?: string;
+  valid_until?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  
+  // Relations
+  customer?: Customer;
+}
+
+export interface WorkOrderPersonnel {
+  id: string;
+  work_order_id: string;
+  personnel_id: string;
+  hourly_rate: number;
+  estimated_hours?: number;
+  actual_hours?: number;
+  notes?: string;
+  created_at: string;
+  
+  // Relations
+  personnel?: Personnel;
+}
+
+export interface WorkOrderEquipment {
+  id: string;
+  work_order_id: string;
+  equipment_id: string;
+  pricing_type: EquipmentPricingType;
+  rate: number;
+  estimated_quantity?: number;
+  actual_quantity?: number;
+  notes?: string;
+  created_at: string;
+  
+  // Relations
+  equipment?: Equipment;
+}
 
 export interface WorkOrder {
   id: string;
@@ -41,6 +116,7 @@ export interface WorkOrder {
   description?: string;
   status: WorkOrderStatus;
   pricing_type: PricingType;
+  pricing_model: PricingModel;
   price_value?: number;
   estimated_hours?: number;
   actual_hours?: number;
@@ -59,6 +135,8 @@ export interface WorkOrder {
   assigned_user?: User;
   creator?: User;
   materials?: WorkOrderMaterial[];
+  personnel?: WorkOrderPersonnel[];
+  equipment?: WorkOrderEquipment[];
   time_entries?: TimeEntry[];
   attachments?: WorkOrderAttachment[];
 }
@@ -125,6 +203,7 @@ export interface CreateWorkOrderForm {
   customer_id: string;
   assigned_to?: string;
   pricing_type: PricingType;
+  pricing_model: PricingModel;
   price_value?: number;
   estimated_hours?: number;
   notes?: string;

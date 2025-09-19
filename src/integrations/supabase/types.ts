@@ -47,6 +47,59 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_pricing_agreements: {
+        Row: {
+          agreement_type: string
+          created_at: string
+          custom_rate: number
+          customer_id: string
+          id: string
+          notes: string | null
+          pricing_type: string
+          resource_id: string | null
+          resource_type: string | null
+          updated_at: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          agreement_type: string
+          created_at?: string
+          custom_rate: number
+          customer_id: string
+          id?: string
+          notes?: string | null
+          pricing_type?: string
+          resource_id?: string | null
+          resource_type?: string | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          agreement_type?: string
+          created_at?: string
+          custom_rate?: number
+          customer_id?: string
+          id?: string
+          notes?: string | null
+          pricing_type?: string
+          resource_id?: string | null
+          resource_type?: string | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_pricing_agreements_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           address: string | null
@@ -80,6 +133,42 @@ export type Database = {
         }
         Relationships: []
       }
+      equipment: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          pricing_type: string
+          standard_rate: number | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          pricing_type?: string
+          standard_rate?: number | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          pricing_type?: string
+          standard_rate?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       materials: {
         Row: {
           created_at: string
@@ -103,6 +192,42 @@ export type Database = {
           name?: string
           price?: number | null
           unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      personnel: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          phone: string | null
+          role: string | null
+          standard_hourly_rate: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          phone?: string | null
+          role?: string | null
+          standard_hourly_rate?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone?: string | null
+          role?: string | null
+          standard_hourly_rate?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -181,6 +306,57 @@ export type Database = {
           },
         ]
       }
+      work_order_equipment: {
+        Row: {
+          actual_quantity: number | null
+          created_at: string
+          equipment_id: string
+          estimated_quantity: number | null
+          id: string
+          notes: string | null
+          pricing_type: string
+          rate: number
+          work_order_id: string
+        }
+        Insert: {
+          actual_quantity?: number | null
+          created_at?: string
+          equipment_id: string
+          estimated_quantity?: number | null
+          id?: string
+          notes?: string | null
+          pricing_type?: string
+          rate: number
+          work_order_id: string
+        }
+        Update: {
+          actual_quantity?: number | null
+          created_at?: string
+          equipment_id?: string
+          estimated_quantity?: number | null
+          id?: string
+          notes?: string | null
+          pricing_type?: string
+          rate?: number
+          work_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_order_equipment_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_equipment_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       work_order_materials: {
         Row: {
           added_by: string
@@ -222,6 +398,54 @@ export type Database = {
           },
           {
             foreignKeyName: "work_order_materials_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_order_personnel: {
+        Row: {
+          actual_hours: number | null
+          created_at: string
+          estimated_hours: number | null
+          hourly_rate: number
+          id: string
+          notes: string | null
+          personnel_id: string
+          work_order_id: string
+        }
+        Insert: {
+          actual_hours?: number | null
+          created_at?: string
+          estimated_hours?: number | null
+          hourly_rate: number
+          id?: string
+          notes?: string | null
+          personnel_id: string
+          work_order_id: string
+        }
+        Update: {
+          actual_hours?: number | null
+          created_at?: string
+          estimated_hours?: number | null
+          hourly_rate?: number
+          id?: string
+          notes?: string | null
+          personnel_id?: string
+          work_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_order_personnel_personnel_id_fkey"
+            columns: ["personnel_id"]
+            isOneToOne: false
+            referencedRelation: "personnel"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_personnel_work_order_id_fkey"
             columns: ["work_order_id"]
             isOneToOne: false
             referencedRelation: "work_orders"
@@ -286,6 +510,7 @@ export type Database = {
           id: string
           notes: string | null
           price_value: number | null
+          pricing_model: string | null
           pricing_type: string
           started_at: string | null
           status: string
@@ -305,6 +530,7 @@ export type Database = {
           id?: string
           notes?: string | null
           price_value?: number | null
+          pricing_model?: string | null
           pricing_type?: string
           started_at?: string | null
           status?: string
@@ -324,6 +550,7 @@ export type Database = {
           id?: string
           notes?: string | null
           price_value?: number | null
+          pricing_model?: string | null
           pricing_type?: string
           started_at?: string | null
           status?: string

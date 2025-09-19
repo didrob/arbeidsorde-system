@@ -15,7 +15,8 @@ import Materials from "./pages/Materials";
 import TimeTracking from "./pages/TimeTracking";
 import Map from "./pages/Map";
 import Reports from "./pages/Reports";
-import Settings from "./pages/Settings";
+import Resources from './pages/Resources';
+import Settings from './pages/Settings';
 
 const queryClient = new QueryClient();
 
@@ -63,6 +64,7 @@ const App = () => (
                         <Route path="/work-orders" element={<WorkOrders />} />
                         <Route path="/customers" element={<Customers />} />
                         <Route path="/materials" element={<Materials />} />
+                        <Route path="/resources" element={<Resources />} />
                         <Route path="/time-tracking" element={<TimeTracking />} />
                         <Route path="/map" element={<Map />} />
                         <Route path="/reports" element={<Reports />} />

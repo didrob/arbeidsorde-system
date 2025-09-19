@@ -20,6 +20,7 @@ interface WorkOrderForm {
   assigned_to?: string;
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
   pricing_type: 'hourly' | 'fixed' | 'material_only';
+  pricing_model: 'fixed' | 'resource_based';
   estimated_hours?: number;
   price_value?: number;
 }
@@ -42,7 +43,8 @@ export default function WorkOrders() {
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<WorkOrderForm>({
     defaultValues: {
       status: 'pending',
-      pricing_type: 'hourly'
+      pricing_type: 'hourly',
+      pricing_model: 'fixed'
     }
   });
 

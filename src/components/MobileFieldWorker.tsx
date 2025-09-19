@@ -206,6 +206,7 @@ export const MobileFieldWorker = () => {
       const workOrderData = {
         ...data,
         pricing_type: 'hourly' as const,
+        pricing_model: 'fixed' as const,
         assigned_to: user?.id,
         user_id: user?.id
       };
