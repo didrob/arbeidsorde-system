@@ -9,6 +9,13 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import FieldWorker from "./pages/FieldWorker";
 import NotFound from "./pages/NotFound";
+import WorkOrders from "./pages/WorkOrders";
+import Customers from "./pages/Customers";
+import Materials from "./pages/Materials";
+import TimeTracking from "./pages/TimeTracking";
+import Map from "./pages/Map";
+import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -53,13 +60,13 @@ const App = () => (
                     <div className="flex-1 flex flex-col">
                       <Routes>
                         <Route path="/" element={<Index />} />
-                        <Route path="/work-orders" element={<Index />} />
-                        <Route path="/customers" element={<Index />} />
-                        <Route path="/materials" element={<Index />} />
-                        <Route path="/time-tracking" element={<Index />} />
-                        <Route path="/map" element={<Index />} />
-                        <Route path="/reports" element={<Index />} />
-                        <Route path="/settings" element={<Index />} />
+                        <Route path="/work-orders" element={<WorkOrders />} />
+                        <Route path="/customers" element={<Customers />} />
+                        <Route path="/materials" element={<Materials />} />
+                        <Route path="/time-tracking" element={<TimeTracking />} />
+                        <Route path="/map" element={<Map />} />
+                        <Route path="/reports" element={<Reports />} />
+                        <Route path="/settings" element={<Settings />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </div>
