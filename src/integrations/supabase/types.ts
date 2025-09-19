@@ -79,6 +79,8 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          is_active: boolean | null
+          phone: string | null
           role: string
           updated_at: string
           user_id: string
@@ -87,6 +89,8 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          is_active?: boolean | null
+          phone?: string | null
           role?: string
           updated_at?: string
           user_id: string
@@ -95,6 +99,8 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          is_active?: boolean | null
+          phone?: string | null
           role?: string
           updated_at?: string
           user_id?: string
@@ -142,17 +148,113 @@ export type Database = {
           },
         ]
       }
+      work_order_materials: {
+        Row: {
+          added_by: string
+          created_at: string
+          id: string
+          material_id: string
+          notes: string | null
+          quantity: number
+          unit_price: number | null
+          work_order_id: string
+        }
+        Insert: {
+          added_by: string
+          created_at?: string
+          id?: string
+          material_id: string
+          notes?: string | null
+          quantity: number
+          unit_price?: number | null
+          work_order_id: string
+        }
+        Update: {
+          added_by?: string
+          created_at?: string
+          id?: string
+          material_id?: string
+          notes?: string | null
+          quantity?: number
+          unit_price?: number | null
+          work_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_order_materials_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_materials_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_order_time_entries: {
+        Row: {
+          break_duration: number | null
+          created_at: string
+          end_time: string | null
+          id: string
+          notes: string | null
+          start_time: string
+          updated_at: string
+          user_id: string
+          work_order_id: string
+        }
+        Insert: {
+          break_duration?: number | null
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          start_time?: string
+          updated_at?: string
+          user_id: string
+          work_order_id: string
+        }
+        Update: {
+          break_duration?: number | null
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          start_time?: string
+          updated_at?: string
+          user_id?: string
+          work_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_order_time_entries_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       work_orders: {
         Row: {
           actual_hours: number | null
+          assigned_to: string | null
+          completed_at: string | null
           created_at: string
           customer_id: string
           description: string | null
           estimated_hours: number | null
+          gps_location: unknown | null
           id: string
           notes: string | null
           price_value: number | null
           pricing_type: string
+          started_at: string | null
           status: string
           title: string
           updated_at: string
@@ -160,14 +262,18 @@ export type Database = {
         }
         Insert: {
           actual_hours?: number | null
+          assigned_to?: string | null
+          completed_at?: string | null
           created_at?: string
           customer_id: string
           description?: string | null
           estimated_hours?: number | null
+          gps_location?: unknown | null
           id?: string
           notes?: string | null
           price_value?: number | null
           pricing_type?: string
+          started_at?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -175,20 +281,31 @@ export type Database = {
         }
         Update: {
           actual_hours?: number | null
+          assigned_to?: string | null
+          completed_at?: string | null
           created_at?: string
           customer_id?: string
           description?: string | null
           estimated_hours?: number | null
+          gps_location?: unknown | null
           id?: string
           notes?: string | null
           price_value?: number | null
           pricing_type?: string
+          started_at?: string | null
           status?: string
           title?: string
           updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "work_orders_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "work_orders_customer_id_fkey"
             columns: ["customer_id"]
