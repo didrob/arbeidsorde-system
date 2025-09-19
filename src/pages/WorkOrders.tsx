@@ -4,14 +4,12 @@ import { TopBar } from '@/components/TopBar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useForm } from 'react-hook-form';
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { WorkOrderDetails } from '@/components/WorkOrderDetails';
+import { WorkOrderWizard } from '@/components/workorder-wizard/WorkOrderWizard';
 
 interface WorkOrderForm {
   title: string;
@@ -33,20 +31,10 @@ export default function WorkOrders() {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   const { data: workOrders, isLoading } = useWorkOrders();
-  const { data: customers } = useCustomers();
-  const { data: fieldWorkers } = useFieldWorkers();
   const createWorkOrder = useCreateWorkOrder();
   const updateWorkOrder = useUpdateWorkOrder();
   const deleteWorkOrder = useDeleteWorkOrder();
   const { toast } = useToast();
-
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<WorkOrderForm>({
-    defaultValues: {
-      status: 'pending',
-      pricing_type: 'hourly',
-      pricing_model: 'fixed'
-    }
-  });
 
   const filteredWorkOrders = workOrders?.filter((order: any) => {
     const matchesSearch = order.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -55,13 +43,20 @@ export default function WorkOrders() {
     return matchesSearch && matchesStatus;
   });
 
-  const onSubmit = async (data: WorkOrderForm) => {
+  const onSubmit = async (data: any) => {
     try {
       await createWorkOrder.mutateAsync(data);
       setIsCreateDialogOpen(false);
-      reset();
+      toast({ 
+        title: 'Suksess', 
+        description: 'Arbeidsordre opprettet' 
+      });
     } catch (error: any) {
-      toast({ title: 'Feil', description: error?.message || 'Kunne ikke opprette arbeidsordre', variant: 'destructive' });
+      toast({ 
+        title: 'Feil', 
+        description: error?.message || 'Kunne ikke opprette arbeidsordre', 
+        variant: 'destructive' 
+      });
     }
   };
 
@@ -175,109 +170,12 @@ export default function WorkOrders() {
           </div>
         )}
 
-        {/* Create Work Order Dialog */}
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Opprett ny arbeidsordre</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <Input
-                  placeholder="Tittel"
-                  {...register('title', { required: 'Tittel er påkrevd' })}
-                />
-                {/* Hidden field to ensure customer_id is registered */}
-                <input type="hidden" {...register('customer_id', { required: 'Kunde er påkrevd' })} />
-                {errors.title && (
-                  <p className="text-destructive text-sm mt-1">{errors.title.message}</p>
-                )}
-              </div>
-              
-              <div>
-                <Textarea
-                  placeholder="Beskrivelse"
-                  {...register('description')}
-                />
-              </div>
-
-              <div>
-                <Select onValueChange={(value) => setValue('customer_id', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Velg kunde" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white">
-                    {customers?.map((customer: any) => (
-                      <SelectItem key={customer.id} value={customer.id}>
-                        {customer.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {!customers || customers.length === 0 ? (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Ingen kunder tilgjengelig. Opprett en kunde først.
-                  </p>
-                ) : null}
-                {errors.customer_id && (
-                  <p className="text-destructive text-sm mt-1">Kunde er påkrevd</p>
-                )}
-              </div>
-
-              <div>
-                <Select onValueChange={(value) => setValue('assigned_to', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Tildel til (valgfritt)" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white">
-                    {fieldWorkers?.map((worker: any) => (
-                      <SelectItem key={worker.user_id} value={worker.user_id}>
-                        {worker.full_name || worker.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Select onValueChange={(value) => setValue('pricing_type', value as any)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pristype" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white">
-                    <SelectItem value="hourly">Timebasert</SelectItem>
-                    <SelectItem value="fixed">Fast pris</SelectItem>
-                    <SelectItem value="material_only">Kun materialer</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Input
-                  type="number"
-                  placeholder="Estimerte timer"
-                  {...register('estimated_hours', { valueAsNumber: true })}
-                />
-              </div>
-
-              <div className="flex gap-2 pt-4">
-                <Button
-                  type="submit"
-                  disabled={createWorkOrder.isPending || !customers || customers.length === 0}
-                >
-                  {createWorkOrder.isPending ? 'Oppretter...' : 'Opprett'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsCreateDialogOpen(false)}
-                >
-                  Avbryt
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+        {/* Work Order Wizard */}
+        <WorkOrderWizard 
+          open={isCreateDialogOpen} 
+          onClose={() => setIsCreateDialogOpen(false)}
+          onSubmit={onSubmit}
+        />
 
         {/* Work Order Details Dialog */}
         <WorkOrderDetails 
