@@ -141,18 +141,49 @@ export default function Invoices() {
           </CardHeader>
           <CardContent>
             {invoices.length === 0 ? (
-              <div className="text-center py-8">
-                <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">
-                  Ingen fakturaer ennå
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  Opprett din første faktura basert på fullførte arbeidsordrer
-                </p>
-                <Button onClick={handleCreateInvoice}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Opprett faktura
-                </Button>
+              <div className="text-center py-12 space-y-6">
+                <div>
+                  <FileText className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                    Ingen fakturaer ennå
+                  </h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    For å opprette fakturaer trenger du fullførte arbeidsordrer med korrekt prising
+                  </p>
+                </div>
+                
+                <div className="bg-muted/50 rounded-lg p-6 max-w-lg mx-auto">
+                  <h4 className="font-medium mb-3">Slik kommer du i gang:</h4>
+                  <div className="space-y-2 text-sm text-left">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-medium">1</div>
+                      <span>Registrer kunder i systemet</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-medium">2</div>
+                      <span>Opprett arbeidsordrer for kundene</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-medium">3</div>
+                      <span>Merk arbeidsordrer som fullført når arbeidet er utført</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-medium">4</div>
+                      <span>Opprett fakturaer basert på fullførte arbeidsordrer</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 justify-center">
+                  <Button variant="outline" onClick={() => window.location.href = '/work-orders'}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Arbeidsordrer
+                  </Button>
+                  <Button onClick={handleCreateInvoice}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Opprett faktura
+                  </Button>
+                </div>
               </div>
             ) : (
               <Table>

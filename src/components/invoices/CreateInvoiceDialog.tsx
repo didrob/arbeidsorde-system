@@ -170,47 +170,83 @@ export function CreateInvoiceDialog({ open, onOpenChange }: CreateInvoiceDialogP
             </div>
 
             <div className="space-y-2 max-h-96 overflow-y-auto">
-              {customerId ? (
-                filteredWorkOrders.length > 0 ? (
-                  filteredWorkOrders.map((workOrder) => (
-                    <Card key={workOrder.id} className="p-4">
-                      <div className="flex items-start space-x-3">
-                        <Checkbox
-                          id={workOrder.id}
-                          checked={selectedWorkOrders.includes(workOrder.id)}
-                          onCheckedChange={() => handleWorkOrderToggle(workOrder.id)}
-                        />
-                        <div className="flex-1 space-y-1">
-                          <Label
-                            htmlFor={workOrder.id}
-                            className="text-sm font-medium cursor-pointer"
-                          >
-                            {workOrder.title}
-                          </Label>
-                          <p className="text-xs text-muted-foreground">
-                            {workOrder.description}
-                          </p>
-                          <div className="flex justify-between items-center text-xs">
-                            <span className="text-muted-foreground">
-                              Fullført: {new Date(workOrder.completed_at).toLocaleDateString('nb-NO')}
-                            </span>
-                            <span className="font-medium">
-                              {formatCurrency(workOrder.price_value || 0)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>Ingen fullførte arbeidsordrer for denne kunden</p>
+              {customers.length === 0 ? (
+                <div className="text-center py-8 space-y-4">
+                  <div className="text-muted-foreground">
+                    <p className="font-medium">Ingen kunder registrert</p>
+                    <p className="text-sm">Du må først registrere kunder for å kunne opprette fakturaer</p>
                   </div>
-                )
-              ) : (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => window.location.href = '/customers'}
+                    className="mt-2"
+                  >
+                    Gå til Kunder
+                  </Button>
+                </div>
+              ) : !customerId ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <p>Velg en kunde for å se tilgjengelige arbeidsordrer</p>
                 </div>
+              ) : workOrders.filter(wo => wo.customer_id === customerId).length === 0 ? (
+                <div className="text-center py-8 space-y-4">
+                  <div className="text-muted-foreground">
+                    <p className="font-medium">Ingen arbeidsordrer for denne kunden</p>
+                    <p className="text-sm">Opprett arbeidsordrer først for å kunne fakturere</p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => window.location.href = '/work-orders'}
+                    className="mt-2"
+                  >
+                    Opprett arbeidsordre
+                  </Button>
+                </div>
+              ) : filteredWorkOrders.length === 0 ? (
+                <div className="text-center py-8 space-y-4">
+                  <div className="text-muted-foreground">
+                    <p className="font-medium">Ingen fullførte arbeidsordrer for denne kunden</p>
+                    <p className="text-sm">Arbeidsordrer må være merket som "fullført" for å kunne faktureres</p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => window.location.href = '/work-orders'}
+                    className="mt-2"
+                  >
+                    Administrer arbeidsordrer
+                  </Button>
+                </div>
+              ) : (
+                filteredWorkOrders.map((workOrder) => (
+                  <Card key={workOrder.id} className="p-4">
+                    <div className="flex items-start space-x-3">
+                      <Checkbox
+                        id={workOrder.id}
+                        checked={selectedWorkOrders.includes(workOrder.id)}
+                        onCheckedChange={() => handleWorkOrderToggle(workOrder.id)}
+                      />
+                      <div className="flex-1 space-y-1">
+                        <Label
+                          htmlFor={workOrder.id}
+                          className="text-sm font-medium cursor-pointer"
+                        >
+                          {workOrder.title}
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          {workOrder.description}
+                        </p>
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-muted-foreground">
+                            Fullført: {new Date(workOrder.completed_at).toLocaleDateString('nb-NO')}
+                          </span>
+                          <span className="font-medium">
+                            {formatCurrency(workOrder.price_value || 0)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))
               )}
             </div>
           </div>
@@ -222,7 +258,7 @@ export function CreateInvoiceDialog({ open, onOpenChange }: CreateInvoiceDialogP
           </Button>
           <Button 
             onClick={handleSubmit}
-            disabled={!customerId || !dueDate || createInvoiceMutation.isPending}
+            disabled={!customerId || !dueDate || selectedWorkOrders.length === 0 || createInvoiceMutation.isPending}
           >
             {createInvoiceMutation.isPending ? "Oppretter..." : "Opprett faktura"}
           </Button>
