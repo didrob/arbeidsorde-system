@@ -27,11 +27,19 @@ export function PricingModelStep() {
   };
 
   React.useEffect(() => {
-    // Mark step complete if pricing model is selected
-    if (formData.pricing_model) {
+    // Mark step complete if pricing model is selected and requirements are met
+    const isComplete = () => {
+      if (!formData.pricing_model) return false;
+      if (formData.pricing_model === 'fixed' && (!formData.price_value || formData.price_value <= 0)) {
+        return false;
+      }
+      return true;
+    };
+
+    if (isComplete()) {
       dispatch({ type: 'MARK_STEP_COMPLETE', payload: 2 });
     }
-  }, [formData.pricing_model, dispatch]);
+  }, [formData.pricing_model, formData.price_value, dispatch]);
 
   return (
     <div className="space-y-6">

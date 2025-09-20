@@ -81,9 +81,27 @@ export function WizardProvider({ children }: { children: ReactNode }) {
     // Can always go to step 1
     if (stepId === 1) return true;
     
-    // For step 3 (resources), only required if pricing_model is resource_based
-    if (stepId === 3) {
-      return state.formData.pricing_model === 'resource_based' && isStepCompleted(2);
+    // Special validation for step 2 (pricing model)
+    if (stepId === 3 || stepId === 4 || stepId === 5) {
+      // Validate step 2 requirements
+      if (!state.formData.pricing_model) return false;
+      if (state.formData.pricing_model === 'fixed' && (!state.formData.price_value || state.formData.price_value <= 0)) {
+        return false;
+      }
+      
+      // For step 3 (resources), only required if pricing_model is resource_based
+      if (stepId === 3) {
+        return state.formData.pricing_model === 'resource_based';
+      }
+      
+      // For steps 4 and 5, skip step 3 if fixed pricing
+      if (stepId === 4 || stepId === 5) {
+        if (state.formData.pricing_model === 'fixed') {
+          return true; // Step 2 is already validated above
+        } else {
+          return isStepCompleted(3); // Need step 3 completed for resource-based
+        }
+      }
     }
     
     // For other steps, just check if previous step is completed
