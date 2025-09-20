@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/hooks/useAuth';
 import { MobileNav } from '@/components/mobile/MobileNav';
 import { SimpleSidebar } from '@/components/SimpleSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -17,8 +18,10 @@ export function ResponsiveLayout({
   notificationCount = 0 
 }: ResponsiveLayoutProps) {
   const isMobile = useIsMobile();
+  const { isFieldWorker } = useAuth();
 
-  if (isMobile) {
+  // Field workers always get mobile interface, regardless of screen size
+  if (isFieldWorker || (isMobile && showMobileNav)) {
     return (
       <div className="min-h-screen bg-background">
         <main className={cn(
@@ -35,7 +38,7 @@ export function ResponsiveLayout({
     );
   }
 
-  // Desktop/Tablet layout with sidebar
+  // Desktop/Tablet layout with sidebar for admin/managers
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">

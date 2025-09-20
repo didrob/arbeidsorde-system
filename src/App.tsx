@@ -4,7 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { SimpleSidebar } from "@/components/SimpleSidebar";
+import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
+import { useSmartRouting } from "@/hooks/useSmartRouting";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import FieldWorker from "./pages/FieldWorker";
@@ -19,13 +21,15 @@ import Resources from './pages/Resources';
 import Settings from './pages/Settings';
 import CustomerAgreements from './pages/CustomerAgreements';
 import Invoices from './pages/Invoices';
-// Force rebuild
 
 const queryClient = new QueryClient();
 
-// Protected route wrapper
+// Protected route wrapper with role-based routing
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, userRole, loading, isFieldWorker } = useAuth();
+  
+  // Use smart routing for field workers
+  useSmartRouting();
 
   if (loading) {
     return (
@@ -42,7 +46,21 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/auth" replace />;
   }
 
-  return <>{children}</>;
+  // Field workers should use mobile interface
+  if (isFieldWorker) {
+    return (
+      <ResponsiveLayout showMobileNav={true}>
+        {children}
+      </ResponsiveLayout>
+    );
+  }
+
+  // Admin/Manager users get responsive layout with sidebar on desktop
+  return (
+    <ResponsiveLayout showMobileNav={false}>
+      {children}
+    </ResponsiveLayout>
+  );
 }
 
 const App = () => (
@@ -51,6 +69,7 @@ const App = () => (
       <AuthProvider>
         <Toaster />
         <Sonner />
+        <PWAInstallPrompt />
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
@@ -59,25 +78,20 @@ const App = () => (
               path="/*" 
               element={
                 <ProtectedRoute>
-                  <div className="flex min-h-screen w-full">
-                    <SimpleSidebar />
-                    <div className="flex-1 flex flex-col">
-                      <Routes>
-                        <Route path="/" element={<Index />} />
-                        <Route path="/work-orders" element={<WorkOrders />} />
-                        <Route path="/customers" element={<Customers />} />
-                        <Route path="/customer-agreements" element={<CustomerAgreements />} />
-                        <Route path="/materials" element={<Materials />} />
-                        <Route path="/resources" element={<Resources />} />
-                        <Route path="/time-tracking" element={<TimeTracking />} />
-                        <Route path="/map" element={<Map />} />
-                        <Route path="/reports" element={<Reports />} />
-                        <Route path="/invoices" element={<Invoices />} />
-                        <Route path="/settings" element={<Settings />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </div>
-                  </div>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/work-orders" element={<WorkOrders />} />
+                    <Route path="/customers" element={<Customers />} />
+                    <Route path="/customer-agreements" element={<CustomerAgreements />} />
+                    <Route path="/materials" element={<Materials />} />
+                    <Route path="/resources" element={<Resources />} />
+                    <Route path="/time-tracking" element={<TimeTracking />} />
+                    <Route path="/map" element={<Map />} />
+                    <Route path="/reports" element={<Reports />} />
+                    <Route path="/invoices" element={<Invoices />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
                 </ProtectedRoute>
               } 
             />
