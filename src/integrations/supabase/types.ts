@@ -202,6 +202,93 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_line_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string
+          item_type: string
+          line_total: number
+          quantity: number
+          reference_id: string | null
+          unit_price: number
+          work_order_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id: string
+          item_type?: string
+          line_total: number
+          quantity?: number
+          reference_id?: string | null
+          unit_price: number
+          work_order_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string
+          item_type?: string
+          line_total?: number
+          quantity?: number
+          reference_id?: string | null
+          unit_price?: number
+          work_order_id?: string | null
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          created_at: string
+          created_by: string
+          customer_id: string
+          due_date: string
+          id: string
+          invoice_number: string
+          issue_date: string
+          notes: string | null
+          status: string
+          subtotal: number
+          tax_amount: number
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          customer_id: string
+          due_date: string
+          id?: string
+          invoice_number: string
+          issue_date?: string
+          notes?: string | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          customer_id?: string
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          notes?: string | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       materials: {
         Row: {
           created_at: string
@@ -655,6 +742,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_invoice_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
