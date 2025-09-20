@@ -23,7 +23,18 @@ function WizardContent({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
   const currentStepData = steps.find(step => step.id === currentStep);
   const progress = (currentStep / steps.length) * 100;
   const isLastStep = currentStep === steps.length;
-  const canGoNext = canProceedToStep(currentStep + 1) || isLastStep;
+  
+  // Calculate the intended next step (accounting for skipped steps)
+  const getIntendedNextStep = () => {
+    let nextStep = currentStep + 1;
+    if (nextStep === 3 && formData.pricing_model === 'fixed') {
+      nextStep = 4;
+    }
+    return nextStep;
+  };
+  
+  const intendedNextStep = getIntendedNextStep();
+  const canGoNext = canProceedToStep(intendedNextStep) || isLastStep;
 
   const handleNext = () => {
     if (isLastStep) {
