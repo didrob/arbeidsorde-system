@@ -8,6 +8,7 @@ import {
   Clock,
   MapPin,
   BarChart3,
+  HandCoins,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -45,6 +46,12 @@ const navigationItems = [
     url: "/customers", 
     icon: Users,
     description: "Kundedatabase"
+  },
+  { 
+    title: "Kundeavtaler", 
+    url: "/customer-agreements", 
+    icon: HandCoins,
+    description: "Prisavtaler"
   },
   { 
     title: "Materialer", 

@@ -36,7 +36,7 @@ export type WorkOrderStatus = 'pending' | 'in_progress' | 'completed' | 'cancell
 export type PricingType = 'hourly' | 'fixed' | 'material_only';
 export type PricingModel = 'fixed' | 'resource_based';
 export type EquipmentPricingType = 'hourly' | 'daily' | 'fixed';
-export type AgreementType = 'personnel' | 'equipment' | 'material' | 'general';
+export type AgreementType = 'fixed_rate' | 'percentage_discount' | 'bulk_pricing';
 export type ResourceType = 'personnel' | 'equipment' | 'material';
 
 export interface Personnel {

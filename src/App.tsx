@@ -17,6 +17,7 @@ import Map from "./pages/Map";
 import Reports from "./pages/Reports";
 import Resources from './pages/Resources';
 import Settings from './pages/Settings';
+import CustomerAgreements from './pages/CustomerAgreements';
 // Force rebuild
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ const App = () => (
                         <Route path="/" element={<Index />} />
                         <Route path="/work-orders" element={<WorkOrders />} />
                         <Route path="/customers" element={<Customers />} />
+                        <Route path="/customer-agreements" element={<CustomerAgreements />} />
                         <Route path="/materials" element={<Materials />} />
                         <Route path="/resources" element={<Resources />} />
                         <Route path="/time-tracking" element={<TimeTracking />} />
