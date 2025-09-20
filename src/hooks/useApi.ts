@@ -246,6 +246,27 @@ export const useCreateCustomer = () => {
   });
 };
 
+export const useUpdateCustomer = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Omit<Customer, 'id' | 'created_at' | 'updated_at'>> }) => {
+      const response = await api.updateCustomer(id, data);
+      if (!response.success) {
+        throw new Error(response.error?.message || 'Failed to update customer');
+      }
+      return response.data!;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers() });
+      toast.success('Kunde oppdatert');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Kunne ikke oppdatere kunde');
+    },
+  });
+};
+
 // Users Hooks
 export const useFieldWorkers = () => {
   return useQuery({

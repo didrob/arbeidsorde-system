@@ -210,6 +210,17 @@ class ApiClient {
     return this.handleResponse(data, error);
   }
 
+  async updateCustomer(id: string, customerData: Partial<Omit<Customer, 'id' | 'created_at' | 'updated_at'>>): Promise<ApiResponse<Customer>> {
+    const { data, error } = await supabase
+      .from('customers')
+      .update(customerData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    return this.handleResponse(data, error);
+  }
+
   // Users API
   async getFieldWorkers(): Promise<ApiResponse<any[]>> {
     const { data, error } = await supabase
@@ -278,6 +289,7 @@ export const {
   addMaterialToWorkOrder,
   getCustomers,
   createCustomer,
+  updateCustomer,
   getFieldWorkers,
   getCurrentUser,
   getDashboardStats

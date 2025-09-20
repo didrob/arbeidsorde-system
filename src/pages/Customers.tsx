@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useCustomers, useCreateCustomer } from '@/hooks/useApi';
+import { useCustomers, useCreateCustomer, useUpdateCustomer } from '@/hooks/useApi';
 import { TopBar } from '@/components/TopBar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,12 +20,16 @@ interface CustomerForm {
 export default function Customers() {
   const [search, setSearch] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   
   const { data: customers, isLoading } = useCustomers();
   const createCustomer = useCreateCustomer();
+  const updateCustomer = useUpdateCustomer();
   const { toast } = useToast();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CustomerForm>();
+  const { register: registerEdit, handleSubmit: handleSubmitEdit, reset: resetEdit, setValue, formState: { errors: editErrors } } = useForm<CustomerForm>();
 
   const filteredCustomers = customers?.filter((customer: any) => 
     customer.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -43,6 +47,27 @@ export default function Customers() {
       // Error handling is done in the hook's onError callback
       console.error('Failed to create customer:', error);
     }
+  };
+
+  const onEditSubmit = async (data: CustomerForm) => {
+    try {
+      await updateCustomer.mutateAsync({ id: selectedCustomer.id, data });
+      setIsEditDialogOpen(false);
+      setSelectedCustomer(null);
+      resetEdit();
+    } catch (error) {
+      console.error('Failed to update customer:', error);
+    }
+  };
+
+  const handleEditClick = (customer: any) => {
+    setSelectedCustomer(customer);
+    setValue('name', customer.name || '');
+    setValue('contact_person', customer.contact_person || '');
+    setValue('email', customer.email || '');
+    setValue('phone', customer.phone || '');
+    setValue('address', customer.address || '');
+    setIsEditDialogOpen(true);
   };
 
   return (
@@ -76,7 +101,7 @@ export default function Customers() {
                 <CardHeader className="pb-4">
                   <div className="flex items-start justify-between">
                     <CardTitle className="text-lg">{customer.name}</CardTitle>
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" onClick={() => handleEditClick(customer)}>
                       <Edit className="h-4 w-4" />
                     </Button>
                   </div>
@@ -177,6 +202,72 @@ export default function Customers() {
                   type="button"
                   variant="outline"
                   onClick={() => setIsCreateDialogOpen(false)}
+                >
+                  Avbryt
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Customer Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Rediger kunde</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmitEdit(onEditSubmit)} className="space-y-4">
+              <div>
+                <Input
+                  placeholder="Firmanavn *"
+                  {...registerEdit('name', { required: 'Firmanavn er påkrevd' })}
+                />
+                {editErrors.name && (
+                  <p className="text-destructive text-sm mt-1">{editErrors.name.message}</p>
+                )}
+              </div>
+              
+              <div>
+                <Input
+                  placeholder="Kontaktperson"
+                  {...registerEdit('contact_person')}
+                />
+              </div>
+
+              <div>
+                <Input
+                  type="email"
+                  placeholder="E-post"
+                  {...registerEdit('email')}
+                />
+              </div>
+
+              <div>
+                <Input
+                  placeholder="Telefon"
+                  {...registerEdit('phone')}
+                />
+              </div>
+
+              <div>
+                <Input
+                  placeholder="Adresse"
+                  {...registerEdit('address')}
+                />
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button type="submit" disabled={updateCustomer.isPending}>
+                  {updateCustomer.isPending ? 'Oppdaterer...' : 'Oppdater'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditDialogOpen(false);
+                    setSelectedCustomer(null);
+                    resetEdit();
+                  }}
                 >
                   Avbryt
                 </Button>
