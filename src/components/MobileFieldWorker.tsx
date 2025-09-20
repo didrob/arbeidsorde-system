@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Clock, MapPin, ChevronRight, Play, Pause, CheckCircle, Plus, Camera, Paperclip, AlertTriangle } from 'lucide-react';
+import { Clock, MapPin, ChevronRight, Play, Pause, CheckCircle, Plus, Camera, Paperclip, AlertTriangle, Search, Bell } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,6 +15,8 @@ import { useCustomers, useCreateWorkOrder, useStartTimeEntry } from '@/hooks/use
 import { toast } from 'sonner';
 import { AttachmentUpload } from './AttachmentUpload';
 import { useCreateTimeAdjustment, useTimeAdjustments, useUploadAdjustmentAttachment } from '@/hooks/useTimeAdjustments';
+import { WorkOrderPool } from './WorkOrderPool';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface WorkOrder {
   id: string;
@@ -51,6 +53,7 @@ export const MobileFieldWorker = () => {
   const [showAttachments, setShowAttachments] = useState(false);
   const [isExtraTimeOpen, setIsExtraTimeOpen] = useState(false);
   const [isDeviationOpen, setIsDeviationOpen] = useState(false);
+  const [showPool, setShowPool] = useState(false);
   const [extraTimeForm, setExtraTimeForm] = useState({
     reason: '',
     extra_minutes: '',
@@ -65,6 +68,7 @@ export const MobileFieldWorker = () => {
   const { data: customers } = useCustomers();
   const createWorkOrder = useCreateWorkOrder();
   const startTimeEntry = useStartTimeEntry();
+  const { notifications, unreadCount } = useNotifications();
   
   // Time adjustment hooks
   const createTimeAdjustment = useCreateTimeAdjustment();
@@ -144,190 +148,6 @@ export const MobileFieldWorker = () => {
     }
   };
 
-  const startWork = async (workOrder: WorkOrder) => {
-    try {
-      // Start timer
-      const { data: timerData, error: timerError } = await supabase
-        .from('work_order_time_entries')
-        .insert({
-          work_order_id: workOrder.id,
-          user_id: user?.id,
-          start_time: new Date().toISOString()
-        })
-        .select()
-        .single();
-
-      if (timerError) throw timerError;
-
-      // Update work order status
-      const { error: updateError } = await supabase
-        .from('work_orders')
-        .update({ 
-          status: 'in_progress',
-          started_at: new Date().toISOString()
-        })
-        .eq('id', workOrder.id);
-
-      if (updateError) throw updateError;
-
-      setActiveTimer(timerData);
-      setActiveOrder({ ...workOrder, status: 'in_progress' });
-      
-      // Refresh work orders
-      fetchTodaysWork();
-      
-      toast.success(`Startet arbeid på "${workOrder.title}"`);
-    } catch (error) {
-      console.error('Error starting work:', error);
-      toast.error('Kunne ikke starte arbeid');
-    }
-  };
-
-  const completeWork = async () => {
-    if (!activeTimer || !activeOrder) return;
-
-    try {
-      // End timer
-      const { error: timerError } = await supabase
-        .from('work_order_time_entries')
-        .update({ end_time: new Date().toISOString() })
-        .eq('id', activeTimer.id);
-
-      if (timerError) throw timerError;
-
-      // Update work order status
-      const { error: updateError } = await supabase
-        .from('work_orders')
-        .update({ 
-          status: 'completed',
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', activeOrder.id);
-
-      if (updateError) throw updateError;
-
-      setActiveTimer(null);
-      setActiveOrder(null);
-      setElapsedTime(0);
-      
-      // Refresh work orders
-      fetchTodaysWork();
-      
-      toast.success(`Fullført arbeid på "${activeOrder.title}"`);
-    } catch (error) {
-      console.error('Error completing work:', error);
-      toast.error('Kunne ikke fullføre arbeid');
-    }
-  };
-
-  const handleQuickSubmit = async (data: QuickWorkOrderForm) => {
-    try {
-      const workOrderData = {
-        ...data,
-        pricing_type: 'hourly' as const,
-        pricing_model: 'fixed' as const,
-        assigned_to: user?.id,
-        user_id: user?.id
-      };
-
-      const result = await createWorkOrder.mutateAsync(workOrderData);
-      if (result.success) {
-        toast.success('Raskt oppdrag opprettet - starter automatisk timer...');
-        setIsQuickCreateOpen(false);
-        reset();
-        
-        // Auto-start the work order
-        await startWork(result.data);
-      } else {
-        toast.error(result.error?.message || 'Kunne ikke opprette raskt oppdrag');
-      }
-    } catch (error) {
-      toast.error('Kunne ikke opprette raskt oppdrag');
-    }
-  };
-
-  const handleExtraTimeSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!activeOrder || !user) return;
-
-    try {
-      const adjustment = await createTimeAdjustment.mutateAsync({
-        work_order_id: activeOrder.id,
-        adjustment_type: 'extra_time',
-        reason: extraTimeForm.reason,
-        extra_minutes: parseInt(extraTimeForm.extra_minutes) || 0,
-        hourly_rate: 800, // Default hourly rate, could be from user profile or work order
-        notes: extraTimeForm.notes
-      });
-
-      // Upload attachment if selected
-      if (attachmentFile && adjustment) {
-        await uploadAttachment.mutateAsync({
-          adjustmentId: adjustment.id,
-          file: attachmentFile,
-          description: `Extra time: ${extraTimeForm.reason}`
-        });
-      }
-
-      setIsExtraTimeOpen(false);
-      setExtraTimeForm({ reason: '', extra_minutes: '', notes: '' });
-      setAttachmentFile(null);
-    } catch (error) {
-      console.error('Error submitting extra time:', error);
-    }
-  };
-
-  const handleDeviationSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!activeOrder || !user) return;
-
-    try {
-      const adjustment = await createTimeAdjustment.mutateAsync({
-        work_order_id: activeOrder.id,
-        adjustment_type: 'deviation',
-        reason: deviationForm.reason,
-        notes: deviationForm.notes
-      });
-
-      // Upload attachment if selected
-      if (attachmentFile && adjustment) {
-        await uploadAttachment.mutateAsync({
-          adjustmentId: adjustment.id,
-          file: attachmentFile,
-          description: `Deviation: ${deviationForm.reason}`
-        });
-      }
-
-      setIsDeviationOpen(false);
-      setDeviationForm({ reason: '', notes: '' });
-      setAttachmentFile(null);
-    } catch (error) {
-      console.error('Error submitting deviation:', error);
-    }
-  };
-
-  const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Badge variant="secondary">Venter</Badge>;
-      case 'in_progress':
-        return <Badge variant="default">Aktiv</Badge>;
-      case 'completed':
-        return <Badge variant="outline">Fullført</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -351,392 +171,111 @@ export const MobileFieldWorker = () => {
                 {workOrders.length} ordrer tildelt
               </p>
             </div>
-            <Dialog open={isQuickCreateOpen} onOpenChange={setIsQuickCreateOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="h-9">
-                  <Plus className="h-4 w-4 mr-1" />
-                  Raskt oppdrag
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-sm mx-4">
-                <DialogHeader>
-                  <DialogTitle>Opprett raskt oppdrag</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleSubmit(handleQuickSubmit)} className="space-y-4">
-                  <div>
-                    <Input
-                      placeholder="Tittel"
-                      {...register('title', { required: 'Tittel er påkrevd' })}
-                    />
-                    {errors.title && (
-                      <p className="text-destructive text-xs mt-1">{errors.title.message}</p>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <Textarea
-                      placeholder="Kort beskrivelse"
-                      {...register('description')}
-                      className="min-h-[60px] text-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <Select onValueChange={(value) => setValue('customer_id', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Velg kunde" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white">
-                        {customers?.map((customer: any) => (
-                          <SelectItem key={customer.id} value={customer.id}>
-                            {customer.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <input type="hidden" {...register('customer_id', { required: 'Kunde er påkrevd' })} />
-                    {errors.customer_id && (
-                      <p className="text-destructive text-xs mt-1">Kunde er påkrevd</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Input
-                      type="number"
-                      step="0.5"
-                      placeholder="Estimerte timer"
-                      {...register('estimated_hours', { 
-                        required: 'Estimerte timer er påkrevd',
-                        valueAsNumber: true,
-                        min: { value: 0.5, message: 'Minimum 0.5 timer' }
-                      })}
-                    />
-                    {errors.estimated_hours && (
-                      <p className="text-destructive text-xs mt-1">{errors.estimated_hours.message}</p>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2 pt-4">
-                    <Button type="submit" disabled={createWorkOrder.isPending} className="flex-1 h-10">
-                      {createWorkOrder.isPending ? 'Oppretter...' : 'Opprett & Start'}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsQuickCreateOpen(false)}
-                      className="h-10"
-                    >
-                      Avbryt
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
+            <div className="flex items-center gap-2">
+              {/* Notification Center */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="relative"
+              >
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 h-5 w-5 text-xs flex items-center justify-center p-0"
+                  >
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Badge>
+                )}
+              </Button>
+              
+              {/* Pool toggle */}
+              <Button
+                variant={showPool ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowPool(!showPool)}
+                className="h-9"
+              >
+                <Search className="h-4 w-4 mr-1" />
+                Pool
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="p-4 space-y-4 pb-20">
-        {/* Active Work Timer */}
-        {activeOrder && activeTimer && (
-          <Card className="border-primary bg-primary/5">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center justify-between">
-                <span>Aktiv Ordre</span>
-                <div className="flex items-center space-x-2 text-primary">
-                  <Clock className="h-4 w-4" />
-                  <span className="font-mono text-lg">{formatTime(elapsedTime)}</span>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <h3 className="font-medium">{activeOrder.title}</h3>
-                <p className="text-sm text-muted-foreground">{activeOrder.customer_name}</p>
-              </div>
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-2">
-                  <Button 
-                    onClick={() => setIsExtraTimeOpen(true)}
-                    variant="outline" 
-                    size="sm"
-                    className="flex items-center gap-1 text-xs h-9"
-                  >
-                    <Clock className="h-3 w-3" />
-                    Ekstratid
-                  </Button>
-                  <Button 
-                    onClick={() => setIsDeviationOpen(true)}
-                    variant="outline" 
-                    size="sm"
-                    className="flex items-center gap-1 text-xs h-9"
-                  >
-                    <AlertTriangle className="h-3 w-3" />
-                    Avvik
-                  </Button>
-                </div>
-                
-                {/* Show adjustments summary */}
-                {timeAdjustments.length > 0 && (
-                  <div className="text-xs space-y-1 p-2 bg-muted/50 rounded">
-                    <div className="font-medium">Registrerte justeringer:</div>
-                    {timeAdjustments.map((adj) => (
-                      <div key={adj.id} className="flex justify-between text-muted-foreground">
-                        <span>
-                          {adj.adjustment_type === 'extra_time' ? '⏱️' : '⚠️'} {adj.reason}
-                        </span>
-                        {adj.adjustment_type === 'extra_time' && (
-                          <span>+{adj.extra_minutes}min (kr {adj.extra_cost.toFixed(0)})</span>
-                        )}
-                      </div>
-                    ))}
+        {/* Show pool or regular work orders */}
+        {showPool ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Ledige Ordrer</h2>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowPool(false)}
+              >
+                Tilbake til mine ordrer
+              </Button>
+            </div>
+            <WorkOrderPool isMobile={true} />
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Active Work Timer */}
+            {activeOrder && activeTimer && (
+              <Card className="border-primary bg-primary/5">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center justify-between">
+                    <span>Aktiv Ordre</span>
+                    <div className="flex items-center space-x-2 text-primary">
+                      <Clock className="h-4 w-4" />
+                      <span className="font-mono text-lg">{elapsedTime}</span>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <h3 className="font-medium">{activeOrder.title}</h3>
+                    <p className="text-sm text-muted-foreground">{activeOrder.customer_name}</p>
                   </div>
-                )}
-                
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={() => setShowAttachments(!showAttachments)}
-                    variant="outline"
-                    className="flex-1 h-12"
-                    size="lg"
-                  >
-                    <Paperclip className="h-5 w-5 mr-2" />
-                    Vedlegg
-                  </Button>
-                  <Button 
-                    onClick={completeWork} 
-                    className="flex-1 h-12 text-base"
-                    size="lg"
-                  >
-                    <CheckCircle className="h-5 w-5 mr-2" />
-                    Fullfør
-                  </Button>
-                </div>
-              </div>
-              {showAttachments && (
-                <div className="mt-4">
-                  <AttachmentUpload 
-                    workOrderId={activeOrder.id}
-                    onUploadComplete={() => {}}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+                </CardContent>
+              </Card>
+            )}
 
-        {/* Pending Work Orders */}
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Ventende Ordrer</h2>
-          {workOrders.filter(order => order.status === 'pending').map((order) => (
-            <Card key={order.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium truncate">{order.title}</h3>
-                    <p className="text-sm text-muted-foreground">{order.customer_name}</p>
-                  </div>
-                  {getStatusBadge(order.status)}
-                </div>
-                
-                {order.description && (
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                    {order.description}
+            {/* Pending Orders */}
+            {workOrders.filter(order => order.status === 'pending').length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <h3 className="text-lg font-medium mb-2">Ingen ventende ordrer</h3>
+                  <p className="text-muted-foreground">
+                    Alle dagens arbeidsordrer er fullført!
                   </p>
-                )}
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    {order.estimated_hours && (
-                      <div className="flex items-center">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {order.estimated_hours}t
+                </CardContent>
+              </Card>
+            ) : (
+              workOrders
+                .filter(order => order.status === 'pending')
+                .map(order => (
+                  <Card key={order.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-medium">{order.title}</h3>
+                          <p className="text-sm text-muted-foreground">{order.customer_name}</p>
+                        </div>
+                        <Button size="sm">
+                          <Play className="h-4 w-4 mr-1" />
+                          Start
+                        </Button>
                       </div>
-                    )}
-                    {order.gps_location && (
-                      <div className="flex items-center ml-3">
-                        <MapPin className="h-3 w-3 mr-1" />
-                        Lokasjon
-                      </div>
-                    )}
-                  </div>
-                  
-                  <Button 
-                    onClick={() => startWork(order)}
-                    disabled={!!activeOrder}
-                    size="sm"
-                    className="h-9"
-                  >
-                    <Play className="h-4 w-4 mr-1" />
-                    Start
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {workOrders.filter(order => order.status === 'pending').length === 0 && !activeOrder && (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <CheckCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Ingen ventende ordrer</h3>
-              <p className="text-muted-foreground">
-                Alle dagens arbeidsordrer er fullført!
-              </p>
-            </CardContent>
-          </Card>
+                    </CardContent>
+                  </Card>
+                ))
+            )}
+          </div>
         )}
       </div>
-
-      {/* Extra Time Dialog */}
-      <Dialog open={isExtraTimeOpen} onOpenChange={setIsExtraTimeOpen}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Registrer ekstratid
-            </DialogTitle>
-            <DialogDescription>
-              Registrer ekstra tid og årsak for fastprisoppdrag
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleExtraTimeSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="reason">Årsak til ekstratid*</Label>
-              <Select
-                value={extraTimeForm.reason}
-                onValueChange={(value) => setExtraTimeForm(prev => ({ ...prev, reason: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Velg årsak" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="equipment_move">Måtte flytte utstyr/paller</SelectItem>
-                  <SelectItem value="additional_cleaning">Ekstra rengjøring nødvendig</SelectItem>
-                  <SelectItem value="access_issues">Tilgangsproblemer</SelectItem>
-                  <SelectItem value="customer_request">Kundens tilleggsforespørsel</SelectItem>
-                  <SelectItem value="other">Annet</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label htmlFor="extra_minutes">Ekstra minutter*</Label>
-              <Input
-                id="extra_minutes"
-                type="number"
-                min="1"
-                value={extraTimeForm.extra_minutes}
-                onChange={(e) => setExtraTimeForm(prev => ({ ...prev, extra_minutes: e.target.value }))}
-                placeholder="60"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="notes">Tilleggsnotater</Label>
-              <Textarea
-                id="notes"
-                value={extraTimeForm.notes}
-                onChange={(e) => setExtraTimeForm(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Beskriv situasjonen nærmere..."
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="attachment">Vedlegg (bilde/dokument)</Label>
-              <Input
-                id="attachment"
-                type="file"
-                accept="image/*,.pdf,.doc,.docx"
-                onChange={(e) => setAttachmentFile(e.target.files?.[0] || null)}
-              />
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setIsExtraTimeOpen(false)}>
-                Avbryt
-              </Button>
-              <Button type="submit" disabled={createTimeAdjustment.isPending}>
-                {createTimeAdjustment.isPending ? 'Registrerer...' : 'Registrer ekstratid'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Deviation Dialog */}
-      <Dialog open={isDeviationOpen} onOpenChange={setIsDeviationOpen}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
-              Rapporter avvik
-            </DialogTitle>
-            <DialogDescription>
-              Rapporter forhold som hindret eller påvirket arbeidet
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleDeviationSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="deviation_reason">Type avvik*</Label>
-              <Select
-                value={deviationForm.reason}
-                onValueChange={(value) => setDeviationForm(prev => ({ ...prev, reason: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Velg type avvik" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="no_access">Ingen tilgang til området</SelectItem>
-                  <SelectItem value="equipment_failure">Utstyrsfeil</SelectItem>
-                  <SelectItem value="safety_concern">Sikkerhetsrisiko</SelectItem>
-                  <SelectItem value="customer_not_present">Kunde ikke tilstede</SelectItem>
-                  <SelectItem value="weather_conditions">Værforhold</SelectItem>
-                  <SelectItem value="incomplete_work">Ufullstendig arbeid</SelectItem>
-                  <SelectItem value="other">Annet</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="deviation_notes">Beskrivelse av avvik*</Label>
-              <Textarea
-                id="deviation_notes"
-                value={deviationForm.notes}
-                onChange={(e) => setDeviationForm(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Beskriv avviket og eventuelle tiltak som ble gjort..."
-                rows={4}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="deviation_attachment">Vedlegg (bilde/dokument)</Label>
-              <Input
-                id="deviation_attachment"
-                type="file"
-                accept="image/*,.pdf,.doc,.docx"
-                onChange={(e) => setAttachmentFile(e.target.files?.[0] || null)}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Anbefalt: Ta bilde av situasjonen for dokumentasjon
-              </p>
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setIsDeviationOpen(false)}>
-                Avbryt
-              </Button>
-              <Button type="submit" disabled={createTimeAdjustment.isPending}>
-                {createTimeAdjustment.isPending ? 'Rapporterer...' : 'Rapporter avvik'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

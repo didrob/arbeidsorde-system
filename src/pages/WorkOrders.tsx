@@ -12,7 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, Search, Edit, Trash2, Eye, MoreHorizontal, User, Clock, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { WorkOrderDetails } from '@/components/WorkOrderDetails';
-import { WorkOrderWizard } from '@/components/workorder-wizard/WorkOrderWizard';
+import { WorkOrderAssignment } from './WorkOrderAssignment';
+import { NotificationCenter } from './NotificationCenter';
 
 interface WorkOrderForm {
   title: string;
@@ -30,7 +31,10 @@ export default function WorkOrders() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<any>(null);
+  const [selectedOrders, setSelectedOrders] = useState<any[]>([]);
+  const [bulkAssignMode, setBulkAssignMode] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   const { data: workOrders, isLoading } = useWorkOrders();
@@ -270,6 +274,16 @@ export default function WorkOrders() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem 
+                          className="flex items-center gap-2"
+                          onClick={() => {
+                            setSelectedWorkOrder(order);
+                            setIsAssignDialogOpen(true);
+                          }}
+                        >
+                          <User className="w-4 h-4" />
+                          Tildel til feltarbeider
+                        </DropdownMenuItem>
                         <DropdownMenuItem className="flex items-center gap-2">
                           <Edit className="w-4 h-4" />
                           Rediger arbeidsordre
@@ -292,6 +306,18 @@ export default function WorkOrders() {
           open={isCreateDialogOpen} 
           onClose={() => setIsCreateDialogOpen(false)}
           onSubmit={onSubmit}
+        />
+
+        {/* Work Order Assignment Dialog */}
+        <WorkOrderAssignment 
+          workOrder={selectedWorkOrder}
+          isOpen={isAssignDialogOpen}
+          onClose={() => {
+            setIsAssignDialogOpen(false);
+            setSelectedWorkOrder(null);
+          }}
+          bulkMode={bulkAssignMode}
+          selectedOrders={selectedOrders}
         />
 
         {/* Work Order Details Dialog */}
