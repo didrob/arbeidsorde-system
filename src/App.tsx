@@ -18,6 +18,7 @@ import Reports from "./pages/Reports";
 import Resources from './pages/Resources';
 import Settings from './pages/Settings';
 import CustomerAgreements from './pages/CustomerAgreements';
+import Invoices from './pages/Invoices';
 // Force rebuild
 
 const queryClient = new QueryClient();
@@ -71,6 +72,7 @@ const App = () => (
                         <Route path="/time-tracking" element={<TimeTracking />} />
                         <Route path="/map" element={<Map />} />
                         <Route path="/reports" element={<Reports />} />
+                        <Route path="/invoices" element={<Invoices />} />
                         <Route path="/settings" element={<Settings />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>

@@ -9,6 +9,7 @@ import {
   Settings,
   LogOut,
   Wrench,
+  Receipt,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,6 +24,7 @@ const navigationItems = [
   { title: "Tidssporing", url: "/time-tracking", icon: Clock },
   { title: "Kart", url: "/map", icon: MapPin },
   { title: "Rapporter", url: "/reports", icon: BarChart3 },
+  { title: "Fakturaer", url: "/invoices", icon: Receipt },
   { title: "Innstillinger", url: "/settings", icon: Settings },
 ];
 
