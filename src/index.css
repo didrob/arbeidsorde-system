@@ -233,4 +233,67 @@ All colors MUST be HSL.
   .text-warning {
     color: hsl(var(--warning));
   }
+
+  /* Mobile and PWA specific utilities */
+  .safe-area-padding {
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-area-padding-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-padding-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-margin-bottom {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Touch-friendly interactive elements */
+  .thumb-zone {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .btn-mobile {
+    @apply min-h-12 text-base font-medium rounded-lg thumb-zone;
+  }
+
+  /* Improved focus indicators for accessibility */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+  }
+
+  /* Disable text selection on UI elements */
+  .no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Mobile-first responsive utilities */
+  .mobile-only {
+    @apply md:hidden;
+  }
+  
+  .desktop-only {
+    @apply hidden md:block;
+  }
+
+  /* Haptic feedback simulation */
+  .haptic-tap {
+    animation: hapticTap 0.1s ease-out;
+  }
+
+  @keyframes hapticTap {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+  }
 }

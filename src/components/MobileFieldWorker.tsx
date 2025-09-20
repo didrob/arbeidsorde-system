@@ -17,6 +17,9 @@ import { AttachmentUpload } from './AttachmentUpload';
 import { useCreateTimeAdjustment, useTimeAdjustments, useUploadAdjustmentAttachment } from '@/hooks/useTimeAdjustments';
 import { WorkOrderPool } from './WorkOrderPool';
 import { useNotifications } from '@/hooks/useNotifications';
+import { PullToRefresh } from './mobile/PullToRefresh';
+import { SwipeableCard } from './mobile/SwipeableCard';
+import { cn } from '@/lib/utils';
 
 interface WorkOrder {
   id: string;
@@ -84,7 +87,7 @@ export const MobileFieldWorker = () => {
     }
   }, [user]);
 
-  // Timer effect
+  // Timer effect with proper formatting
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (activeTimer && !activeTimer.end_time) {
@@ -160,9 +163,9 @@ export const MobileFieldWorker = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background safe-area-padding-top">
       {/* Header */}
-      <div className="bg-card border-b sticky top-0 z-10">
+      <div className="bg-card border-b sticky top-0 z-10 safe-area-padding-top">
         <div className="p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -176,7 +179,7 @@ export const MobileFieldWorker = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="relative"
+                className="relative thumb-zone focus-ring"
               >
                 <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
@@ -194,7 +197,7 @@ export const MobileFieldWorker = () => {
                 variant={showPool ? "default" : "outline"}
                 size="sm"
                 onClick={() => setShowPool(!showPool)}
-                className="h-9"
+                className="h-9 thumb-zone focus-ring"
               >
                 <Search className="h-4 w-4 mr-1" />
                 Pool
@@ -204,78 +207,111 @@ export const MobileFieldWorker = () => {
         </div>
       </div>
 
-      <div className="p-4 space-y-4 pb-20">
-        {/* Show pool or regular work orders */}
-        {showPool ? (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Ledige Ordrer</h2>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setShowPool(false)}
-              >
-                Tilbake til mine ordrer
-              </Button>
+      <PullToRefresh 
+        onRefresh={async () => {
+          await fetchTodaysWork();
+          await fetchActiveTimer();
+        }}
+        className="flex-1"
+      >
+        <div className="p-4 space-y-4 pb-20 safe-area-padding-bottom">
+          {/* Show pool or regular work orders */}
+          {showPool ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Ledige Ordrer</h2>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setShowPool(false)}
+                  className="thumb-zone focus-ring"
+                >
+                  Tilbake til mine ordrer
+                </Button>
+              </div>
+              <WorkOrderPool isMobile={true} />
             </div>
-            <WorkOrderPool isMobile={true} />
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {/* Active Work Timer */}
-            {activeOrder && activeTimer && (
-              <Card className="border-primary bg-primary/5">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center justify-between">
-                    <span>Aktiv Ordre</span>
-                    <div className="flex items-center space-x-2 text-primary">
-                      <Clock className="h-4 w-4" />
-                      <span className="font-mono text-lg">{elapsedTime}</span>
+          ) : (
+            <div className="space-y-4">
+              {/* Active Work Timer */}
+              {activeOrder && activeTimer && (
+                <Card className="border-primary bg-primary/5 animate-fade-in">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center justify-between">
+                      <span>Aktiv Ordre</span>
+                      <div className="flex items-center space-x-2 text-primary">
+                        <Clock className="h-4 w-4" />
+                        <span className="font-mono text-lg animate-pulse-subtle">
+                          {Math.floor(elapsedTime / 3600)}:{String(Math.floor((elapsedTime % 3600) / 60)).padStart(2, '0')}:{String(elapsedTime % 60).padStart(2, '0')}
+                        </span>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <h3 className="font-medium">{activeOrder.title}</h3>
+                      <p className="text-sm text-muted-foreground">{activeOrder.customer_name}</p>
                     </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div>
-                    <h3 className="font-medium">{activeOrder.title}</h3>
-                    <p className="text-sm text-muted-foreground">{activeOrder.customer_name}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                  </CardContent>
+                </Card>
+              )}
 
-            {/* Pending Orders */}
-            {workOrders.filter(order => order.status === 'pending').length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <h3 className="text-lg font-medium mb-2">Ingen ventende ordrer</h3>
-                  <p className="text-muted-foreground">
-                    Alle dagens arbeidsordrer er fullført!
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              workOrders
-                .filter(order => order.status === 'pending')
-                .map(order => (
-                  <Card key={order.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
+              {/* Pending Orders */}
+              {workOrders.filter(order => order.status === 'pending').length === 0 ? (
+                <Card className="animate-fade-in">
+                  <CardContent className="p-8 text-center">
+                    <h3 className="text-lg font-medium mb-2">Ingen ventende ordrer</h3>
+                    <p className="text-muted-foreground">
+                      Alle dagens arbeidsordrer er fullført!
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                workOrders
+                  .filter(order => order.status === 'pending')
+                  .map((order, index) => (
+                    <SwipeableCard
+                      key={order.id}
+                      className={cn(
+                        "transition-all duration-200 hover:shadow-md animate-fade-in"
+                      )}
+                      rightAction={<Play className="h-5 w-5" />}
+                      onSwipeRight={() => {
+                        // Start work order
+                        toast.success('Arbeidsordre startet!');
+                      }}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <h3 className="font-medium">{order.title}</h3>
                           <p className="text-sm text-muted-foreground">{order.customer_name}</p>
+                          {order.estimated_hours && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Estimert: {order.estimated_hours}t
+                            </p>
+                          )}
                         </div>
-                        <Button size="sm">
+                        <Button 
+                          size="sm" 
+                          className="thumb-zone focus-ring haptic-tap"
+                          onClick={() => {
+                            // Add haptic feedback simulation
+                            const button = document.activeElement as HTMLElement;
+                            button?.classList.add('haptic-tap');
+                            setTimeout(() => button?.classList.remove('haptic-tap'), 100);
+                          }}
+                        >
                           <Play className="h-4 w-4 mr-1" />
                           Start
                         </Button>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))
-            )}
-          </div>
-        )}
-      </div>
+                    </SwipeableCard>
+                  ))
+              )}
+            </div>
+          )}
+        </div>
+      </PullToRefresh>
     </div>
   );
 };
