@@ -88,91 +88,108 @@ function WizardContent({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
   };
 
   return (
-    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-      <DialogHeader>
-        <div className="flex items-center justify-between">
-          <DialogTitle className="text-xl">Opprett arbeidsordre</DialogTitle>
-          {formData.pricing_model === 'resource_based' && (
-            <Badge variant="outline" className="text-sm">
-              Estimert: {getTotalEstimatedCost().toLocaleString('no-NO')} kr
-            </Badge>
-          )}
+    <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 p-0 flex flex-col">
+      {/* Fixed header */}
+      <div className="flex-shrink-0 border-b bg-background p-6">
+        <div className="flex items-center justify-between mb-4">
+          <DialogTitle className="text-2xl font-semibold">Opprett arbeidsordre</DialogTitle>
+          <div className="flex items-center space-x-4">
+            {formData.pricing_model === 'resource_based' && (
+              <Badge variant="outline" className="text-base px-3 py-1">
+                Estimert: {getTotalEstimatedCost().toLocaleString('no-NO')} kr
+              </Badge>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              ✕
+            </Button>
+          </div>
         </div>
         
         {/* Progress bar */}
-        <div className="space-y-2">
-          <Progress value={progress} className="w-full" />
+        <div className="space-y-3">
+          <Progress value={progress} className="w-full h-2" />
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>Steg {currentStep} av {steps.length}</span>
-            <span>{currentStepData?.title}</span>
+            <span className="font-medium">{currentStepData?.title}</span>
           </div>
         </div>
-      </DialogHeader>
 
-      {/* Step indicators */}
-      <div className="flex justify-center space-x-2 py-4">
-        {steps.map((step) => (
-          <div
-            key={step.id}
-            className={`flex items-center space-x-2 px-3 py-2 rounded-lg border transition-colors ${
-              step.id === currentStep
-                ? 'bg-primary text-primary-foreground border-primary'
-                : step.isCompleted
-                ? 'bg-muted text-muted-foreground border-muted'
-                : step.id === 3 && formData.pricing_model === 'fixed'
-                ? 'bg-muted/50 text-muted-foreground/50 border-muted/50'
-                : 'bg-background text-foreground border-border'
-            }`}
-          >
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-              step.id === currentStep ? 'bg-primary-foreground text-primary' : ''
-            }`}>
-              {step.id}
+        {/* Compact step indicators */}
+        <div className="flex justify-center space-x-1 mt-4">
+          {steps.map((step) => (
+            <div
+              key={step.id}
+              className={`flex items-center space-x-2 px-2 py-1 rounded-md text-xs transition-colors ${
+                step.id === currentStep
+                  ? 'bg-primary text-primary-foreground'
+                  : step.isCompleted
+                  ? 'bg-muted text-muted-foreground'
+                  : step.id === 3 && formData.pricing_model === 'fixed'
+                  ? 'bg-muted/50 text-muted-foreground/50'
+                  : 'bg-background text-foreground border'
+              }`}
+            >
+              <div className={`w-4 h-4 rounded-full flex items-center justify-center text-xs font-medium ${
+                step.id === currentStep ? 'bg-primary-foreground text-primary' : ''
+              }`}>
+                {step.id}
+              </div>
+              <span className="font-medium hidden lg:inline">{step.title}</span>
+              {step.isOptional && (
+                <Badge variant="secondary" className="text-xs hidden xl:inline">Valgfritt</Badge>
+              )}
             </div>
-            <span className="text-sm font-medium hidden sm:inline">{step.title}</span>
-            {step.isOptional && (
-              <Badge variant="secondary" className="text-xs hidden sm:inline">Valgfritt</Badge>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {/* Current step content */}
-      <div className="py-6">
-        {renderCurrentStep()}
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="container mx-auto max-w-4xl p-6">
+          {renderCurrentStep()}
+        </div>
       </div>
 
-      {/* Navigation buttons */}
-      <div className="flex justify-between pt-4 border-t">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handlePrevious}
-          disabled={currentStep === 1}
-          className="flex items-center space-x-2"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span>Tilbake</span>
-        </Button>
-
-        <div className="flex space-x-2">
+      {/* Fixed footer */}
+      <div className="flex-shrink-0 border-t bg-background p-6">
+        <div className="flex justify-between max-w-4xl mx-auto">
           <Button
             type="button"
-            variant="ghost"
-            onClick={onClose}
-          >
-            Avbryt
-          </Button>
-          
-          <Button
-            type="button"
-            onClick={handleNext}
-            disabled={!canGoNext && !isLastStep}
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentStep === 1}
             className="flex items-center space-x-2"
           >
-            <span>{isLastStep ? 'Opprett arbeidsordre' : 'Neste'}</span>
-            {!isLastStep && <ChevronRight className="w-4 h-4" />}
+            <ChevronLeft className="w-4 h-4" />
+            <span>Tilbake</span>
           </Button>
+
+          <div className="flex space-x-3">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onClose}
+            >
+              Avbryt
+            </Button>
+            
+            <Button
+              type="button"
+              onClick={handleNext}
+              disabled={!canGoNext && !isLastStep}
+              className="flex items-center space-x-2"
+              size="lg"
+            >
+              <span>{isLastStep ? 'Opprett arbeidsordre' : 'Neste'}</span>
+              {!isLastStep && <ChevronRight className="w-4 h-4" />}
+            </Button>
+          </div>
         </div>
       </div>
     </DialogContent>
