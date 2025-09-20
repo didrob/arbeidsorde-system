@@ -4,15 +4,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Clock, MapPin, ChevronRight, Play, Pause, CheckCircle, Plus, Camera, Paperclip } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Clock, MapPin, ChevronRight, Play, Pause, CheckCircle, Plus, Camera, Paperclip, AlertTriangle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { useForm } from 'react-hook-form';
 import { useCustomers, useCreateWorkOrder, useStartTimeEntry } from '@/hooks/useApi';
 import { toast } from 'sonner';
 import { AttachmentUpload } from './AttachmentUpload';
+import { useCreateTimeAdjustment, useTimeAdjustments, useUploadAdjustmentAttachment } from '@/hooks/useTimeAdjustments';
 
 interface WorkOrder {
   id: string;
@@ -47,10 +49,27 @@ export const MobileFieldWorker = () => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
+  const [isExtraTimeOpen, setIsExtraTimeOpen] = useState(false);
+  const [isDeviationOpen, setIsDeviationOpen] = useState(false);
+  const [extraTimeForm, setExtraTimeForm] = useState({
+    reason: '',
+    extra_minutes: '',
+    notes: ''
+  });
+  const [deviationForm, setDeviationForm] = useState({
+    reason: '',
+    notes: ''
+  });
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
 
   const { data: customers } = useCustomers();
   const createWorkOrder = useCreateWorkOrder();
   const startTimeEntry = useStartTimeEntry();
+  
+  // Time adjustment hooks
+  const createTimeAdjustment = useCreateTimeAdjustment();
+  const { data: timeAdjustments = [] } = useTimeAdjustments(activeOrder?.id || '');
+  const uploadAttachment = useUploadAdjustmentAttachment();
   
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<QuickWorkOrderForm>();
 
@@ -227,6 +246,68 @@ export const MobileFieldWorker = () => {
     }
   };
 
+  const handleExtraTimeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!activeOrder || !user) return;
+
+    try {
+      const adjustment = await createTimeAdjustment.mutateAsync({
+        work_order_id: activeOrder.id,
+        adjustment_type: 'extra_time',
+        reason: extraTimeForm.reason,
+        extra_minutes: parseInt(extraTimeForm.extra_minutes) || 0,
+        hourly_rate: 800, // Default hourly rate, could be from user profile or work order
+        notes: extraTimeForm.notes
+      });
+
+      // Upload attachment if selected
+      if (attachmentFile && adjustment) {
+        await uploadAttachment.mutateAsync({
+          adjustmentId: adjustment.id,
+          file: attachmentFile,
+          description: `Extra time: ${extraTimeForm.reason}`
+        });
+      }
+
+      setIsExtraTimeOpen(false);
+      setExtraTimeForm({ reason: '', extra_minutes: '', notes: '' });
+      setAttachmentFile(null);
+    } catch (error) {
+      console.error('Error submitting extra time:', error);
+    }
+  };
+
+  const handleDeviationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!activeOrder || !user) return;
+
+    try {
+      const adjustment = await createTimeAdjustment.mutateAsync({
+        work_order_id: activeOrder.id,
+        adjustment_type: 'deviation',
+        reason: deviationForm.reason,
+        notes: deviationForm.notes
+      });
+
+      // Upload attachment if selected
+      if (attachmentFile && adjustment) {
+        await uploadAttachment.mutateAsync({
+          adjustmentId: adjustment.id,
+          file: attachmentFile,
+          description: `Deviation: ${deviationForm.reason}`
+        });
+      }
+
+      setIsDeviationOpen(false);
+      setDeviationForm({ reason: '', notes: '' });
+      setAttachmentFile(null);
+    } catch (error) {
+      console.error('Error submitting deviation:', error);
+    }
+  };
+
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -373,24 +454,64 @@ export const MobileFieldWorker = () => {
                 <h3 className="font-medium">{activeOrder.title}</h3>
                 <p className="text-sm text-muted-foreground">{activeOrder.customer_name}</p>
               </div>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => setShowAttachments(!showAttachments)}
-                  variant="outline"
-                  className="flex-1 h-12"
-                  size="lg"
-                >
-                  <Paperclip className="h-5 w-5 mr-2" />
-                  Vedlegg
-                </Button>
-                <Button 
-                  onClick={completeWork} 
-                  className="flex-1 h-12 text-base"
-                  size="lg"
-                >
-                  <CheckCircle className="h-5 w-5 mr-2" />
-                  Fullfør
-                </Button>
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <Button 
+                    onClick={() => setIsExtraTimeOpen(true)}
+                    variant="outline" 
+                    size="sm"
+                    className="flex items-center gap-1 text-xs h-9"
+                  >
+                    <Clock className="h-3 w-3" />
+                    Ekstratid
+                  </Button>
+                  <Button 
+                    onClick={() => setIsDeviationOpen(true)}
+                    variant="outline" 
+                    size="sm"
+                    className="flex items-center gap-1 text-xs h-9"
+                  >
+                    <AlertTriangle className="h-3 w-3" />
+                    Avvik
+                  </Button>
+                </div>
+                
+                {/* Show adjustments summary */}
+                {timeAdjustments.length > 0 && (
+                  <div className="text-xs space-y-1 p-2 bg-muted/50 rounded">
+                    <div className="font-medium">Registrerte justeringer:</div>
+                    {timeAdjustments.map((adj) => (
+                      <div key={adj.id} className="flex justify-between text-muted-foreground">
+                        <span>
+                          {adj.adjustment_type === 'extra_time' ? '⏱️' : '⚠️'} {adj.reason}
+                        </span>
+                        {adj.adjustment_type === 'extra_time' && (
+                          <span>+{adj.extra_minutes}min (kr {adj.extra_cost.toFixed(0)})</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => setShowAttachments(!showAttachments)}
+                    variant="outline"
+                    className="flex-1 h-12"
+                    size="lg"
+                  >
+                    <Paperclip className="h-5 w-5 mr-2" />
+                    Vedlegg
+                  </Button>
+                  <Button 
+                    onClick={completeWork} 
+                    className="flex-1 h-12 text-base"
+                    size="lg"
+                  >
+                    <CheckCircle className="h-5 w-5 mr-2" />
+                    Fullfør
+                  </Button>
+                </div>
               </div>
               {showAttachments && (
                 <div className="mt-4">
@@ -467,6 +588,155 @@ export const MobileFieldWorker = () => {
           </Card>
         )}
       </div>
+
+      {/* Extra Time Dialog */}
+      <Dialog open={isExtraTimeOpen} onOpenChange={setIsExtraTimeOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Registrer ekstratid
+            </DialogTitle>
+            <DialogDescription>
+              Registrer ekstra tid og årsak for fastprisoppdrag
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleExtraTimeSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="reason">Årsak til ekstratid*</Label>
+              <Select
+                value={extraTimeForm.reason}
+                onValueChange={(value) => setExtraTimeForm(prev => ({ ...prev, reason: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Velg årsak" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="equipment_move">Måtte flytte utstyr/paller</SelectItem>
+                  <SelectItem value="additional_cleaning">Ekstra rengjøring nødvendig</SelectItem>
+                  <SelectItem value="access_issues">Tilgangsproblemer</SelectItem>
+                  <SelectItem value="customer_request">Kundens tilleggsforespørsel</SelectItem>
+                  <SelectItem value="other">Annet</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="extra_minutes">Ekstra minutter*</Label>
+              <Input
+                id="extra_minutes"
+                type="number"
+                min="1"
+                value={extraTimeForm.extra_minutes}
+                onChange={(e) => setExtraTimeForm(prev => ({ ...prev, extra_minutes: e.target.value }))}
+                placeholder="60"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="notes">Tilleggsnotater</Label>
+              <Textarea
+                id="notes"
+                value={extraTimeForm.notes}
+                onChange={(e) => setExtraTimeForm(prev => ({ ...prev, notes: e.target.value }))}
+                placeholder="Beskriv situasjonen nærmere..."
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="attachment">Vedlegg (bilde/dokument)</Label>
+              <Input
+                id="attachment"
+                type="file"
+                accept="image/*,.pdf,.doc,.docx"
+                onChange={(e) => setAttachmentFile(e.target.files?.[0] || null)}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setIsExtraTimeOpen(false)}>
+                Avbryt
+              </Button>
+              <Button type="submit" disabled={createTimeAdjustment.isPending}>
+                {createTimeAdjustment.isPending ? 'Registrerer...' : 'Registrer ekstratid'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Deviation Dialog */}
+      <Dialog open={isDeviationOpen} onOpenChange={setIsDeviationOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Rapporter avvik
+            </DialogTitle>
+            <DialogDescription>
+              Rapporter forhold som hindret eller påvirket arbeidet
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleDeviationSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="deviation_reason">Type avvik*</Label>
+              <Select
+                value={deviationForm.reason}
+                onValueChange={(value) => setDeviationForm(prev => ({ ...prev, reason: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Velg type avvik" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="no_access">Ingen tilgang til området</SelectItem>
+                  <SelectItem value="equipment_failure">Utstyrsfeil</SelectItem>
+                  <SelectItem value="safety_concern">Sikkerhetsrisiko</SelectItem>
+                  <SelectItem value="customer_not_present">Kunde ikke tilstede</SelectItem>
+                  <SelectItem value="weather_conditions">Værforhold</SelectItem>
+                  <SelectItem value="incomplete_work">Ufullstendig arbeid</SelectItem>
+                  <SelectItem value="other">Annet</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="deviation_notes">Beskrivelse av avvik*</Label>
+              <Textarea
+                id="deviation_notes"
+                value={deviationForm.notes}
+                onChange={(e) => setDeviationForm(prev => ({ ...prev, notes: e.target.value }))}
+                placeholder="Beskriv avviket og eventuelle tiltak som ble gjort..."
+                rows={4}
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="deviation_attachment">Vedlegg (bilde/dokument)</Label>
+              <Input
+                id="deviation_attachment"
+                type="file"
+                accept="image/*,.pdf,.doc,.docx"
+                onChange={(e) => setAttachmentFile(e.target.files?.[0] || null)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Anbefalt: Ta bilde av situasjonen for dokumentasjon
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setIsDeviationOpen(false)}>
+                Avbryt
+              </Button>
+              <Button type="submit" disabled={createTimeAdjustment.isPending}>
+                {createTimeAdjustment.isPending ? 'Rapporterer...' : 'Rapporter avvik'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

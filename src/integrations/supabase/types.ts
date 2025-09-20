@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      adjustment_attachments: {
+        Row: {
+          adjustment_id: string
+          created_at: string
+          description: string | null
+          file_name: string
+          file_size: number | null
+          file_type: string
+          file_url: string
+          id: string
+        }
+        Insert: {
+          adjustment_id: string
+          created_at?: string
+          description?: string | null
+          file_name: string
+          file_size?: number | null
+          file_type: string
+          file_url: string
+          id?: string
+        }
+        Update: {
+          adjustment_id?: string
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -452,6 +485,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      work_order_time_adjustments: {
+        Row: {
+          adjustment_type: string
+          created_at: string
+          extra_cost: number | null
+          extra_minutes: number | null
+          hourly_rate: number | null
+          id: string
+          notes: string | null
+          reason: string
+          updated_at: string
+          user_id: string
+          work_order_id: string
+        }
+        Insert: {
+          adjustment_type: string
+          created_at?: string
+          extra_cost?: number | null
+          extra_minutes?: number | null
+          hourly_rate?: number | null
+          id?: string
+          notes?: string | null
+          reason: string
+          updated_at?: string
+          user_id: string
+          work_order_id: string
+        }
+        Update: {
+          adjustment_type?: string
+          created_at?: string
+          extra_cost?: number | null
+          extra_minutes?: number | null
+          hourly_rate?: number | null
+          id?: string
+          notes?: string | null
+          reason?: string
+          updated_at?: string
+          user_id?: string
+          work_order_id?: string
+        }
+        Relationships: []
       }
       work_order_time_entries: {
         Row: {
