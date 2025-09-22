@@ -77,39 +77,52 @@ export function FieldWorkerDashboard() {
 
   const updateWorkOrderStatus = async (workOrderId: string, status: string) => {
     try {
-      const updateData: any = { status };
-      
       if (status === 'in_progress') {
-        updateData.started_at = new Date().toISOString();
-      } else if (status === 'completed') {
-        updateData.completed_at = new Date().toISOString();
-      }
+        // Start via time entry to satisfy RLS/trigger path
+        const { error: insertErr } = await supabase
+          .from('work_order_time_entries')
+          .insert({
+            work_order_id: workOrderId,
+            user_id: user?.id!,
+            start_time: new Date().toISOString(),
+            notes: ''
+          });
+        if (insertErr) throw insertErr;
 
-      const { error } = await supabase
-        .from('work_orders')
-        .update(updateData)
-        .eq('id', workOrderId);
-
-      if (error) throw error;
-
-      await fetchAssignedWorkOrders();
-      
-      toast({
-        title: "Status oppdatert",
-        description: `Arbeidsordre ${status === 'in_progress' ? 'startet' : 'fullført'}.`,
-      });
-
-      if (status === 'in_progress') {
         setActiveWorkOrder(workOrderId);
       } else if (status === 'completed') {
+        // Stop the latest active time entry for this user/order
+        const { data: activeEntry, error: fetchErr } = await supabase
+          .from('work_order_time_entries')
+          .select('*')
+          .eq('work_order_id', workOrderId)
+          .eq('user_id', user?.id!)
+          .is('end_time', null)
+          .order('start_time', { ascending: false })
+          .limit(1)
+          .single();
+        if (fetchErr) throw fetchErr;
+
+        const { error: stopErr } = await supabase
+          .from('work_order_time_entries')
+          .update({ end_time: new Date().toISOString() })
+          .eq('id', activeEntry.id);
+        if (stopErr) throw stopErr;
+
         setActiveWorkOrder(null);
       }
+
+      await fetchAssignedWorkOrders();
+      toast({
+        title: 'Status oppdatert',
+        description: `Arbeidsordre ${status === 'in_progress' ? 'startet' : 'fullført'}.`,
+      });
     } catch (error) {
       console.error('Error updating work order:', error);
       toast({
-        variant: "destructive",
-        title: "Feil ved oppdatering",
-        description: "Kunne ikke oppdatere arbeidsordre status.",
+        variant: 'destructive',
+        title: 'Feil',
+        description: status === 'in_progress' ? 'Kunne ikke starte arbeidsordre.' : 'Kunne ikke fullføre arbeidsordre.',
       });
     }
   };

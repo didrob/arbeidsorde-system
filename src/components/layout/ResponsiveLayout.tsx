@@ -20,8 +20,26 @@ export function ResponsiveLayout({
   const isMobile = useIsMobile();
   const { isFieldWorker } = useAuth();
 
-  // Field workers always get mobile interface, regardless of screen size
-  if (isFieldWorker || (isMobile && showMobileNav)) {
+  // Field workers ALWAYS get mobile interface, regardless of screen size or device
+  if (isFieldWorker) {
+    return (
+      <div className="min-h-screen bg-background">
+        <main className={cn(
+          "flex-1",
+          showMobileNav && "pb-20" // Space for bottom nav
+        )}>
+          {children}
+        </main>
+        
+        {showMobileNav && (
+          <MobileNav notificationCount={notificationCount} />
+        )}
+      </div>
+    );
+  }
+
+  // Regular mobile users get mobile interface when requested
+  if (isMobile && showMobileNav) {
     return (
       <div className="min-h-screen bg-background">
         <main className={cn(
