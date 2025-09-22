@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
 import { useSmartRouting } from "@/hooks/useSmartRouting";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import FieldWorker from "./pages/FieldWorker";
@@ -72,40 +73,42 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <BrowserRouter>
-        <Toaster />
-        <Sonner />
-        <PWAWrapper />
-        <Routes>
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/field" element={<FieldWorker />} />
-          <Route 
-            path="/*" 
-            element={
-              <ProtectedRoute>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/work-orders" element={<WorkOrders />} />
-                  <Route path="/customers" element={<Customers />} />
-                  <Route path="/customer-agreements" element={<CustomerAgreements />} />
-                  <Route path="/materials" element={<Materials />} />
-                  <Route path="/resources" element={<Resources />} />
-                  <Route path="/time-tracking" element={<TimeTracking />} />
-                  <Route path="/map" element={<Map />} />
-                  <Route path="/reports" element={<Reports />} />
-                  <Route path="/invoices" element={<Invoices />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </ProtectedRoute>
-            } 
-          />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
-  </QueryClientProvider>
+  <TooltipPrimitive.Provider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BrowserRouter>
+          <Toaster />
+          <Sonner />
+          <PWAWrapper />
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/field" element={<FieldWorker />} />
+            <Route 
+              path="/*" 
+              element={
+                <ProtectedRoute>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/work-orders" element={<WorkOrders />} />
+                    <Route path="/customers" element={<Customers />} />
+                    <Route path="/customer-agreements" element={<CustomerAgreements />} />
+                    <Route path="/materials" element={<Materials />} />
+                    <Route path="/resources" element={<Resources />} />
+                    <Route path="/time-tracking" element={<TimeTracking />} />
+                    <Route path="/map" element={<Map />} />
+                    <Route path="/reports" element={<Reports />} />
+                    <Route path="/invoices" element={<Invoices />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </ProtectedRoute>
+              } 
+            />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </QueryClientProvider>
+  </TooltipPrimitive.Provider>
 );
 
 export default App;
