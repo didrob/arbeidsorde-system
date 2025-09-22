@@ -155,7 +155,7 @@ const createLineItemsFromWorkOrders = async (invoiceId: string, workOrderIds: st
         title,
         description,
         price_value,
-        pricing_model,
+        pricing_type,
         actual_hours
       `)
       .in('id', workOrderIds);
@@ -170,14 +170,34 @@ const createLineItemsFromWorkOrders = async (invoiceId: string, workOrderIds: st
     const lineItems: any[] = [];
 
     for (const workOrder of workOrders || []) {
+      console.log('Processing work order:', workOrder);
+      
+      // Calculate price based on pricing type
+      let unitPrice = 0;
+      let description = `${workOrder.title}${workOrder.description ? ' - ' + workOrder.description : ''}`;
+      
+      if (workOrder.price_value && workOrder.price_value > 0) {
+        unitPrice = workOrder.price_value;
+      } else if (workOrder.pricing_type === 'hourly' && workOrder.actual_hours) {
+        // For hourly pricing without fixed price, we need a default hourly rate
+        // This should ideally come from a settings table or be configurable
+        const defaultHourlyRate = 800; // Default rate per hour
+        unitPrice = workOrder.actual_hours * defaultHourlyRate;
+        description += ` (${workOrder.actual_hours} timer @ kr ${defaultHourlyRate}/time)`;
+      } else {
+        console.warn('Work order has no price_value:', workOrder);
+        // Still create a line item but with 0 value
+        description += ' (Pris ikke satt)';
+      }
+
       // Main service line item
       lineItems.push({
         invoice_id: invoiceId,
         work_order_id: workOrder.id,
-        description: `${workOrder.title}${workOrder.description ? ' - ' + workOrder.description : ''}`,
+        description: description,
         quantity: 1,
-        unit_price: workOrder.price_value || 0,
-        line_total: workOrder.price_value || 0,
+        unit_price: unitPrice,
+        line_total: unitPrice,
         item_type: 'service',
         reference_id: workOrder.id
       });

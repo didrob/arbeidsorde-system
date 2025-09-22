@@ -26,6 +26,14 @@ interface InvoicePDFData {
 }
 
 export const generateInvoicePDF = (invoice: InvoicePDFData): void => {
+  console.log('Generating PDF for invoice:', invoice);
+  console.log('Line items:', invoice.line_items);
+  console.log('Totals:', { 
+    subtotal: invoice.subtotal, 
+    tax_amount: invoice.tax_amount, 
+    total_amount: invoice.total_amount 
+  });
+
   const doc = new jsPDF();
   
   // Set font
@@ -93,7 +101,13 @@ export const generateInvoicePDF = (invoice: InvoicePDFData): void => {
   doc.setTextColor(40, 40, 40);
   let currentY = tableStartY + 12;
   
-  invoice.line_items.forEach((item, index) => {
+  // Handle empty line items
+  if (!invoice.line_items || invoice.line_items.length === 0) {
+    doc.setFontSize(10);
+    doc.text('Ingen linjevarer funnet for denne fakturaen.', 22, currentY);
+    currentY += 15;
+  } else {
+    invoice.line_items.forEach((item, index) => {
     const isEven = index % 2 === 0;
     
     if (isEven) {
@@ -112,7 +126,8 @@ export const generateInvoicePDF = (invoice: InvoicePDFData): void => {
     doc.text(`kr ${item.line_total.toFixed(2)}`, 170, currentY);
     
     currentY += Math.max(splitDescription.length * lineHeight, 8);
-  });
+    });
+  }
   
   // Totals
   const totalsY = currentY + 10;
