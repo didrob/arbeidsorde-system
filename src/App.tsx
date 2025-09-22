@@ -1,6 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
@@ -74,40 +73,38 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <BrowserRouter>
-          <Toaster />
-          <Sonner />
-          <PWAWrapper />
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/field" element={<FieldWorker />} />
-            <Route 
-              path="/*" 
-              element={
-                <ProtectedRoute>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/work-orders" element={<WorkOrders />} />
-                    <Route path="/customers" element={<Customers />} />
-                    <Route path="/customer-agreements" element={<CustomerAgreements />} />
-                    <Route path="/materials" element={<Materials />} />
-                    <Route path="/resources" element={<Resources />} />
-                    <Route path="/time-tracking" element={<TimeTracking />} />
-                    <Route path="/map" element={<Map />} />
-                    <Route path="/reports" element={<Reports />} />
-                    <Route path="/invoices" element={<Invoices />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </ProtectedRoute>
-              } 
-            />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
+    <AuthProvider>
+      <BrowserRouter>
+        <Toaster />
+        <Sonner />
+        <PWAWrapper />
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/field" element={<FieldWorker />} />
+          <Route 
+            path="/*" 
+            element={
+              <ProtectedRoute>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/work-orders" element={<WorkOrders />} />
+                  <Route path="/customers" element={<Customers />} />
+                  <Route path="/customer-agreements" element={<CustomerAgreements />} />
+                  <Route path="/materials" element={<Materials />} />
+                  <Route path="/resources" element={<Resources />} />
+                  <Route path="/time-tracking" element={<TimeTracking />} />
+                  <Route path="/map" element={<Map />} />
+                  <Route path="/reports" element={<Reports />} />
+                  <Route path="/invoices" element={<Invoices />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
