@@ -1,0 +1,47 @@
+---
+description: UX conventions for ASCO arbeidsordre app (navigation, forms, feedback, theming, a11y)
+alwaysApply: false
+---
+## Navigation
+- Use `react-router-dom` routes; all nav links must expose `aria-current="page"` on active route.
+- Indicate active state using Tailwind variant styles, never color alone.
+
+## Forms
+- Use `react-hook-form` with `zod` resolver for all forms.
+- Show validation on blur and submit; display inline error text below the field using shadcn `FormMessage` pattern.
+- Apply `aria-invalid` and link errors via `aria-describedby`.
+- Primary submit button is disabled while submitting and shows a progress affordance (spinner or `aria-busy`).
+
+## Feedback
+- Prefer `sonner` for transient toasts (success/info). Use max 1 toast per action.
+- Use shadcn `Toaster` only for non-transient, actionable messages (rare). Do not duplicate both for the same event.
+
+## Buttons
+- Minimum touch target: `h-10` and `px-4` (use `size="default"`).
+- Primary action on the right; destructive uses `variant="destructive"`.
+- Do not introduce custom button colors; extend `buttonVariants` if needed.
+
+## Focus and Accessibility
+- All interactive elements must be keyboard focusable and show a visible focus ring (`focus-visible:ring-2 ring-ring ring-offset-2`).
+- Do not remove outlines. Ensure color contrast ≥ 4.5:1 for text, 3:1 for UI elements.
+- Provide text labels for icons; tooltips are supplementary only.
+
+## Theming
+- Support light/dark via CSS variables defined in `src/index.css`; avoid hardcoded colors.
+- If theme toggling is added, use `next-themes` `ThemeProvider` and toggle component; persist theme.
+
+## Loading/Empty States
+- Use skeletons for content loads > 300ms where layout is known; spinner for indeterminate short waits.
+- Provide clear empty states with next-step guidance and primary action.
+
+## Layout & Responsiveness
+- Mobile-first; ensure layouts work at 320px width and up. Avoid fixed widths that break below `sm`.
+- Constrain content with the Tailwind container and `max-w` utilities; prefer responsive grids.
+
+## Tables & Data
+- Tables must be horizontally scrollable on small screens (`overflow-x-auto`).
+- Sticky table header on long lists where feasible; include loading and empty rows.
+
+## Notifications & Errors
+- Errors that block progress use inline messages near the cause; global errors may use a toast plus inline context.
+- Success toasts auto-dismiss in ≤ 4s; errors require user dismissal or inline correction.

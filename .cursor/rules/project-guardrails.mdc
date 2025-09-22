@@ -1,5 +1,62 @@
 ---
-description:
-globs:
 alwaysApply: true
 ---
+
+PROSJEKT: <prosjektnavn>
+
+MODELL & KOST
+- Standard: GPT-5 for små, avgrensede endringer i ≤1 fil / ≤80 linjer.
+- Bytt til Claude-4-Sonnet KUN ved arkitektur/dyp resonnering eller >1 fil.
+- Budsjett: Metered kost for dette prosjektet maks $<X>/mnd.
+  • Hvis estimert måned > $<X>, stopp og spør om å:
+    (a) stramme tokens/output, (b) flytte til GPT-5, (c) kjøre i mindre blokker.
+
+OUTPUT
+- Aldri lim inn uendret kode. Returnér KUN minimal patch (```diff```) eller små codeblocks med endringer.
+- GPT-5 cap: ~250 tokens / ≤80 linjer.
+- Claude cap: lever i blokker, stopp ved ~150 linjer og spør før mer.
+
+STACK & STIL
+- Språk/rammeverk: <f.eks. React + TS + shadcn + Supabase>.
+- Filstruktur: følg /src/features/*, /lib/*, /components/*.
+- Format: Prettier + ESLint; behold eksisterende konvensjoner.
+
+TEST & CI
+- Nye funksjoner: legg til korte jest/vitest-tester.
+- Endringer i data-lag: oppdater types og minimale integrasjonstester.
+
+SIKKERHET
+- Ikke send nøkler/hemmeligheter/loggdata ut av editor-kontekst.
+- PII: maskér, bruk mock når mulig.
+
+AMBIGUITET
+- Hvis oppgaven kan løses “kort” eller “dypt”, spør først hvilken retning.
+PROSJEKT: <prosjektnavn>
+
+MODELL & KOST
+- Standard: GPT-5 for små, avgrensede endringer i ≤1 fil / ≤80 linjer.
+- Bytt til Claude-4-Sonnet KUN ved arkitektur/dyp resonnering eller >1 fil.
+- Budsjett: Metered kost for dette prosjektet maks $<X>/mnd.
+  • Hvis estimert måned > $<X>, stopp og spør om å:
+    (a) stramme tokens/output, (b) flytte til GPT-5, (c) kjøre i mindre blokker.
+
+OUTPUT
+- Aldri lim inn uendret kode. Returnér KUN minimal patch (```diff```) eller små codeblocks med endringer.
+- GPT-5 cap: ~250 tokens / ≤80 linjer.
+- Claude cap: lever i blokker, stopp ved ~150 linjer og spør før mer.
+
+STACK & STIL
+- Språk/rammeverk: <f.eks. React + TS + shadcn + Supabase>.
+- Filstruktur: følg /src/features/*, /lib/*, /components/*.
+- Format: Prettier + ESLint; behold eksisterende konvensjoner.
+
+TEST & CI
+- Nye funksjoner: legg til korte jest/vitest-tester.
+- Endringer i data-lag: oppdater types og minimale integrasjonstester.
+
+SIKKERHET
+- Ikke send nøkler/hemmeligheter/loggdata ut av editor-kontekst.
+- PII: maskér, bruk mock når mulig.
+
+AMBIGUITET
+- Hvis oppgaven kan løses “kort” eller “dypt”, spør først hvilken retning.
