@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
 import { useSmartRouting } from "@/hooks/useSmartRouting";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import FieldWorker from "./pages/FieldWorker";
@@ -73,7 +73,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 const App = () => (
-  <TooltipPrimitive.Provider>
+  <TooltipProvider>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
@@ -108,7 +108,7 @@ const App = () => (
         </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>
-  </TooltipPrimitive.Provider>
+  </TooltipProvider>
 );
 
 export default App;
