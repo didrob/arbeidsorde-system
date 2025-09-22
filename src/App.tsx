@@ -76,9 +76,9 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
-        <Toaster />
-        <Sonner />
         <BrowserRouter>
+          <Toaster />
+          <Sonner />
           <PWAWrapper />
           <Routes>
             <Route path="/auth" element={<Auth />} />
