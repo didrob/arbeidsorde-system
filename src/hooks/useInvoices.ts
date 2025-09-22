@@ -14,6 +14,7 @@ interface Invoice {
   tax_amount: number;
   total_amount: number;
   notes?: string;
+  internal_notes?: string;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -155,6 +156,7 @@ const createLineItemsFromWorkOrders = async (invoiceId: string, workOrderIds: st
         title,
         description,
         price_value,
+        pricing_model,
         pricing_type,
         actual_hours
       `)
@@ -172,26 +174,30 @@ const createLineItemsFromWorkOrders = async (invoiceId: string, workOrderIds: st
     for (const workOrder of workOrders || []) {
       console.log('Processing work order:', workOrder);
       
-      // Calculate price based on pricing type
+      // Calculate price based on pricing model
       let unitPrice = 0;
       let description = `${workOrder.title}${workOrder.description ? ' - ' + workOrder.description : ''}`;
-      // Annotate fixed price in description for clarity on invoice
-      if (workOrder.pricing_type === 'fixed') {
-        description += ' (Fastpris)';
-      }
       
-      if (workOrder.price_value && workOrder.price_value > 0) {
-        unitPrice = workOrder.price_value;
-      } else if (workOrder.pricing_type === 'hourly' && workOrder.actual_hours) {
-        // For hourly pricing without fixed price, we need a default hourly rate
-        // This should ideally come from a settings table or be configurable
-        const defaultHourlyRate = 800; // Default rate per hour
-        unitPrice = workOrder.actual_hours * defaultHourlyRate;
-        description += ` (${workOrder.actual_hours} timer @ kr ${defaultHourlyRate}/time)`;
+      // Check pricing model (fixed vs hourly)
+      if (workOrder.pricing_model === 'fixed') {
+        // Fixed price - use price_value directly
+        description += ' (Fastpris)';
+        if (workOrder.price_value && workOrder.price_value > 0) {
+          unitPrice = workOrder.price_value;
+        } else {
+          console.warn('Fixed price work order has no price_value:', workOrder);
+          description += ' (Pris ikke satt)';
+        }
       } else {
-        console.warn('Work order has no price_value:', workOrder);
-        // Still create a line item but with 0 value
-        description += ' (Pris ikke satt)';
+        // Hourly pricing - calculate based on hours
+        if (workOrder.actual_hours && workOrder.actual_hours > 0) {
+          const defaultHourlyRate = 800; // Default rate per hour
+          unitPrice = workOrder.actual_hours * defaultHourlyRate;
+          description += ` (${workOrder.actual_hours} timer @ kr ${defaultHourlyRate}/time)`;
+        } else {
+          console.warn('Hourly work order has no actual_hours:', workOrder);
+          description += ' (Timer ikke registrert)';
+        }
       }
 
       // Main service line item
@@ -392,8 +398,13 @@ export const useDownloadInvoicePDF = () => {
       // Fetch the complete invoice data
       const invoice = await fetchInvoice(invoiceId);
       
+      // Ensure customer data is present for PDF generation
+      if (!invoice.customer) {
+        throw new Error('Kunde data mangler for PDF generering');
+      }
+      
       // Generate and download PDF
-      generateInvoicePDF(invoice);
+      generateInvoicePDF(invoice as any);
       
       return invoice;
     },
