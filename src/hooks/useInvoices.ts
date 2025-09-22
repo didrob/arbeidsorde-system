@@ -335,6 +335,51 @@ export const useUpdateInvoiceStatus = () => {
   });
 };
 
+// Add update invoice functionality
+const updateInvoice = async (invoiceId: string, updates: Partial<Invoice>): Promise<Invoice> => {
+  const { data, error } = await supabase
+    .from('invoices')
+    .update(updates)
+    .eq('id', invoiceId)
+    .select(`
+      *,
+      customer:customers(id, name, email),
+      line_items:invoice_line_items!fk_invoice_line_items_invoice_id(*)
+    `)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as unknown as Invoice;
+};
+
+export const useUpdateInvoice = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<Invoice> }) =>
+      updateInvoice(id, updates),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invoices });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invoice(data.id) });
+      toast({
+        title: "Faktura oppdatert",
+        description: "Fakturaen ble oppdatert successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Feil ved oppdatering",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+};
+
 export const useDownloadInvoicePDF = () => {
   const { toast } = useToast();
 
