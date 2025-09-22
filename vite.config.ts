@@ -32,9 +32,9 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       manifest: {
-        name: 'Arbeidsordre System',
-        short_name: 'JobBoss',
-        description: 'Mobil arbeidsordre- og tidssporingssystem for feltarbeidere',
+        name: 'Asco Workorder',
+        short_name: 'Asco WO',
+        description: 'Profesjonelt arbeidsordre- og tidssporingssystem for feltarbeidere og administrasjon',
         theme_color: '#2563eb',
         background_color: '#ffffff',
         display: 'standalone',
@@ -43,15 +43,20 @@ export default defineConfig(({ mode }) => ({
         start_url: '/',
         icons: [
           {
-            src: '/placeholder.svg',
+            src: '/favicon.png',
+            sizes: '32x32',
+            type: 'image/png'
+          },
+          {
+            src: '/app-icon-192.png',
             sizes: '192x192',
-            type: 'image/svg+xml',
+            type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: '/placeholder.svg',
+            src: '/app-icon-192.png',
             sizes: '512x512', 
-            type: 'image/svg+xml',
+            type: 'image/png',
             purpose: 'any maskable'
           }
         ]
