@@ -1,14 +1,64 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState } from 'react';
+import { FieldWorkerDashboard } from '@/components/FieldWorkerDashboard';
+import Dashboard from './Dashboard';
+
+interface UserProfile {
+  role: string;
+}
 
 const Index = () => {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+  const { user, loading } = useAuth();
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) throw error;
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    } else {
+      setProfileLoading(false);
+    }
+  }, [user]);
+
+  // Show loading state
+  if (loading || profileLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Laster...</p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Show field worker dashboard if user is a field worker
+  if (userProfile?.role === 'field_worker') {
+    return <FieldWorkerDashboard />;
+  }
+
+  // Show dashboard for admin/manager users
+  return <Dashboard />;
 };
 
 export default Index;

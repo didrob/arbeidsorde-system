@@ -1,24 +1,48 @@
 <!doctype html>
-<html lang="en">
+<html lang="nb">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>mobile-job-boss</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Asco Workorder - Arbeidsordresystem</title>
+    <meta name="description" content="Profesjonelt arbeidsordre- og tidssporingssystem for feltarbeidere og administrasjon. Effektiv oppgavehåndtering fra mobil og desktop." />
+    <meta name="author" content="Asco" />
+    <meta name="theme-color" content="#2563eb" />
+    
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    
+    <!-- PWA and Mobile Optimization -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Asco Workorder" />
+    <link rel="apple-touch-icon" href="/app-icon-192.png" />
+    
+    <!-- High DPI Display Support -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
 
-    <meta property="og:title" content="mobile-job-boss" />
-    <meta property="og:description" content="Lovable Generated Project" />
+    <!-- Open Graph -->
+    <meta property="og:title" content="Asco Workorder - Arbeidsordresystem" />
+    <meta property="og:description" content="Profesjonelt arbeidsordre- og tidssporingssystem for feltarbeidere og administrasjon" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:image" content="/app-icon-192.png" />
 
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta name="twitter:site" content="@asco_workorder" />
+    <meta name="twitter:image" content="/app-icon-192.png" />
+    
+    <!-- Preload critical resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   </head>
 
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- PWA Installation Prompt intentionally not registered in dev to avoid SW caching issues -->
   </body>
 </html>
