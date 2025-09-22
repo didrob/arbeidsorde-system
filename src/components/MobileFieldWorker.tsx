@@ -151,6 +151,59 @@ export const MobileFieldWorker = () => {
     }
   };
 
+  const updateWorkOrderStatus = async (workOrderId: string, status: string) => {
+    try {
+      if (status === 'in_progress') {
+        // Start via time entry to satisfy RLS/trigger path
+        const { error: insertErr } = await supabase
+          .from('work_order_time_entries')
+          .insert({
+            work_order_id: workOrderId,
+            user_id: user?.id!,
+            start_time: new Date().toISOString(),
+            notes: ''
+          });
+        if (insertErr) throw insertErr;
+
+        // Find and set the active order
+        const order = workOrders.find(wo => wo.id === workOrderId);
+        if (order) {
+          setActiveOrder(order);
+        }
+
+        // Fetch fresh timer data
+        await fetchActiveTimer();
+      } else if (status === 'completed') {
+        // Stop the latest active time entry for this user/order
+        const { data: activeEntry, error: fetchErr } = await supabase
+          .from('work_order_time_entries')
+          .select('*')
+          .eq('work_order_id', workOrderId)
+          .eq('user_id', user?.id!)
+          .is('end_time', null)
+          .order('start_time', { ascending: false })
+          .limit(1)
+          .single();
+        if (fetchErr) throw fetchErr;
+
+        const { error: stopErr } = await supabase
+          .from('work_order_time_entries')
+          .update({ end_time: new Date().toISOString() })
+          .eq('id', activeEntry.id);
+        if (stopErr) throw stopErr;
+
+        setActiveOrder(null);
+        setActiveTimer(null);
+      }
+
+      await fetchTodaysWork();
+      toast.success(`Arbeidsordre ${status === 'in_progress' ? 'startet' : 'fullført'}!`);
+    } catch (error) {
+      console.error('Error updating work order:', error);
+      toast.error(status === 'in_progress' ? 'Kunne ikke starte arbeidsordre' : 'Kunne ikke fullføre arbeidsordre');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -281,10 +334,7 @@ export const MobileFieldWorker = () => {
                         "transition-all duration-200 hover:shadow-md animate-fade-in"
                       )}
                       rightAction={<Play className="h-5 w-5" />}
-                      onSwipeRight={() => {
-                        // Start work order
-                        toast.success('Arbeidsordre startet!');
-                      }}
+                      onSwipeRight={() => updateWorkOrderStatus(order.id, 'in_progress')}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
@@ -299,12 +349,7 @@ export const MobileFieldWorker = () => {
                         <Button 
                           size="sm" 
                           className="focus-ring"
-                          onClick={() => {
-                            // Add haptic feedback simulation
-                            const button = document.activeElement as HTMLElement;
-                            button?.classList.add('haptic-tap');
-                            setTimeout(() => button?.classList.remove('haptic-tap'), 100);
-                          }}
+                          onClick={() => updateWorkOrderStatus(order.id, 'in_progress')}
                         >
                           <Play className="h-4 w-4 mr-1" />
                           Start
