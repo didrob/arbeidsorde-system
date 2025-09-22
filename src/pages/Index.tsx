@@ -1,6 +1,6 @@
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { useEffect, useState } from 'react';
 import { FieldWorkerDashboard } from '@/components/FieldWorkerDashboard';
 import Dashboard from './Dashboard';
 
