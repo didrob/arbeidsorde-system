@@ -50,7 +50,7 @@ const fetchInvoices = async (): Promise<Invoice[]> => {
     .select(`
       *,
       customer:customers(id, name, email),
-      line_items:invoice_line_items!fk_invoice_line_items_invoice(*)
+      line_items:invoice_line_items!fk_invoice_line_items_invoice_id(*)
     `)
     .order('created_at', { ascending: false });
 
@@ -67,7 +67,7 @@ const fetchInvoice = async (id: string): Promise<Invoice> => {
     .select(`
       *,
       customer:customers(id, name, email, address, contact_person),
-      line_items:invoice_line_items!fk_invoice_line_items_invoice(*)
+      line_items:invoice_line_items!fk_invoice_line_items_invoice_id(*)
     `)
     .eq('id', id)
     .single();
