@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
 import { useSmartRouting } from "@/hooks/useSmartRouting";
@@ -23,6 +23,15 @@ import CustomerAgreements from './pages/CustomerAgreements';
 import Invoices from './pages/Invoices';
 
 const queryClient = new QueryClient();
+
+// PWA Install Prompt wrapper - only show when not on auth pages
+function PWAWrapper() {
+  const location = useLocation();
+  const isAuthPage = location.pathname.startsWith('/auth');
+  
+  if (isAuthPage) return null;
+  return <PWAInstallPrompt />;
+}
 
 // Protected route wrapper with role-based routing
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -69,8 +78,8 @@ const App = () => (
       <AuthProvider>
         <Toaster />
         <Sonner />
-        <PWAInstallPrompt />
         <BrowserRouter>
+          <PWAWrapper />
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/field" element={<FieldWorker />} />

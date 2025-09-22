@@ -32,11 +32,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id', userId)
         .single();
       
-      if (error) throw error;
-      setUserRole(data?.role || null);
+      if (error) {
+        console.error('Error fetching user role:', error);
+        // Set default role if profile doesn't exist yet
+        setUserRole('field_worker');
+        return;
+      }
+      
+      setUserRole(data?.role || 'field_worker');
     } catch (error) {
       console.error('Error fetching user role:', error);
-      setUserRole(null);
+      setUserRole('field_worker'); // Default fallback
     }
   };
 
