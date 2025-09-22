@@ -85,6 +85,7 @@ export const createWorkOrderSchema = z.object({
   description: z.string().optional(),
   customer_id: z.string().uuid('Please select a customer'),
   assigned_to: z.string().uuid().optional(),
+  pricing_model: z.enum(['fixed', 'resource_based']),
   pricing_type: pricingTypeSchema,
   price_value: z.number().positive().optional(),
   estimated_hours: z.number().positive().optional(),

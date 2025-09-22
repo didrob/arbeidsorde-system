@@ -92,21 +92,10 @@ class ApiClient {
       return this.handleResponse(null, { message: 'Not authenticated' });
     }
 
-    // Derive sane defaults to avoid DB default overriding pricing
-    const derivedPricingType = (formData as any).pricing_type
-      ? (formData as any).pricing_type
-      : formData.pricing_model === 'fixed'
-        ? 'fixed'
-        : 'hourly';
-
-    const normalizedPriceValue = formData.pricing_model === 'fixed'
-      ? formData.price_value ?? null
-      : null; // ensure hourly/resource-based does not persist a fixed price
-
+    // The formData from the wizard now contains all correct fields,
+    // including pricing_type and price_value. No extra logic is needed here.
     const insertData = {
       ...formData,
-      pricing_type: derivedPricingType,
-      price_value: normalizedPriceValue,
       assigned_to: formData.assigned_to && formData.assigned_to.length > 0 ? formData.assigned_to : null,
       user_id: user.user.id
     };
