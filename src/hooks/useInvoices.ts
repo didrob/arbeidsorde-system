@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { generateInvoicePDF } from '@/utils/pdfGenerator';
 
 interface Invoice {
   id: string;
@@ -307,6 +308,35 @@ export const useUpdateInvoiceStatus = () => {
     onError: (error: Error) => {
       toast({
         title: "Feil ved oppdatering",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useDownloadInvoicePDF = () => {
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (invoiceId: string) => {
+      // Fetch the complete invoice data
+      const invoice = await fetchInvoice(invoiceId);
+      
+      // Generate and download PDF
+      generateInvoicePDF(invoice);
+      
+      return invoice;
+    },
+    onSuccess: (invoice) => {
+      toast({
+        title: "PDF lastet ned",
+        description: `Faktura ${invoice.invoice_number} ble lastet ned som PDF.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Feil ved PDF-generering",
         description: error.message,
         variant: "destructive",
       });

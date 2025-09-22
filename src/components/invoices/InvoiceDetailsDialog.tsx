@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { Download, Send, Edit, Check, X } from "lucide-react";
-import { useUpdateInvoiceStatus } from "@/hooks/useInvoices";
+import { useUpdateInvoiceStatus, useDownloadInvoicePDF } from "@/hooks/useInvoices";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 interface InvoiceDetailsDialogProps {
@@ -32,11 +32,16 @@ const statusLabels = {
 
 export function InvoiceDetailsDialog({ invoice, open, onOpenChange }: InvoiceDetailsDialogProps) {
   const updateStatusMutation = useUpdateInvoiceStatus();
+  const downloadPDFMutation = useDownloadInvoicePDF();
 
   if (!invoice) return null;
 
   const handleStatusChange = (status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled') => {
     updateStatusMutation.mutate({ id: invoice.id, status });
+  };
+
+  const handleDownloadPDF = () => {
+    downloadPDFMutation.mutate(invoice.id);
   };
 
   const canEdit = invoice.status === 'draft';
@@ -103,9 +108,14 @@ export function InvoiceDetailsDialog({ invoice, open, onOpenChange }: InvoiceDet
                 Avbryt faktura
               </Button>
             )}
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleDownloadPDF}
+              disabled={downloadPDFMutation.isPending}
+            >
               <Download className="h-4 w-4 mr-2" />
-              Last ned PDF
+              {downloadPDFMutation.isPending ? "Genererer..." : "Last ned PDF"}
             </Button>
           </div>
 

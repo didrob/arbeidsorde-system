@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, FileText, Download, Send, Eye, Edit } from "lucide-react";
-import { useInvoices, useCreateInvoice } from "@/hooks/useInvoices";
+import { useInvoices, useCreateInvoice, useDownloadInvoicePDF } from "@/hooks/useInvoices";
 import { LoadingState } from "@/components/common/LoadingState";
 import { CreateInvoiceDialog } from "@/components/invoices/CreateInvoiceDialog";
 import { InvoiceDetailsDialog } from "@/components/invoices/InvoiceDetailsDialog";
@@ -34,6 +34,7 @@ export default function Invoices() {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
   const { data: invoices = [], isLoading, error } = useInvoices();
+  const downloadPDFMutation = useDownloadInvoicePDF();
 
   if (isLoading) {
     return <LoadingState />;
@@ -56,6 +57,10 @@ export default function Invoices() {
   const handleViewInvoice = (invoice: any) => {
     setSelectedInvoice(invoice);
     setShowDetailsDialog(true);
+  };
+
+  const handleDownloadPDF = (invoice: any) => {
+    downloadPDFMutation.mutate(invoice.id);
   };
 
   return (
@@ -240,6 +245,8 @@ export default function Invoices() {
                           <Button
                             variant="outline"
                             size="sm"
+                            onClick={() => handleDownloadPDF(invoice)}
+                            disabled={downloadPDFMutation.isPending}
                           >
                             <Download className="h-4 w-4" />
                           </Button>
