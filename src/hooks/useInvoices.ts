@@ -175,6 +175,10 @@ const createLineItemsFromWorkOrders = async (invoiceId: string, workOrderIds: st
       // Calculate price based on pricing type
       let unitPrice = 0;
       let description = `${workOrder.title}${workOrder.description ? ' - ' + workOrder.description : ''}`;
+      // Annotate fixed price in description for clarity on invoice
+      if (workOrder.pricing_type === 'fixed') {
+        description += ' (Fastpris)';
+      }
       
       if (workOrder.price_value && workOrder.price_value > 0) {
         unitPrice = workOrder.price_value;
