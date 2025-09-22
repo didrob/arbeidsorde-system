@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Clock, MapPin, ChevronRight, Play, Pause, CheckCircle, Plus, Camera, Paperclip, AlertTriangle, Search, Bell } from 'lucide-react';
+import { Clock, MapPin, ChevronRight, Play, Pause, CheckCircle, Plus, Camera, Paperclip, AlertTriangle, Search, Bell, LogOut, Menu, Timer } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -46,7 +47,7 @@ interface ActiveTimer {
 }
 
 export const MobileFieldWorker = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
   const [activeOrder, setActiveOrder] = useState<WorkOrder | null>(null);
   const [activeTimer, setActiveTimer] = useState<ActiveTimer | null>(null);
@@ -67,6 +68,7 @@ export const MobileFieldWorker = () => {
     notes: ''
   });
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [showTimeDialog, setShowTimeDialog] = useState(false);
 
   const { data: customers } = useCustomers();
   const createWorkOrder = useCreateWorkOrder();
@@ -99,6 +101,67 @@ export const MobileFieldWorker = () => {
     }
     return () => clearInterval(interval);
   }, [activeTimer]);
+
+  // Audio notification effect
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('work-order-audio-notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'work_orders',
+          filter: `assigned_to=eq.${user.id}`
+        },
+        (payload) => {
+          // Play notification sound
+          playNotificationSound();
+          toast.success(`Ny arbeidsordre: ${payload.new.title}`);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const playNotificationSound = () => {
+    // Create audio context and play notification sound
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Create a pleasant notification sound
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+      console.log('Audio notification not supported');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast.success('Logget ut');
+    } catch (error) {
+      toast.error('Kunne ikke logge ut');
+    }
+  };
 
   const fetchTodaysWork = async () => {
     try {
@@ -151,6 +214,59 @@ export const MobileFieldWorker = () => {
     }
   };
 
+  const updateWorkOrderStatus = async (workOrderId: string, status: string) => {
+    try {
+      if (status === 'in_progress') {
+        // Start via time entry to satisfy RLS/trigger path
+        const { error: insertErr } = await supabase
+          .from('work_order_time_entries')
+          .insert({
+            work_order_id: workOrderId,
+            user_id: user?.id!,
+            start_time: new Date().toISOString(),
+            notes: ''
+          });
+        if (insertErr) throw insertErr;
+
+        // Find and set the active order
+        const order = workOrders.find(wo => wo.id === workOrderId);
+        if (order) {
+          setActiveOrder(order);
+        }
+
+        // Fetch fresh timer data
+        await fetchActiveTimer();
+      } else if (status === 'completed') {
+        // Stop the latest active time entry for this user/order
+        const { data: activeEntry, error: fetchErr } = await supabase
+          .from('work_order_time_entries')
+          .select('*')
+          .eq('work_order_id', workOrderId)
+          .eq('user_id', user?.id!)
+          .is('end_time', null)
+          .order('start_time', { ascending: false })
+          .limit(1)
+          .single();
+        if (fetchErr) throw fetchErr;
+
+        const { error: stopErr } = await supabase
+          .from('work_order_time_entries')
+          .update({ end_time: new Date().toISOString() })
+          .eq('id', activeEntry.id);
+        if (stopErr) throw stopErr;
+
+        setActiveOrder(null);
+        setActiveTimer(null);
+      }
+
+      await fetchTodaysWork();
+      toast.success(`Arbeidsordre ${status === 'in_progress' ? 'startet' : 'fullført'}!`);
+    } catch (error) {
+      console.error('Error updating work order:', error);
+      toast.error(status === 'in_progress' ? 'Kunne ikke starte arbeidsordre' : 'Kunne ikke fullføre arbeidsordre');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -170,6 +286,16 @@ export const MobileFieldWorker = () => {
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-xl font-bold">Dagens Arbeid</h1>
             <div className="flex items-center gap-2">
+              {/* Clock/Timer Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTimeDialog(true)}
+                className="focus-ring"
+              >
+                <Timer className="h-4 w-4" />
+              </Button>
+              
               {/* Notification Center */}
               <Button
                 variant="ghost"
@@ -187,16 +313,25 @@ export const MobileFieldWorker = () => {
                 )}
               </Button>
               
-              {/* Pool toggle */}
-              <Button
-                variant={showPool ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setShowPool(!showPool)}
-                className="focus-ring"
-              >
-                <Search className="h-4 w-4 mr-1" />
-                Pool
-              </Button>
+              {/* Menu Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="focus-ring">
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setShowPool(!showPool)}>
+                    <Search className="h-4 w-4 mr-2" />
+                    {showPool ? 'Mine ordrer' : 'Ledig pool'}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logg ut
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
           <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -281,10 +416,7 @@ export const MobileFieldWorker = () => {
                         "transition-all duration-200 hover:shadow-md animate-fade-in"
                       )}
                       rightAction={<Play className="h-5 w-5" />}
-                      onSwipeRight={() => {
-                        // Start work order
-                        toast.success('Arbeidsordre startet!');
-                      }}
+                      onSwipeRight={() => updateWorkOrderStatus(order.id, 'in_progress')}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
@@ -299,12 +431,7 @@ export const MobileFieldWorker = () => {
                         <Button 
                           size="sm" 
                           className="focus-ring"
-                          onClick={() => {
-                            // Add haptic feedback simulation
-                            const button = document.activeElement as HTMLElement;
-                            button?.classList.add('haptic-tap');
-                            setTimeout(() => button?.classList.remove('haptic-tap'), 100);
-                          }}
+                          onClick={() => updateWorkOrderStatus(order.id, 'in_progress')}
                         >
                           <Play className="h-4 w-4 mr-1" />
                           Start
@@ -317,6 +444,43 @@ export const MobileFieldWorker = () => {
           )}
         </div>
       </PullToRefresh>
+
+      {/* Time Tracking Dialog */}
+      <Dialog open={showTimeDialog} onOpenChange={setShowTimeDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Tidssporing</DialogTitle>
+            <DialogDescription>
+              {activeTimer ? 'Aktiv tidssporing' : 'Ingen aktiv tidssporing'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {activeTimer && activeOrder ? (
+              <div className="text-center">
+                <div className="text-3xl font-mono text-primary mb-2">
+                  {Math.floor(elapsedTime / 3600)}:{String(Math.floor((elapsedTime % 3600) / 60)).padStart(2, '0')}:{String(elapsedTime % 60).padStart(2, '0')}
+                </div>
+                <p className="text-sm text-muted-foreground">{activeOrder.title}</p>
+                <p className="text-xs text-muted-foreground">{activeOrder.customer_name}</p>
+                <Button 
+                  onClick={() => updateWorkOrderStatus(activeOrder.id, 'completed')}
+                  className="mt-4 w-full"
+                  variant="destructive"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Fullfør arbeid
+                </Button>
+              </div>
+            ) : (
+              <div className="text-center text-muted-foreground">
+                <Clock className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <p>Ingen aktiv tidssporing</p>
+                <p className="text-xs">Start en arbeidsordre for å begynne tidssporing</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
