@@ -92,7 +92,7 @@ export function BasicInfoStep() {
               </SelectTrigger>
               <SelectContent className="bg-white">
                 {fieldWorkers?.map((worker: any) => (
-                  <SelectItem key={worker.id} value={worker.id}>
+                  <SelectItem key={worker.user_id ?? worker.id} value={worker.user_id}>
                     {worker.full_name || worker.user_id}
                   </SelectItem>
                 ))}

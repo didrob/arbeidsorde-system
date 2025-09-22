@@ -94,6 +94,7 @@ class ApiClient {
 
     const insertData = {
       ...formData,
+      assigned_to: formData.assigned_to && formData.assigned_to.length > 0 ? formData.assigned_to : null,
       user_id: user.user.id
     };
 
