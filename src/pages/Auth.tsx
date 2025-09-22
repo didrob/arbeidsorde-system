@@ -44,7 +44,7 @@ const Auth = () => {
       <Card className="w-full max-w-md mx-4 relative z-10 bg-white/95 backdrop-blur-sm">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-primary">
-            Arbeidsordre System
+            Asco Workorder
           </CardTitle>
           <CardDescription>
             {isLogin ? 'Logg inn på din konto' : 'Opprett ny konto'}

@@ -33,7 +33,7 @@ export function PWAInstallPrompt() {
                 <Button 
                   size="sm" 
                   onClick={installPWA}
-                  className="flex-1 thumb-zone focus-ring"
+                  className="flex-1 focus-ring"
                 >
                   Installer
                 </Button>
@@ -41,7 +41,7 @@ export function PWAInstallPrompt() {
                   size="sm" 
                   variant="ghost" 
                   onClick={dismissInstallPrompt}
-                  className="thumb-zone focus-ring"
+                  className="focus-ring"
                 >
                   <X className="h-4 w-4" />
                 </Button>

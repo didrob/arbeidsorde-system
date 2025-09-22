@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { MobileFieldWorker } from '@/components/MobileFieldWorker';
+import { ResponsiveLayout } from '@/components/layout/ResponsiveLayout';
 
 const FieldWorker = () => {
   const { user, loading } = useAuth();
@@ -22,8 +23,12 @@ const FieldWorker = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  // Show mobile-optimized field worker interface
-  return <MobileFieldWorker />;
+  // Show mobile-optimized field worker interface with proper navigation
+  return (
+    <ResponsiveLayout showMobileNav={true}>
+      <MobileFieldWorker />
+    </ResponsiveLayout>
+  );
 };
 
 export default FieldWorker;

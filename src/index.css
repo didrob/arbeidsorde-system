@@ -155,10 +155,7 @@ All colors MUST be HSL.
     padding-right: env(safe-area-inset-right);
   }
   
-  /* Thumb-friendly spacing */
-  .thumb-zone {
-    @apply pb-20; /* 80px bottom padding for thumb reach */
-  }
+  /* Removed conflicting thumb-zone - see proper definition below */
   
   /* Mobile card optimizations */
   .card-mobile {

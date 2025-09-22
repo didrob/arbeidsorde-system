@@ -167,25 +167,20 @@ export const MobileFieldWorker = () => {
       {/* Header */}
       <div className="bg-card border-b sticky top-0 z-10 safe-area-padding-top">
         <div className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold">Dagens Arbeid</h1>
-              <p className="text-sm text-muted-foreground">
-                {workOrders.length} ordrer tildelt
-              </p>
-            </div>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-xl font-bold">Dagens Arbeid</h1>
             <div className="flex items-center gap-2">
               {/* Notification Center */}
               <Button
                 variant="ghost"
                 size="sm"
-                className="relative thumb-zone focus-ring"
+                className="relative focus-ring"
               >
-                <Bell className="h-5 w-5" />
+                <Bell className="h-4 w-4" />
                 {unreadCount > 0 && (
                   <Badge 
                     variant="destructive" 
-                    className="absolute -top-1 -right-1 h-5 w-5 text-xs flex items-center justify-center p-0"
+                    className="absolute -top-1 -right-1 h-4 w-4 text-xs flex items-center justify-center p-0"
                   >
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </Badge>
@@ -194,15 +189,25 @@ export const MobileFieldWorker = () => {
               
               {/* Pool toggle */}
               <Button
-                variant={showPool ? "default" : "outline"}
+                variant={showPool ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setShowPool(!showPool)}
-                className="h-9 thumb-zone focus-ring"
+                className="focus-ring"
               >
                 <Search className="h-4 w-4 mr-1" />
                 Pool
               </Button>
             </div>
+          </div>
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <span>{workOrders.length} ordrer tildelt</span>
+            <span>
+              {new Intl.DateTimeFormat('nb-NO', { 
+                weekday: 'short', 
+                day: 'numeric', 
+                month: 'short'
+              }).format(new Date())}
+            </span>
           </div>
         </div>
       </div>
@@ -224,7 +229,7 @@ export const MobileFieldWorker = () => {
                   variant="outline" 
                   size="sm" 
                   onClick={() => setShowPool(false)}
-                  className="thumb-zone focus-ring"
+                  className="focus-ring"
                 >
                   Tilbake til mine ordrer
                 </Button>
@@ -293,7 +298,7 @@ export const MobileFieldWorker = () => {
                         </div>
                         <Button 
                           size="sm" 
-                          className="thumb-zone focus-ring haptic-tap"
+                          className="focus-ring"
                           onClick={() => {
                             // Add haptic feedback simulation
                             const button = document.activeElement as HTMLElement;
