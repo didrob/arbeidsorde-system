@@ -52,9 +52,11 @@ const Index = () => {
     );
   }
 
-  // Show field worker dashboard if user is a field worker
+  // Field workers should be redirected to /field by useSmartRouting
+  // If they reach here, redirect them manually as fallback
   if (userProfile?.role === 'field_worker') {
-    return <FieldWorkerDashboard />;
+    window.location.href = '/field';
+    return null;
   }
 
   // Show dashboard for admin/manager users
