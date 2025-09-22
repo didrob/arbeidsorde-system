@@ -239,7 +239,15 @@ export type Database = {
           unit_price?: number
           work_order_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_invoice_line_items_invoice_id"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoices: {
         Row: {
