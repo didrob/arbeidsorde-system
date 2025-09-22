@@ -180,117 +180,84 @@ const createInvoice = async (invoiceData: CreateInvoiceData): Promise<Invoice> =
 };
 
 const createLineItemsFromWorkOrders = async (invoiceId: string, workOrderIds: string[]) => {
-  // Fetch work orders with their related data
-  const { data: workOrders, error } = await supabase
-    .from('work_orders')
-    .select(`
-      id,
-      title,
-      description,
-      price_value,
-      pricing_model,
-      actual_hours,
-      work_order_materials(quantity, unit_price, material:materials(name)),
-      work_order_equipment(actual_quantity, rate, equipment:equipment(name)),
-      work_order_time_adjustments(id, extra_minutes, extra_cost, reason, adjustment_type)
-    `)
-    .in('id', workOrderIds);
+  try {
+    // Fetch work orders with basic data only (avoid problematic relations for now)
+    const { data: workOrders, error } = await supabase
+      .from('work_orders')
+      .select(`
+        id,
+        title,
+        description,
+        price_value,
+        pricing_model,
+        actual_hours
+      `)
+      .in('id', workOrderIds);
 
-  if (error) {
-    throw new Error('Kunne ikke hente arbeidsordrer: ' + error.message);
-  }
+    if (error) {
+      console.error('Work orders fetch error:', error);
+      throw new Error('Kunne ikke hente arbeidsordrer: ' + error.message);
+    }
 
-  const lineItems: any[] = [];
+    console.log('Fetched work orders for invoice:', workOrders);
 
-  for (const workOrder of workOrders || []) {
-    // Main service line item
-    lineItems.push({
-      invoice_id: invoiceId,
-      work_order_id: workOrder.id,
-      description: `${workOrder.title} - ${workOrder.description || ''}`,
-      quantity: 1,
-      unit_price: workOrder.price_value || 0,
-      line_total: workOrder.price_value || 0,
-      item_type: 'service',
-      reference_id: workOrder.id
-    });
+    const lineItems: any[] = [];
 
-    // Materials
-    if (workOrder.work_order_materials && Array.isArray(workOrder.work_order_materials)) {
-      for (const material of workOrder.work_order_materials) {
-        lineItems.push({
-          invoice_id: invoiceId,
-          work_order_id: workOrder.id,
-          description: `Materiale: ${(material.material as any)?.name || 'Ukjent'}`,
-          quantity: material.quantity || 0,
-          unit_price: material.unit_price || 0,
-          line_total: (material.quantity || 0) * (material.unit_price || 0),
-          item_type: 'material',
-          reference_id: null
-        });
+    for (const workOrder of workOrders || []) {
+      // Main service line item
+      lineItems.push({
+        invoice_id: invoiceId,
+        work_order_id: workOrder.id,
+        description: `${workOrder.title}${workOrder.description ? ' - ' + workOrder.description : ''}`,
+        quantity: 1,
+        unit_price: workOrder.price_value || 0,
+        line_total: workOrder.price_value || 0,
+        item_type: 'service',
+        reference_id: workOrder.id
+      });
+    }
+
+    console.log('Created line items:', lineItems);
+
+    // Insert all line items if there are any
+    if (lineItems.length > 0) {
+      const { error: lineItemsError } = await supabase
+        .from('invoice_line_items')
+        .insert(lineItems);
+
+      if (lineItemsError) {
+        console.error('Line items insertion error:', lineItemsError);
+        throw new Error('Kunne ikke opprette fakturalinjer: ' + lineItemsError.message);
       }
-    }
 
-    // Equipment
-    if (workOrder.work_order_equipment && Array.isArray(workOrder.work_order_equipment)) {
-      for (const equipment of workOrder.work_order_equipment) {
-        lineItems.push({
-          invoice_id: invoiceId,
-          work_order_id: workOrder.id,
-          description: `Utstyr: ${(equipment.equipment as any)?.name || 'Ukjent'}`,
-          quantity: equipment.actual_quantity || 0,
-          unit_price: equipment.rate || 0,
-          line_total: (equipment.actual_quantity || 0) * (equipment.rate || 0),
-          item_type: 'equipment',
-          reference_id: null
-        });
+      console.log('Inserted line items successfully');
+
+      // Update invoice totals
+      const subtotal = lineItems.reduce((sum, item) => sum + item.line_total, 0);
+      const taxAmount = subtotal * 0.25; // 25% MVA
+      const totalAmount = subtotal + taxAmount;
+
+      console.log('Updating invoice totals:', { subtotal, taxAmount, totalAmount });
+
+      const { error: updateError } = await supabase
+        .from('invoices')
+        .update({
+          subtotal,
+          tax_amount: taxAmount,
+          total_amount: totalAmount
+        })
+        .eq('id', invoiceId);
+
+      if (updateError) {
+        console.error('Invoice totals update error:', updateError);
+        throw new Error('Kunne ikke oppdatere fakturatotaler: ' + updateError.message);
       }
+
+      console.log('Updated invoice totals successfully');
     }
-
-    // Time adjustments
-    if (workOrder.work_order_time_adjustments && Array.isArray(workOrder.work_order_time_adjustments)) {
-      for (const adjustment of workOrder.work_order_time_adjustments) {
-        lineItems.push({
-          invoice_id: invoiceId,
-          work_order_id: workOrder.id,
-          description: `Tillegg: ${adjustment.reason} (${adjustment.adjustment_type})`,
-          quantity: 1,
-          unit_price: adjustment.extra_cost || 0,
-          line_total: adjustment.extra_cost || 0,
-          item_type: 'extra_time',
-          reference_id: adjustment.id
-        });
-      }
-    }
-  }
-
-  // Insert all line items if there are any
-  if (lineItems.length > 0) {
-    const { error: lineItemsError } = await supabase
-      .from('invoice_line_items')
-      .insert(lineItems);
-
-    if (lineItemsError) {
-      throw new Error('Kunne ikke opprette fakturalinjer: ' + lineItemsError.message);
-    }
-
-    // Update invoice totals
-    const subtotal = lineItems.reduce((sum, item) => sum + item.line_total, 0);
-    const taxAmount = subtotal * 0.25; // 25% MVA
-    const totalAmount = subtotal + taxAmount;
-
-    const { error: updateError } = await supabase
-      .from('invoices')
-      .update({
-        subtotal,
-        tax_amount: taxAmount,
-        total_amount: totalAmount
-      })
-      .eq('id', invoiceId);
-
-    if (updateError) {
-      throw new Error('Kunne ikke oppdatere fakturatotaler: ' + updateError.message);
-    }
+  } catch (error) {
+    console.error('Error in createLineItemsFromWorkOrders:', error);
+    throw error;
   }
 };
 
