@@ -121,46 +121,62 @@ const fetchInvoice = async (id: string): Promise<Invoice> => {
 };
 
 const createInvoice = async (invoiceData: CreateInvoiceData): Promise<Invoice> => {
-  // Generate invoice number
-  const { data: invoiceNumber, error: numberError } = await supabase
-    .rpc('generate_invoice_number');
-
-  if (numberError) {
-    throw new Error('Kunne ikke generere fakturanummer: ' + numberError.message);
-  }
-
   // Get current user
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     throw new Error('Ikke autentisert');
   }
 
-  // Create the invoice
-  const { data: invoice, error: invoiceError } = await supabase
-    .from('invoices')
-    .insert({
-      invoice_number: invoiceNumber,
-      customer_id: invoiceData.customer_id,
-      due_date: invoiceData.due_date,
-      notes: invoiceData.notes,
-      created_by: user.id
-    })
-    .select(`
-      *,
-      customer:customers(id, name, email)
-    `)
-    .single();
+  try {
+    // Generate invoice number
+    const { data: invoiceNumber, error: numberError } = await supabase
+      .rpc('generate_invoice_number');
 
-  if (invoiceError) {
-    throw new Error(invoiceError.message);
+    if (numberError) {
+      console.error('Invoice number generation error:', numberError);
+      throw new Error('Kunne ikke generere fakturanummer: ' + numberError.message);
+    }
+
+    console.log('Generated invoice number:', invoiceNumber);
+
+    // Create the invoice
+    const { data: invoice, error: invoiceError } = await supabase
+      .from('invoices')
+      .insert({
+        invoice_number: invoiceNumber,
+        customer_id: invoiceData.customer_id,
+        due_date: invoiceData.due_date,
+        notes: invoiceData.notes,
+        created_by: user.id,
+        status: 'draft',
+        subtotal: 0,
+        tax_amount: 0,
+        total_amount: 0
+      })
+      .select(`
+        *,
+        customer:customers(id, name, email)
+      `)
+      .single();
+
+    if (invoiceError) {
+      console.error('Invoice creation error:', invoiceError);
+      throw new Error('Kunne ikke opprette faktura: ' + invoiceError.message);
+    }
+
+    console.log('Created invoice:', invoice);
+
+    // If work order IDs are provided, create line items from them
+    if (invoiceData.work_order_ids && invoiceData.work_order_ids.length > 0) {
+      await createLineItemsFromWorkOrders(invoice.id, invoiceData.work_order_ids);
+    }
+
+    return invoice as unknown as Invoice;
+    
+  } catch (error) {
+    console.error('Full error creating invoice:', error);
+    throw error;
   }
-
-  // If work order IDs are provided, create line items from them
-  if (invoiceData.work_order_ids && invoiceData.work_order_ids.length > 0) {
-    await createLineItemsFromWorkOrders(invoice.id, invoiceData.work_order_ids);
-  }
-
-  return invoice as unknown as Invoice;
 };
 
 const createLineItemsFromWorkOrders = async (invoiceId: string, workOrderIds: string[]) => {
