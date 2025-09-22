@@ -45,12 +45,13 @@ interface CreateInvoiceData {
 
 // API functions
 const fetchInvoices = async (): Promise<Invoice[]> => {
-  // Fetch invoices without line items first
+  // Fetch invoices with line items using correct FK
   const { data: invoicesData, error: invoicesError } = await supabase
     .from('invoices')
     .select(`
       *,
-      customer:customers(id, name, email)
+      customer:customers(id, name, email),
+      line_items:invoice_line_items!fk_invoice_line_items_invoice_id(*)
     `)
     .order('created_at', { ascending: false });
 
@@ -58,37 +59,17 @@ const fetchInvoices = async (): Promise<Invoice[]> => {
     throw new Error(invoicesError.message);
   }
 
-  if (!invoicesData || invoicesData.length === 0) {
-    return [];
-  }
-
-  // Fetch line items separately
-  const invoiceIds = invoicesData.map(invoice => invoice.id);
-  const { data: lineItemsData, error: lineItemsError } = await supabase
-    .from('invoice_line_items')
-    .select('*')
-    .in('invoice_id', invoiceIds);
-
-  if (lineItemsError) {
-    throw new Error(lineItemsError.message);
-  }
-
-  // Combine data
-  const invoicesWithLineItems = invoicesData.map(invoice => ({
-    ...invoice,
-    line_items: (lineItemsData || []).filter(item => item.invoice_id === invoice.id)
-  }));
-
-  return invoicesWithLineItems as unknown as Invoice[];
+  return (invoicesData || []) as unknown as Invoice[];
 };
 
 const fetchInvoice = async (id: string): Promise<Invoice> => {
-  // Fetch invoice without line items first
+  // Fetch invoice with line items using correct FK
   const { data: invoiceData, error: invoiceError } = await supabase
     .from('invoices')
     .select(`
       *,
-      customer:customers(id, name, email, address, contact_person)
+      customer:customers(id, name, email, address, contact_person),
+      line_items:invoice_line_items!fk_invoice_line_items_invoice_id(*)
     `)
     .eq('id', id)
     .single();
@@ -101,23 +82,7 @@ const fetchInvoice = async (id: string): Promise<Invoice> => {
     throw new Error('Faktura ikke funnet');
   }
 
-  // Fetch line items separately
-  const { data: lineItemsData, error: lineItemsError } = await supabase
-    .from('invoice_line_items')
-    .select('*')
-    .eq('invoice_id', id);
-
-  if (lineItemsError) {
-    throw new Error(lineItemsError.message);
-  }
-
-  // Combine data
-  const invoiceWithLineItems = {
-    ...invoiceData,
-    line_items: lineItemsData || []
-  };
-
-  return invoiceWithLineItems as unknown as Invoice;
+  return invoiceData as unknown as Invoice;
 };
 
 const createInvoice = async (invoiceData: CreateInvoiceData): Promise<Invoice> => {
