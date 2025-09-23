@@ -778,6 +778,7 @@ export type Database = {
           price_value: number | null
           pricing_model: string | null
           pricing_type: string
+          requires_time_tracking: boolean | null
           started_at: string | null
           status: string
           title: string
@@ -801,6 +802,7 @@ export type Database = {
           price_value?: number | null
           pricing_model?: string | null
           pricing_type?: string
+          requires_time_tracking?: boolean | null
           started_at?: string | null
           status?: string
           title: string
@@ -824,6 +826,7 @@ export type Database = {
           price_value?: number | null
           pricing_model?: string | null
           pricing_type?: string
+          requires_time_tracking?: boolean | null
           started_at?: string | null
           status?: string
           title?: string
@@ -878,6 +881,7 @@ export type Database = {
           price_value: number | null
           pricing_model: string | null
           pricing_type: string
+          requires_time_tracking: boolean | null
           started_at: string | null
           status: string
           title: string
@@ -920,6 +924,7 @@ export type Database = {
           price_value: number | null
           pricing_model: string | null
           pricing_type: string
+          requires_time_tracking: boolean | null
           started_at: string | null
           status: string
           title: string

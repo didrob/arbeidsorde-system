@@ -22,6 +22,7 @@ import { PullToRefresh } from './mobile/PullToRefresh';
 import { SwipeableCard } from './mobile/SwipeableCard';
 import { QuickStartModal } from './QuickStartModal';
 import { WorkOrderCompletionDialog } from './WorkOrderCompletionDialog';
+import { TimeTracker } from './TimeTracker';
 import { 
   useAssignedWorkOrders, 
   useActiveTimer, 
@@ -87,6 +88,8 @@ export const MobileFieldWorker = () => {
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [showTimeDialog, setShowTimeDialog] = useState(false);
   const [showQuickStart, setShowQuickStart] = useState(false);
+  const [showTimeTracker, setShowTimeTracker] = useState(false);
+  const [activeWorkOrderId, setActiveWorkOrderId] = useState<string | null>(null);
 
   const { data: customers } = useCustomers();
   const createWorkOrder = useCreateWorkOrder();
@@ -150,26 +153,39 @@ export const MobileFieldWorker = () => {
   const updateWorkOrderStatus = async (workOrderId: string, status: string) => {
     try {
       if (status === 'in_progress') {
-        // Start via time entry to satisfy RLS/trigger path
-        const { error: insertErr } = await supabase
-          .from('work_order_time_entries')
-          .insert({
-            work_order_id: workOrderId,
-            user_id: user?.id!,
-            start_time: new Date().toISOString(),
-            notes: ''
-          });
-        if (insertErr) throw insertErr;
+        // Don't create time entry here - let TimeTracker handle it
+        // Just update work order status and open TimeTracker
+        const { error: updateErr } = await supabase
+          .from('work_orders')
+          .update({ status: 'in_progress', started_at: new Date().toISOString() })
+          .eq('id', workOrderId);
+        
+        if (updateErr) throw updateErr;
 
+        // Open TimeTracker for this work order
+        setActiveWorkOrderId(workOrderId);
+        setShowTimeTracker(true);
+        
         // Refresh data using React Query
         await Promise.all([
           refetchWorkOrders(),
           refetchActiveTimer()
         ]);
         
-        toast.success('Arbeidsordre startet!');
+        toast.success('Arbeidsordre startet! Start tidssporing i TimeTracker.');
       } else if (status === 'completed') {
-        // For completion, open the completion dialog instead of direct completion
+        // For completion, first check if there's an active timer and stop it
+        if (activeTimer && activeTimer.work_order_id === workOrderId) {
+          // Stop the active timer first
+          const { error: stopErr } = await supabase
+            .from('work_order_time_entries')
+            .update({ end_time: new Date().toISOString() })
+            .eq('id', activeTimer.id);
+          
+          if (stopErr) throw stopErr;
+        }
+        
+        // Then open completion dialog
         const order = workOrders.find(wo => wo.id === workOrderId);
         if (order) {
           setCompletingOrder(order);
@@ -178,7 +194,7 @@ export const MobileFieldWorker = () => {
       }
     } catch (error) {
       console.error('Error updating work order:', error);
-      toast.error('Kunne ikke starte arbeidsordre');
+      toast.error('Kunne ikke oppdatere arbeidsordre');
     }
   };
 
@@ -378,17 +394,31 @@ export const MobileFieldWorker = () => {
                               Start
                             </Button>
                           )}
-                          
+                           
                           {order.status === 'in_progress' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateWorkOrderStatus(order.id, 'completed')}
-                              className="focus-ring bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-                            >
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              Fullfør
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setActiveWorkOrderId(order.id);
+                                  setShowTimeTracker(true);
+                                }}
+                                className="focus-ring"
+                              >
+                                <Clock className="h-4 w-4 mr-2" />
+                                Timer
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateWorkOrderStatus(order.id, 'completed')}
+                                className="focus-ring bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Fullfør
+                              </Button>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -477,6 +507,28 @@ export const MobileFieldWorker = () => {
           onComplete={handleCompletionSuccess}
         />
       )}
+
+      {/* TimeTracker Dialog */}
+      <Dialog open={showTimeTracker} onOpenChange={setShowTimeTracker}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Tidssporing</DialogTitle>
+            <DialogDescription>
+              Registrer arbeidstid for denne ordren
+            </DialogDescription>
+          </DialogHeader>
+          {activeWorkOrderId && (
+            <TimeTracker 
+              workOrderId={activeWorkOrderId}
+              onComplete={() => {
+                setShowTimeTracker(false);
+                setActiveWorkOrderId(null);
+                refreshFieldWorkerData();
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
