@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, Search, Edit, Trash2, Eye, MoreHorizontal, User, Clock, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +39,8 @@ export default function WorkOrders() {
   const [selectedOrders, setSelectedOrders] = useState<any[]>([]);
   const [bulkAssignMode, setBulkAssignMode] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteReason, setDeleteReason] = useState('');
   
   const { data: workOrders, isLoading } = useWorkOrders();
   const createWorkOrder = useCreateWorkOrder();
@@ -289,7 +293,7 @@ export default function WorkOrders() {
                           <Edit className="w-4 h-4" />
                           Rediger arbeidsordre
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-2 text-destructive focus:text-destructive">
+                        <DropdownMenuItem className="flex items-center gap-2 text-destructive focus:text-destructive" onClick={() => setIsDeleteDialogOpen(true)}>
                           <Trash2 className="w-4 h-4" />
                           Slett arbeidsordre
                         </DropdownMenuItem>
@@ -327,6 +331,49 @@ export default function WorkOrders() {
           isOpen={isDetailsOpen}
           onClose={() => setIsDetailsOpen(false)}
         />
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Slett arbeidsordre?</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 py-2">
+              <p className="text-sm text-muted-foreground">
+                Denne handlingen kan ikke angres. Vi lagrer hvem som sletter og tidspunkt i revisjonsloggen.
+              </p>
+              <Textarea
+                placeholder="Begrunnelse (valgfritt)"
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>Avbryt</Button>
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  if (!selectedWorkOrder) return;
+                  try {
+                    await deleteWorkOrder.mutateAsync({ id: selectedWorkOrder.id, reason: deleteReason });
+                    setIsDeleteDialogOpen(false);
+                    setSelectedWorkOrder(null);
+                    setDeleteReason('');
+                    toast({ title: 'Slettet', description: 'Arbeidsordre ble slettet' });
+                  } catch (err: any) {
+                    toast({
+                      title: 'Kunne ikke slette',
+                      description: err?.message || 'Ordren er aktiv eller har registrert tid. Avbryt/fullfør først.',
+                      variant: 'destructive'
+                    });
+                  }
+                }}
+              >
+                Slett
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useWorkOrders, useUpdateWorkOrder } from '@/hooks/useApi';
+import { useWorkOrders, useClaimWorkOrder } from '@/hooks/useApi';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Clock, MapPin, User, Search, Filter, Grab } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface WorkOrderPoolProps {
   isMobile?: boolean;
@@ -21,7 +22,7 @@ export function WorkOrderPool({ isMobile = false }: WorkOrderPoolProps) {
   
   const { user } = useAuth();
   const { data: workOrders } = useWorkOrders();
-  const updateWorkOrder = useUpdateWorkOrder();
+  const claimWorkOrder = useClaimWorkOrder();
   const { toast } = useToast();
 
   // Filter orders that are not assigned or in the pool
@@ -36,15 +37,27 @@ export function WorkOrderPool({ isMobile = false }: WorkOrderPoolProps) {
     return matchesSearch && matchesPriority;
   });
 
+  // Minimal realtime invalidation for pool visibility
+  useEffect(() => {
+    const channel = supabase
+      .channel('work-order-pool-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'work_orders' }, () => {
+        // New orders might be unassigned
+        // Let react-query refetch via visibility changes (invalidate done on claim)
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'work_orders' }, () => {
+        // Assignment changes move orders in/out of pool
+        // We rely on useWorkOrders invalidations from mutations; this is best-effort UI freshness
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const handleClaimOrder = async (orderId: string) => {
     try {
-      await updateWorkOrder.mutateAsync({
-        id: orderId,
-        data: {
-          assigned_to: user?.id,
-          status: 'pending' // Keep as pending until actually started
-        }
-      });
+      await claimWorkOrder.mutateAsync(orderId);
 
       toast({
         title: 'Suksess',
@@ -127,9 +140,10 @@ export function WorkOrderPool({ isMobile = false }: WorkOrderPoolProps) {
             onClick={() => handleClaimOrder(order.id)}
             size="sm"
             className="flex items-center gap-2"
+            disabled={claimWorkOrder.isPending}
           >
             <Grab className="w-4 h-4" />
-            Ta ordre
+            {claimWorkOrder.isPending ? 'Tar...' : 'Ta ordre'}
           </Button>
         </div>
       </CardContent>

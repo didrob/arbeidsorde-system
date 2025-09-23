@@ -36,53 +36,75 @@ class ApiClient {
 
   // Work Orders API
   async getWorkOrders(filters?: WorkOrderFilters): Promise<ApiResponse<any[]>> {
-    let query = supabase
-      .from('work_orders')
-      .select(`
-        *,
-        customer:customers(name, email, phone),
-        assigned_user:profiles!assigned_to(full_name, role),
-        creator:profiles!user_id(full_name, role)
-      `)
-      .order('created_at', { ascending: false });
+    const buildQuery = (withDeletedFilter: boolean) => {
+      let query = supabase
+        .from('work_orders')
+        .select(`
+          *,
+          customer:customers(name, email, phone),
+          assigned_user:profiles!assigned_to(full_name, role),
+          creator:profiles!user_id(full_name, role)
+        `)
+        .order('created_at', { ascending: false });
 
-    if (filters?.status?.length) {
-      query = query.in('status', filters.status);
-    }
-    if (filters?.assigned_to) {
-      query = query.eq('assigned_to', filters.assigned_to);
-    }
-    if (filters?.customer_id) {
-      query = query.eq('customer_id', filters.customer_id);
-    }
-    if (filters?.search) {
-      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
-    }
+      if (withDeletedFilter) {
+        query = query.eq('is_deleted', false);
+      }
+      if (filters?.status?.length) {
+        query = query.in('status', filters.status);
+      }
+      if (filters?.assigned_to) {
+        query = query.eq('assigned_to', filters.assigned_to);
+      }
+      if (filters?.customer_id) {
+        query = query.eq('customer_id', filters.customer_id);
+      }
+      if (filters?.search) {
+        query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+      }
+      return query;
+    };
 
-    const { data, error } = await query;
+    // Try with filter first, then fallback if column missing (pre-migration)
+    let { data, error }: any = await buildQuery(true);
+    if (error && (String(error.message || '').includes('is_deleted') || String(error.details || '').includes('is_deleted'))) {
+      const fallback = await buildQuery(false);
+      const res = await fallback;
+      data = res.data; error = res.error;
+    }
     return this.handleResponse(data, error);
   }
 
   async getWorkOrder(id: string): Promise<ApiResponse<any>> {
-    const { data, error } = await supabase
-      .from('work_orders')
-      .select(`
-        *,
-        customer:customers(*),
-        assigned_user:profiles!assigned_to(*),
-        creator:profiles!user_id(*),
-        materials:work_order_materials(*,
-          material:materials(*),
-          added_by_user:profiles!added_by(*)
-        ),
-        time_entries:work_order_time_entries(*,
-          user:profiles!user_id(*)
-        ),
-        attachments:work_order_attachments(*)
-      `)
-      .eq('id', id)
-      .single();
+    const buildQuery = (withDeletedFilter: boolean) => {
+      let query = supabase
+        .from('work_orders')
+        .select(`
+          *,
+          customer:customers(*),
+          assigned_user:profiles!assigned_to(*),
+          creator:profiles!user_id(*),
+          materials:work_order_materials(*,
+            material:materials(*),
+            added_by_user:profiles!added_by(*)
+          ),
+          time_entries:work_order_time_entries(*,
+            user:profiles!user_id(*)
+          ),
+          attachments:work_order_attachments(*)
+        `)
+        .eq('id', id);
+      if (withDeletedFilter) {
+        query = query.eq('is_deleted', false);
+      }
+      return query.single();
+    };
 
+    let { data, error }: any = await buildQuery(true);
+    if (error && (String(error.message || '').includes('is_deleted') || String(error.details || '').includes('is_deleted'))) {
+      const res = await buildQuery(false);
+      data = res.data; error = res.error;
+    }
     return this.handleResponse(data, error);
   }
 
@@ -120,13 +142,22 @@ class ApiClient {
     return this.handleResponse(data, error);
   }
 
-  async deleteWorkOrder(id: string): Promise<ApiResponse<void>> {
-    const { error } = await supabase
-      .from('work_orders')
-      .delete()
-      .eq('id', id);
+  async claimWorkOrder(id: string): Promise<ApiResponse<any>> {
+    const { data, error } = await supabase
+      .rpc('claim_work_order', { order_id: id });
 
-    return this.handleResponse(null, error);
+    // If data is null and no error, it means it was already claimed
+    if (!error && !data) {
+      return this.handleResponse(null, { message: 'Already claimed by someone else' });
+    }
+
+    return this.handleResponse(data, error);
+  }
+
+  async deleteWorkOrder(id: string, reason?: string): Promise<ApiResponse<void>> {
+    // Use soft delete RPC with business rules and audit logging
+    const { error } = await supabase.rpc('soft_delete_work_order', { order_id: id, reason });
+    return this.handleResponse(null, error || null);
   }
 
   // Time Tracking API
