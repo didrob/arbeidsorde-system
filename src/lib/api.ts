@@ -36,43 +36,30 @@ class ApiClient {
 
   // Work Orders API
   async getWorkOrders(filters?: WorkOrderFilters): Promise<ApiResponse<any[]>> {
-    const buildQuery = (withDeletedFilter: boolean) => {
-      let query = supabase
-        .from('work_orders')
-        .select(`
-          *,
-          customer:customers(name, email, phone),
-          assigned_user:profiles!assigned_to(full_name, role),
-          creator:profiles!user_id(full_name, role)
-        `)
-        .order('created_at', { ascending: false });
+    let query = supabase
+      .from('work_orders')
+      .select(`
+        *,
+        customer:customers(name, email, phone)
+      `)
+      .eq('is_deleted', false)
+      .order('created_at', { ascending: false });
 
-      if (withDeletedFilter) {
-        query = query.eq('is_deleted', false);
-      }
-      if (filters?.status?.length) {
-        query = query.in('status', filters.status);
-      }
-      if (filters?.assigned_to) {
-        query = query.eq('assigned_to', filters.assigned_to);
-      }
-      if (filters?.customer_id) {
-        query = query.eq('customer_id', filters.customer_id);
-      }
-      if (filters?.search) {
-        query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
-      }
-      return query;
-    };
-
-    // Try with filter first, then fallback if column missing (pre-migration)
-    let { data, error }: any = await buildQuery(true);
-    if (error && (String(error.message || '').includes('is_deleted') || String(error.details || '').includes('is_deleted'))) {
-      const fallback = await buildQuery(false);
-      const res = await fallback;
-      data = res.data; error = res.error;
+    if (filters?.status?.length) {
+      query = query.in('status', filters.status);
     }
-    return this.handleResponse(data, error);
+    if (filters?.assigned_to) {
+      query = query.eq('assigned_to', filters.assigned_to);
+    }
+    if (filters?.customer_id) {
+      query = query.eq('customer_id', filters.customer_id);
+    }
+    if (filters?.search) {
+      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+    }
+
+    const { data, error } = await query;
+    return this.handleResponse(data || [], error);
   }
 
   async getWorkOrder(id: string): Promise<ApiResponse<any>> {

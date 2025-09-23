@@ -459,6 +459,41 @@ export type Database = {
           },
         ]
       }
+      work_order_audit_log: {
+        Row: {
+          action: string
+          details: Json | null
+          id: string
+          performed_at: string
+          performed_by: string
+          work_order_id: string
+        }
+        Insert: {
+          action: string
+          details?: Json | null
+          id?: string
+          performed_at?: string
+          performed_by: string
+          work_order_id: string
+        }
+        Update: {
+          action?: string
+          details?: Json | null
+          id?: string
+          performed_at?: string
+          performed_by?: string
+          work_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_order_audit_log_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       work_order_equipment: {
         Row: {
           actual_quantity: number | null
@@ -699,10 +734,13 @@ export type Database = {
           completed_at: string | null
           created_at: string
           customer_id: string
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           estimated_hours: number | null
           gps_location: unknown | null
           id: string
+          is_deleted: boolean
           notes: string | null
           price_value: number | null
           pricing_model: string | null
@@ -719,10 +757,13 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           customer_id: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           estimated_hours?: number | null
           gps_location?: unknown | null
           id?: string
+          is_deleted?: boolean
           notes?: string | null
           price_value?: number | null
           pricing_model?: string | null
@@ -739,10 +780,13 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           customer_id?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           estimated_hours?: number | null
           gps_location?: unknown | null
           id?: string
+          is_deleted?: boolean
           notes?: string | null
           price_value?: number | null
           pricing_model?: string | null
@@ -768,6 +812,13 @@ export type Database = {
             referencedRelation: "customers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "work_orders_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
     }
@@ -775,6 +826,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_work_order: {
+        Args: { order_id: string }
+        Returns: {
+          actual_hours: number | null
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          customer_id: string
+          deleted_at: string | null
+          deleted_by: string | null
+          description: string | null
+          estimated_hours: number | null
+          gps_location: unknown | null
+          id: string
+          is_deleted: boolean
+          notes: string | null
+          price_value: number | null
+          pricing_model: string | null
+          pricing_type: string
+          started_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+      }
       generate_invoice_number: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -790,6 +867,32 @@ export type Database = {
       is_field_worker: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      soft_delete_work_order: {
+        Args: { order_id: string; reason?: string }
+        Returns: {
+          actual_hours: number | null
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          customer_id: string
+          deleted_at: string | null
+          deleted_by: string | null
+          description: string | null
+          estimated_hours: number | null
+          gps_location: unknown | null
+          id: string
+          is_deleted: boolean
+          notes: string | null
+          price_value: number | null
+          pricing_model: string | null
+          pricing_type: string
+          started_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
       }
     }
     Enums: {
