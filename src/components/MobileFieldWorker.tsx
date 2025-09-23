@@ -20,6 +20,7 @@ import { WorkOrderPool } from './WorkOrderPool';
 import { useNotifications } from '@/hooks/useNotifications';
 import { PullToRefresh } from './mobile/PullToRefresh';
 import { SwipeableCard } from './mobile/SwipeableCard';
+import { QuickStartModal } from './QuickStartModal';
 import { cn } from '@/lib/utils';
 
 interface WorkOrder {
@@ -69,6 +70,7 @@ export const MobileFieldWorker = () => {
   });
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [showTimeDialog, setShowTimeDialog] = useState(false);
+  const [showQuickStart, setShowQuickStart] = useState(false);
 
   const { data: customers } = useCustomers();
   const createWorkOrder = useCreateWorkOrder();
@@ -396,6 +398,27 @@ export const MobileFieldWorker = () => {
                 </Card>
               )}
 
+              {/* Quick Start Button */}
+              <Card className="bg-primary/5 border-primary/20 animate-fade-in">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-primary">Hurtigstart</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Start en ny jobb med én gang
+                      </p>
+                    </div>
+                    <Button 
+                      onClick={() => setShowQuickStart(true)}
+                      className="bg-primary hover:bg-primary/90 focus-ring"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Start jobb
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Pending Orders */}
               {workOrders.filter(order => order.status === 'pending').length === 0 ? (
                 <Card className="animate-fade-in">
@@ -481,6 +504,16 @@ export const MobileFieldWorker = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Quick Start Modal */}
+      <QuickStartModal 
+        open={showQuickStart}
+        onClose={() => setShowQuickStart(false)}
+        onSuccess={async () => {
+          await fetchTodaysWork();
+          await fetchActiveTimer();
+        }}
+      />
     </div>
   );
 };
