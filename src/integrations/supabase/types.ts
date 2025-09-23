@@ -494,6 +494,39 @@ export type Database = {
           },
         ]
       }
+      work_order_breaks: {
+        Row: {
+          created_at: string
+          end_time: string | null
+          id: string
+          notes: string | null
+          reason: string
+          start_time: string
+          time_entry_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          reason?: string
+          start_time?: string
+          time_entry_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          reason?: string
+          start_time?: string
+          time_entry_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       work_order_equipment: {
         Row: {
           actual_quantity: number | null
