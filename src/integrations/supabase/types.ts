@@ -247,6 +247,20 @@ export type Database = {
             referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_invoice_line_items_work_order"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_invoice_line_items_work_order_id"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
         ]
       }
       invoices: {
@@ -256,6 +270,7 @@ export type Database = {
           customer_id: string
           due_date: string
           id: string
+          internal_notes: string | null
           invoice_number: string
           issue_date: string
           notes: string | null
@@ -271,6 +286,7 @@ export type Database = {
           customer_id: string
           due_date: string
           id?: string
+          internal_notes?: string | null
           invoice_number: string
           issue_date?: string
           notes?: string | null
@@ -286,6 +302,7 @@ export type Database = {
           customer_id?: string
           due_date?: string
           id?: string
+          internal_notes?: string | null
           invoice_number?: string
           issue_date?: string
           notes?: string | null
