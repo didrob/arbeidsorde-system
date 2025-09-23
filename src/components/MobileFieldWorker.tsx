@@ -21,6 +21,14 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { PullToRefresh } from './mobile/PullToRefresh';
 import { SwipeableCard } from './mobile/SwipeableCard';
 import { QuickStartModal } from './QuickStartModal';
+import { WorkOrderCompletionDialog } from './WorkOrderCompletionDialog';
+import { 
+  useAssignedWorkOrders, 
+  useActiveTimer, 
+  useActiveWorkOrder,
+  useFieldWorkerRealtime,
+  useRefreshFieldWorkerData
+} from '@/hooks/useFieldWorkerState';
 import { cn } from '@/lib/utils';
 
 interface WorkOrder {
@@ -49,16 +57,24 @@ interface ActiveTimer {
 
 export const MobileFieldWorker = () => {
   const { user, signOut } = useAuth();
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
-  const [activeOrder, setActiveOrder] = useState<WorkOrder | null>(null);
-  const [activeTimer, setActiveTimer] = useState<ActiveTimer | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  // Replace local state with persistent React Query hooks
+  const { data: workOrders = [], isLoading: workOrdersLoading, refetch: refetchWorkOrders } = useAssignedWorkOrders();
+  const { data: activeTimer, refetch: refetchActiveTimer } = useActiveTimer();
+  const { data: activeOrder } = useActiveWorkOrder();
+  const refreshFieldWorkerData = useRefreshFieldWorkerData();
+  
+  // Setup realtime updates
+  useFieldWorkerRealtime();
+  
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
   const [isExtraTimeOpen, setIsExtraTimeOpen] = useState(false);
   const [isDeviationOpen, setIsDeviationOpen] = useState(false);
   const [showPool, setShowPool] = useState(false);
+  const [showCompletionDialog, setShowCompletionDialog] = useState(false);
+  const [completingOrder, setCompletingOrder] = useState<WorkOrder | null>(null);
   const [extraTimeForm, setExtraTimeForm] = useState({
     reason: '',
     extra_minutes: '',
@@ -84,13 +100,6 @@ export const MobileFieldWorker = () => {
   
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<QuickWorkOrderForm>();
 
-  useEffect(() => {
-    if (user) {
-      fetchTodaysWork();
-      fetchActiveTimer();
-    }
-  }, [user]);
-
   // Timer effect with proper formatting
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -103,50 +112,6 @@ export const MobileFieldWorker = () => {
     }
     return () => clearInterval(interval);
   }, [activeTimer]);
-
-  // Realtime updates for immediate notifications and data refresh
-  useEffect(() => {
-    if (!user) return;
-
-    const channel = supabase
-      .channel('mobile-fieldworker-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'work_orders',
-          filter: `assigned_to=eq.${user.id}`
-        },
-        (payload) => {
-          // Play notification sound and refresh data
-          playNotificationSound();
-          toast.success(`Ny arbeidsordre: ${payload.new.title}`);
-          fetchTodaysWork(); // Immediately refresh work orders
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'work_orders',
-          filter: `assigned_to=eq.${user.id}`
-        },
-        (payload) => {
-          // Order status or details changed
-          fetchTodaysWork(); // Refresh to show latest status
-          if (payload.old.status !== payload.new.status) {
-            toast.success(`Ordre oppdatert: ${payload.new.title}`);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
 
   const playNotificationSound = () => {
     // Create audio context and play notification sound
@@ -182,57 +147,6 @@ export const MobileFieldWorker = () => {
     }
   };
 
-  const fetchTodaysWork = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('work_orders')
-        .select(`
-          *,
-          customers (name)
-        `)
-        .eq('assigned_to', user?.id)
-        .in('status', ['pending', 'in_progress'])
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-
-      const formattedOrders = data?.map(order => ({
-        ...order,
-        customer_name: order.customers?.name || 'Unknown Customer'
-      })) || [];
-
-      setWorkOrders(formattedOrders);
-      
-      // Set active order if there's one in progress
-      const inProgress = formattedOrders.find(order => order.status === 'in_progress');
-      if (inProgress) {
-        setActiveOrder(inProgress);
-      }
-    } catch (error) {
-      console.error('Error fetching work orders:', error);
-      toast.error('Kunne ikke hente arbeidsordrer');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchActiveTimer = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('work_order_time_entries')
-        .select('*')
-        .eq('user_id', user?.id)
-        .is('end_time', null)
-        .single();
-
-      if (data) {
-        setActiveTimer(data);
-      }
-    } catch (error) {
-      // No active timer is fine
-    }
-  };
-
   const updateWorkOrderStatus = async (workOrderId: string, status: string) => {
     try {
       if (status === 'in_progress') {
@@ -247,46 +161,34 @@ export const MobileFieldWorker = () => {
           });
         if (insertErr) throw insertErr;
 
-        // Find and set the active order
+        // Refresh data using React Query
+        await Promise.all([
+          refetchWorkOrders(),
+          refetchActiveTimer()
+        ]);
+        
+        toast.success('Arbeidsordre startet!');
+      } else if (status === 'completed') {
+        // For completion, open the completion dialog instead of direct completion
         const order = workOrders.find(wo => wo.id === workOrderId);
         if (order) {
-          setActiveOrder(order);
+          setCompletingOrder(order);
+          setShowCompletionDialog(true);
         }
-
-        // Fetch fresh timer data
-        await fetchActiveTimer();
-      } else if (status === 'completed') {
-        // Stop the latest active time entry for this user/order
-        const { data: activeEntry, error: fetchErr } = await supabase
-          .from('work_order_time_entries')
-          .select('*')
-          .eq('work_order_id', workOrderId)
-          .eq('user_id', user?.id!)
-          .is('end_time', null)
-          .order('start_time', { ascending: false })
-          .limit(1)
-          .single();
-        if (fetchErr) throw fetchErr;
-
-        const { error: stopErr } = await supabase
-          .from('work_order_time_entries')
-          .update({ end_time: new Date().toISOString() })
-          .eq('id', activeEntry.id);
-        if (stopErr) throw stopErr;
-
-        setActiveOrder(null);
-        setActiveTimer(null);
       }
-
-      await fetchTodaysWork();
-      toast.success(`Arbeidsordre ${status === 'in_progress' ? 'startet' : 'fullført'}!`);
     } catch (error) {
       console.error('Error updating work order:', error);
-      toast.error(status === 'in_progress' ? 'Kunne ikke starte arbeidsordre' : 'Kunne ikke fullføre arbeidsordre');
+      toast.error('Kunne ikke starte arbeidsordre');
     }
   };
 
-  if (loading) {
+  const handleCompletionSuccess = async () => {
+    // Refresh all data after successful completion
+    await refreshFieldWorkerData();
+    setCompletingOrder(null);
+  };
+
+  if (workOrdersLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center">
@@ -367,10 +269,7 @@ export const MobileFieldWorker = () => {
       </div>
 
       <PullToRefresh 
-        onRefresh={async () => {
-          await fetchTodaysWork();
-          await fetchActiveTimer();
-        }}
+        onRefresh={refreshFieldWorkerData}
         className="flex-1"
       >
         <div className="p-4 space-y-4 pb-20 safe-area-padding-bottom">
@@ -436,49 +335,86 @@ export const MobileFieldWorker = () => {
                 </CardContent>
               </Card>
 
-              {/* Pending Orders */}
-              {workOrders.filter(order => order.status === 'pending').length === 0 ? (
+              {/* Show ALL assigned orders (not just active one) - supporting multiple orders */}
+              {workOrders.length > 0 && (
                 <Card className="animate-fade-in">
-                  <CardContent className="p-8 text-center">
-                    <h3 className="text-lg font-medium mb-2">Ingen ventende ordrer</h3>
-                    <p className="text-muted-foreground">
-                      Alle dagens arbeidsordrer er fullført!
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                workOrders
-                  .filter(order => order.status === 'pending')
-                  .map((order, index) => (
-                    <SwipeableCard
-                      key={order.id}
-                      className={cn(
-                        "transition-all duration-200 hover:shadow-md animate-fade-in"
-                      )}
-                      rightAction={<Play className="h-5 w-5" />}
-                      onSwipeRight={() => updateWorkOrderStatus(order.id, 'in_progress')}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-medium">{order.title}</h3>
-                          <p className="text-sm text-muted-foreground">{order.customer_name}</p>
-                          {order.estimated_hours && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Estimert: {order.estimated_hours}t
-                            </p>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center justify-between">
+                      <span>Mine tildelte ordrer</span>
+                      <Badge variant="secondary">{workOrders.length}</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {workOrders.map((order) => (
+                      <div key={order.id} className={cn(
+                        "p-3 rounded-lg border transition-all",
+                        order.status === 'in_progress' 
+                          ? "border-primary bg-primary/5" 
+                          : "border-border bg-card hover:bg-accent/50"
+                      )}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-medium">{order.title}</h4>
+                              <Badge variant={order.status === 'in_progress' ? 'default' : 'secondary'}>
+                                {order.status === 'in_progress' ? 'Aktiv' : 'Venter'}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{order.customer_name}</p>
+                            {order.estimated_hours && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Estimert: {order.estimated_hours}t
+                              </p>
+                            )}
+                          </div>
+                          
+                          {order.status === 'pending' && (
+                            <Button
+                              size="sm"
+                              onClick={() => updateWorkOrderStatus(order.id, 'in_progress')}
+                              className="focus-ring"
+                            >
+                              <Play className="h-4 w-4 mr-2" />
+                              Start
+                            </Button>
+                          )}
+                          
+                          {order.status === 'in_progress' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => updateWorkOrderStatus(order.id, 'completed')}
+                              className="focus-ring bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              Fullfør
+                            </Button>
                           )}
                         </div>
-                        <Button 
-                          size="sm" 
-                          className="focus-ring"
-                          onClick={() => updateWorkOrderStatus(order.id, 'in_progress')}
-                        >
-                          <Play className="h-4 w-4 mr-1" />
-                          Start
-                        </Button>
                       </div>
-                    </SwipeableCard>
-                  ))
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Show message when no orders */}
+              {workOrders.length === 0 && (
+                <Card className="animate-fade-in">
+                  <CardContent className="p-8 text-center">
+                    <h3 className="text-lg font-medium mb-2">Ingen tildelte ordrer</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Du har ingen arbeidsordrer tildelt for øyeblikket.
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowPool(true)}
+                      className="focus-ring"
+                    >
+                      <Search className="h-4 w-4 mr-2" />
+                      Se ledige ordrer
+                    </Button>
+                  </CardContent>
+                </Card>
               )}
             </div>
           )}
@@ -505,7 +441,7 @@ export const MobileFieldWorker = () => {
                 <Button 
                   onClick={() => updateWorkOrderStatus(activeOrder.id, 'completed')}
                   className="mt-4 w-full"
-                  variant="destructive"
+                  variant="outline"
                 >
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Fullfør arbeid
@@ -526,11 +462,21 @@ export const MobileFieldWorker = () => {
       <QuickStartModal 
         open={showQuickStart}
         onClose={() => setShowQuickStart(false)}
-        onSuccess={async () => {
-          await fetchTodaysWork();
-          await fetchActiveTimer();
-        }}
+        onSuccess={refreshFieldWorkerData}
       />
+
+      {/* Work Order Completion Dialog */}
+      {completingOrder && (
+        <WorkOrderCompletionDialog
+          open={showCompletionDialog}
+          onClose={() => {
+            setShowCompletionDialog(false);
+            setCompletingOrder(null);
+          }}
+          workOrder={completingOrder}
+          onComplete={handleCompletionSuccess}
+        />
+      )}
     </div>
   );
 };
