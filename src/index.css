@@ -293,4 +293,36 @@ All colors MUST be HSL.
     50% { transform: scale(0.95); }
     100% { transform: scale(1); }
   }
+
+  /* Landscape mode optimizations */
+  @media (orientation: landscape) {
+    .dialog-content {
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .card-mobile {
+      @apply shadow-sm;
+    }
+    
+    /* Optimize header spacing in landscape */
+    .safe-area-padding-top {
+      padding-top: max(env(safe-area-inset-top), 0.5rem);
+    }
+  }
+
+  /* Extra small breakpoint for very narrow screens */
+  @media (max-width: 480px) {
+    .xs\:flex-row {
+      flex-direction: row;
+    }
+    
+    .xs\:items-center {
+      align-items: center;
+    }
+    
+    .xs\:w-auto {
+      width: auto;
+    }
+  }
 }
