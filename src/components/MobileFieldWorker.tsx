@@ -104,12 +104,12 @@ export const MobileFieldWorker = () => {
     return () => clearInterval(interval);
   }, [activeTimer]);
 
-  // Audio notification effect
+  // Realtime updates for immediate notifications and data refresh
   useEffect(() => {
     if (!user) return;
 
     const channel = supabase
-      .channel('work-order-audio-notifications')
+      .channel('mobile-fieldworker-realtime')
       .on(
         'postgres_changes',
         {
@@ -119,9 +119,26 @@ export const MobileFieldWorker = () => {
           filter: `assigned_to=eq.${user.id}`
         },
         (payload) => {
-          // Play notification sound
+          // Play notification sound and refresh data
           playNotificationSound();
           toast.success(`Ny arbeidsordre: ${payload.new.title}`);
+          fetchTodaysWork(); // Immediately refresh work orders
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'work_orders',
+          filter: `assigned_to=eq.${user.id}`
+        },
+        (payload) => {
+          // Order status or details changed
+          fetchTodaysWork(); // Refresh to show latest status
+          if (payload.old.status !== payload.new.status) {
+            toast.success(`Ordre oppdatert: ${payload.new.title}`);
+          }
         }
       )
       .subscribe();

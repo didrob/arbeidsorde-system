@@ -5,9 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useWorkOrders, useClaimWorkOrder } from '@/hooks/useApi';
+import { useWorkOrders, useClaimWorkOrder, queryKeys } from '@/hooks/useApi';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import { Clock, MapPin, User, Search, Filter, Grab } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -24,6 +25,7 @@ export function WorkOrderPool({ isMobile = false }: WorkOrderPoolProps) {
   const { data: workOrders } = useWorkOrders();
   const claimWorkOrder = useClaimWorkOrder();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Filter orders that are not assigned or in the pool
   const poolOrders = workOrders?.filter(order => 
@@ -37,23 +39,37 @@ export function WorkOrderPool({ isMobile = false }: WorkOrderPoolProps) {
     return matchesSearch && matchesPriority;
   });
 
-  // Minimal realtime invalidation for pool visibility
+  // Realtime updates for immediate pool changes
   useEffect(() => {
     const channel = supabase
       .channel('work-order-pool-realtime')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'work_orders' }, () => {
-        // New orders might be unassigned
-        // Let react-query refetch via visibility changes (invalidate done on claim)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'work_orders' }, (payload) => {
+        // New orders might be available in pool
+        queryClient.invalidateQueries({ queryKey: queryKeys.workOrders() });
+        if (!payload.new.assigned_to) {
+          toast({
+            title: 'Ny arbeidsordre',
+            description: `${payload.new.title} er tilgjengelig i pool`,
+          });
+        }
       })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'work_orders' }, () => {
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'work_orders' }, (payload) => {
         // Assignment changes move orders in/out of pool
-        // We rely on useWorkOrders invalidations from mutations; this is best-effort UI freshness
+        queryClient.invalidateQueries({ queryKey: queryKeys.workOrders() });
+        // If someone just claimed an order, show feedback
+        if (payload.old.assigned_to === null && payload.new.assigned_to !== null) {
+          toast({
+            title: 'Ordre tatt',
+            description: `${payload.new.title} ble tatt av en annen`,
+            variant: 'destructive'
+          });
+        }
       })
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [queryClient, toast]);
 
   const handleClaimOrder = async (orderId: string) => {
     try {
