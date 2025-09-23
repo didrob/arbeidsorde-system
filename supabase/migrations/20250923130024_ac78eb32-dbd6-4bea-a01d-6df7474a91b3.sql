@@ -1,0 +1,7 @@
+-- Insert test work orders for testing the system
+INSERT INTO work_orders (title, description, customer_id, user_id, status, pricing_model, pricing_type, estimated_hours) VALUES 
+('Reparasjon av tak', 'Utbedre lekkasje i tak og skifte takstein', 'b5526b2e-19da-4df8-bd6c-39e779bb3cd1', (SELECT user_id FROM profiles WHERE role = 'field_worker' LIMIT 1), 'pending', 'fixed', 'hourly', 4),
+('Maling av fasade', 'Male fasade på boligblokk - 200m2', 'c139d7d0-e829-4d22-8095-4f5f2b3eb7c3', (SELECT user_id FROM profiles WHERE role = 'field_worker' LIMIT 1), 'pending', 'resource_based', 'hourly', 8),
+('Rørleggerarbeid kjøkken', 'Installere ny vask og oppvaskmaskin', '03d77f7d-a63b-4822-9274-ee0ef0138b0a', (SELECT user_id FROM profiles WHERE role = 'field_worker' LIMIT 1), 'pending', 'fixed', 'hourly', 3),
+('Service av ventilasjon', 'Årlig service av ventilasjonsanlegg', '467daf04-478b-4b58-91b0-a6b15a2c4e27', (SELECT user_id FROM profiles WHERE role = 'field_worker' LIMIT 1), 'pending', 'fixed', 'hourly', 2),
+('Reparasjon gulv', 'Utbedring av parkettgulv etter vannskade', 'c6272d90-15a6-40b4-946e-64ee9bfdabab', (SELECT user_id FROM profiles WHERE role = 'admin' LIMIT 1), 'in_progress', 'resource_based', 'hourly', 6);
