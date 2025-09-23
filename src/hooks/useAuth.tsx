@@ -26,6 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserRole = async (userId: string) => {
     try {
+      console.log('Fetching user role for:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('role')
@@ -34,15 +35,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (error) {
         console.error('Error fetching user role:', error);
-        // Set default role if profile doesn't exist yet
-        setUserRole('field_worker');
+        
+        // Only set fallback if it's a "not found" error (profile doesn't exist)
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found, setting default role');
+          setUserRole('field_worker');
+        } else {
+          // For other errors, keep role as null and let user try again
+          console.log('Keeping role as null due to error:', error.message);
+          setUserRole(null);
+        }
         return;
       }
       
+      console.log('User role fetched successfully:', data?.role);
       setUserRole(data?.role || 'field_worker');
     } catch (error) {
-      console.error('Error fetching user role:', error);
-      setUserRole('field_worker'); // Default fallback
+      console.error('Unexpected error fetching user role:', error);
+      // Don't set fallback on unexpected errors - keep as null
+      setUserRole(null);
     }
   };
 
@@ -50,13 +61,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          setTimeout(() => {
-            fetchUserRole(session.user.id);
-          }, 0);
+          // Remove setTimeout race condition - call directly
+          fetchUserRole(session.user.id);
         } else {
           setUserRole(null);
         }
@@ -66,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       

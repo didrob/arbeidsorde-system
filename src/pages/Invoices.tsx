@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, FileText, Download, Send, Eye, Edit } from "lucide-react";
-import { useInvoices, useCreateInvoice } from "@/hooks/useInvoices";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, FileText, Download, Send, Eye, Edit, Archive } from "lucide-react";
+import { useInvoices, useCreateInvoice, useDownloadInvoicePDF } from "@/hooks/useInvoices";
 import { LoadingState } from "@/components/common/LoadingState";
 import { CreateInvoiceDialog } from "@/components/invoices/CreateInvoiceDialog";
 import { InvoiceDetailsDialog } from "@/components/invoices/InvoiceDetailsDialog";
+import { EditInvoiceDialog } from "@/components/invoices/EditInvoiceDialog";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 const statusColors = {
@@ -32,8 +33,14 @@ export default function Invoices() {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const { data: invoices = [], isLoading, error } = useInvoices();
+  const downloadPDFMutation = useDownloadInvoicePDF();
+
+  // Separate active and cancelled invoices
+  const activeInvoices = invoices.filter(i => i.status !== 'cancelled');
+  const cancelledInvoices = invoices.filter(i => i.status === 'cancelled');
 
   if (isLoading) {
     return <LoadingState />;
@@ -57,6 +64,88 @@ export default function Invoices() {
     setSelectedInvoice(invoice);
     setShowDetailsDialog(true);
   };
+
+  const handleEditInvoice = (invoice: any) => {
+    setSelectedInvoice(invoice);
+    setShowEditDialog(true);
+  };
+
+  const handleDownloadPDF = (invoice: any) => {
+    downloadPDFMutation.mutate(invoice.id);
+  };
+
+  const InvoiceTable = ({ invoices: tableInvoices, showArchived = false }) => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Fakturanummer</TableHead>
+          <TableHead>Kunde</TableHead>
+          <TableHead>Dato</TableHead>
+          <TableHead>Forfallsdato</TableHead>
+          <TableHead>Beløp</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead className="text-right">Handlinger</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {tableInvoices.map((invoice: any) => (
+          <TableRow
+            key={invoice.id}
+            className={showArchived ? "opacity-60" : ""}
+          >
+            <TableCell className="font-medium">
+              {invoice.invoice_number}
+              {showArchived && <Archive className="inline-block ml-2 h-3 w-3 text-gray-500" />}
+            </TableCell>
+            <TableCell>
+              {invoice.customer?.name || 'Ukjent kunde'}
+            </TableCell>
+            <TableCell>
+              {formatDate(invoice.issue_date)}
+            </TableCell>
+            <TableCell>
+              {formatDate(invoice.due_date)}
+            </TableCell>
+            <TableCell>
+              {formatCurrency(invoice.total_amount)}
+            </TableCell>
+            <TableCell>
+              <Badge className={statusColors[invoice.status as keyof typeof statusColors]}>
+                {statusLabels[invoice.status as keyof typeof statusLabels]}
+              </Badge>
+            </TableCell>
+            <TableCell className="text-right">
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleViewInvoice(invoice)}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleEditInvoice(invoice)}
+                  disabled={invoice.status !== 'draft'}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDownloadPDF(invoice)}
+                  disabled={downloadPDFMutation.isPending}
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
 
   return (
     <PageLayout 
@@ -82,25 +171,31 @@ export default function Invoices() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Utkast</CardTitle>
+              <CardTitle className="text-sm font-medium">Aktive fakturaer</CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {invoices.filter((i: any) => i.status === 'draft').length}
+                {activeInvoices.length}
               </div>
+              <p className="text-xs text-muted-foreground">
+                Utkast, sendt, betalt
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Sendt</CardTitle>
-              <Send className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Arkiverte</CardTitle>
+              <Archive className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {invoices.filter((i: any) => i.status === 'sent').length}
+                {cancelledInvoices.length}
               </div>
+              <p className="text-xs text-muted-foreground">
+                Kansellerte fakturaer
+              </p>
             </CardContent>
           </Card>
 
@@ -118,15 +213,18 @@ export default function Invoices() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total verdi</CardTitle>
+              <CardTitle className="text-sm font-medium">Aktiv verdi</CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
                 {formatCurrency(
-                  invoices.reduce((sum: number, invoice: any) => sum + (invoice.total_amount || 0), 0)
+                  activeInvoices.reduce((sum: number, invoice: any) => sum + (invoice.total_amount || 0), 0)
                 )}
               </div>
+              <p className="text-xs text-muted-foreground">
+                Ekskl. kansellerte
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -186,69 +284,29 @@ export default function Invoices() {
                 </div>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fakturanummer</TableHead>
-                    <TableHead>Kunde</TableHead>
-                    <TableHead>Dato</TableHead>
-                    <TableHead>Forfallsdato</TableHead>
-                    <TableHead>Beløp</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Handlinger</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {invoices.map((invoice: any) => (
-                    <TableRow key={invoice.id}>
-                      <TableCell className="font-medium">
-                        {invoice.invoice_number}
-                      </TableCell>
-                      <TableCell>
-                        {invoice.customer?.name || 'Ukjent kunde'}
-                      </TableCell>
-                      <TableCell>
-                        {formatDate(invoice.issue_date)}
-                      </TableCell>
-                      <TableCell>
-                        {formatDate(invoice.due_date)}
-                      </TableCell>
-                      <TableCell>
-                        {formatCurrency(invoice.total_amount)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={statusColors[invoice.status as keyof typeof statusColors]}>
-                          {statusLabels[invoice.status as keyof typeof statusLabels]}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewInvoice(invoice)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={invoice.status !== 'draft'}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                          >
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <Tabs defaultValue="active" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="active">
+                    Aktive fakturaer ({activeInvoices.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="archived">
+                    Arkiverte ({cancelledInvoices.length})
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="active" className="mt-4">
+                  <InvoiceTable invoices={activeInvoices} />
+                </TabsContent>
+                <TabsContent value="archived" className="mt-4">
+                  {cancelledInvoices.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Archive className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                      <p>Ingen arkiverte fakturaer</p>
+                    </div>
+                  ) : (
+                    <InvoiceTable invoices={cancelledInvoices} showArchived={true} />
+                  )}
+                </TabsContent>
+              </Tabs>
             )}
           </CardContent>
         </Card>
@@ -264,6 +322,13 @@ export default function Invoices() {
         invoice={selectedInvoice}
         open={showDetailsDialog}
         onOpenChange={setShowDetailsDialog}
+        onEdit={handleEditInvoice}
+      />
+
+      <EditInvoiceDialog
+        invoice={selectedInvoice}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
       />
     </PageLayout>
   );

@@ -92,6 +92,8 @@ class ApiClient {
       return this.handleResponse(null, { message: 'Not authenticated' });
     }
 
+    // The formData from the wizard now contains all correct fields,
+    // including pricing_type and price_value. No extra logic is needed here.
     const insertData = {
       ...formData,
       assigned_to: formData.assigned_to && formData.assigned_to.length > 0 ? formData.assigned_to : null,

@@ -68,7 +68,13 @@ function WizardContent({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
         assigned_to: formData.assigned_to || null,
         notes: formData.notes,
         pricing_model: formData.pricing_model,
-        price_value: formData.pricing_model === 'fixed' ? formData.price_value : getTotalEstimatedCost(),
+        // Set pricing_type explicitly based on selected model
+        // - fixed model => fixed pricing
+        // - resource_based model => hourly pricing
+        pricing_type: formData.pricing_model === 'fixed' ? 'fixed' : 'hourly',
+        // Only persist price_value for fixed price. For hourly/resource-based,
+        // leave price_value undefined to avoid overriding hourly calculation later.
+        price_value: formData.pricing_model === 'fixed' ? formData.price_value : undefined,
         estimated_hours: formData.personnel.reduce((sum, p) => sum + p.estimated_hours, 0),
         // Add other fields as needed
       };

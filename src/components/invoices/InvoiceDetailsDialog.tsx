@@ -4,14 +4,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { Download, Send, Edit, Check, X } from "lucide-react";
-import { useUpdateInvoiceStatus } from "@/hooks/useInvoices";
+import { Download, Send, Edit, Check, X, Lock } from "lucide-react";
+import { useUpdateInvoiceStatus, useDownloadInvoicePDF } from "@/hooks/useInvoices";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 interface InvoiceDetailsDialogProps {
   invoice: any;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onEdit?: (invoice: any) => void;
 }
 
 const statusColors = {
@@ -30,13 +31,24 @@ const statusLabels = {
   cancelled: "Kansellert",
 };
 
-export function InvoiceDetailsDialog({ invoice, open, onOpenChange }: InvoiceDetailsDialogProps) {
+export function InvoiceDetailsDialog({ invoice, open, onOpenChange, onEdit }: InvoiceDetailsDialogProps) {
   const updateStatusMutation = useUpdateInvoiceStatus();
+  const downloadPDFMutation = useDownloadInvoicePDF();
 
   if (!invoice) return null;
 
   const handleStatusChange = (status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled') => {
     updateStatusMutation.mutate({ id: invoice.id, status });
+  };
+
+  const handleDownloadPDF = () => {
+    downloadPDFMutation.mutate(invoice.id);
+  };
+
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit(invoice);
+    }
   };
 
   const canEdit = invoice.status === 'draft';
@@ -63,7 +75,7 @@ export function InvoiceDetailsDialog({ invoice, open, onOpenChange }: InvoiceDet
           {/* Action buttons */}
           <div className="flex flex-wrap gap-2">
             {canEdit && (
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleEdit}>
                 <Edit className="h-4 w-4 mr-2" />
                 Rediger
               </Button>
@@ -103,9 +115,14 @@ export function InvoiceDetailsDialog({ invoice, open, onOpenChange }: InvoiceDet
                 Avbryt faktura
               </Button>
             )}
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleDownloadPDF}
+              disabled={downloadPDFMutation.isPending}
+            >
               <Download className="h-4 w-4 mr-2" />
-              Last ned PDF
+              {downloadPDFMutation.isPending ? "Genererer..." : "Last ned PDF"}
             </Button>
           </div>
 
@@ -235,6 +252,26 @@ export function InvoiceDetailsDialog({ invoice, open, onOpenChange }: InvoiceDet
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">{invoice.notes}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Internal Notes Card (only show if internal_notes exists) */}
+          {invoice.internal_notes && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  Interne notater
+                </CardTitle>
+                <CardDescription>
+                  Kun synlig for ansatte, ikke på kunde-fakturaen
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm bg-muted/50 p-3 rounded">
+                  {invoice.internal_notes}
+                </p>
               </CardContent>
             </Card>
           )}

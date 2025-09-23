@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { generateInvoicePDF } from '@/utils/pdfGenerator';
 
 interface Invoice {
   id: string;
@@ -13,6 +14,7 @@ interface Invoice {
   tax_amount: number;
   total_amount: number;
   notes?: string;
+  internal_notes?: string;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -45,199 +47,213 @@ interface CreateInvoiceData {
 
 // API functions
 const fetchInvoices = async (): Promise<Invoice[]> => {
-  const { data, error } = await supabase
+  // Fetch invoices with line items using correct FK
+  const { data: invoicesData, error: invoicesError } = await supabase
     .from('invoices')
     .select(`
       *,
       customer:customers(id, name, email),
-      line_items:invoice_line_items(*)
+      line_items:invoice_line_items!fk_invoice_line_items_invoice_id(*)
     `)
     .order('created_at', { ascending: false });
 
-  if (error) {
-    throw new Error(error.message);
+  if (invoicesError) {
+    throw new Error(invoicesError.message);
   }
 
-  return (data || []) as unknown as Invoice[];
+  return (invoicesData || []) as unknown as Invoice[];
 };
 
 const fetchInvoice = async (id: string): Promise<Invoice> => {
-  const { data, error } = await supabase
+  // Fetch invoice with line items using correct FK
+  const { data: invoiceData, error: invoiceError } = await supabase
     .from('invoices')
     .select(`
       *,
       customer:customers(id, name, email, address, contact_person),
-      line_items:invoice_line_items(*)
+      line_items:invoice_line_items!fk_invoice_line_items_invoice_id(*)
     `)
     .eq('id', id)
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  if (!data) {
-    throw new Error('Faktura ikke funnet');
-  }
-
-  return data as unknown as Invoice;
-};
-
-const createInvoice = async (invoiceData: CreateInvoiceData): Promise<Invoice> => {
-  // Generate invoice number
-  const { data: invoiceNumber, error: numberError } = await supabase
-    .rpc('generate_invoice_number');
-
-  if (numberError) {
-    throw new Error('Kunne ikke generere fakturanummer: ' + numberError.message);
-  }
-
-  // Get current user
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    throw new Error('Ikke autentisert');
-  }
-
-  // Create the invoice
-  const { data: invoice, error: invoiceError } = await supabase
-    .from('invoices')
-    .insert({
-      invoice_number: invoiceNumber,
-      customer_id: invoiceData.customer_id,
-      due_date: invoiceData.due_date,
-      notes: invoiceData.notes,
-      created_by: user.id
-    })
-    .select(`
-      *,
-      customer:customers(id, name, email)
-    `)
     .single();
 
   if (invoiceError) {
     throw new Error(invoiceError.message);
   }
 
-  // If work order IDs are provided, create line items from them
-  if (invoiceData.work_order_ids && invoiceData.work_order_ids.length > 0) {
-    await createLineItemsFromWorkOrders(invoice.id, invoiceData.work_order_ids);
+  if (!invoiceData) {
+    throw new Error('Faktura ikke funnet');
   }
 
-  return invoice as unknown as Invoice;
+  return invoiceData as unknown as Invoice;
+};
+
+const createInvoice = async (invoiceData: CreateInvoiceData): Promise<Invoice> => {
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('Ikke autentisert');
+  }
+
+  try {
+    // Generate invoice number
+    const { data: invoiceNumber, error: numberError } = await supabase
+      .rpc('generate_invoice_number');
+
+    if (numberError) {
+      console.error('Invoice number generation error:', numberError);
+      throw new Error('Kunne ikke generere fakturanummer: ' + numberError.message);
+    }
+
+    console.log('Generated invoice number:', invoiceNumber);
+
+    // Create the invoice
+    const { data: invoice, error: invoiceError } = await supabase
+      .from('invoices')
+      .insert({
+        invoice_number: invoiceNumber,
+        customer_id: invoiceData.customer_id,
+        due_date: invoiceData.due_date,
+        notes: invoiceData.notes,
+        created_by: user.id,
+        status: 'draft',
+        subtotal: 0,
+        tax_amount: 0,
+        total_amount: 0
+      })
+      .select(`
+        *,
+        customer:customers(id, name, email)
+      `)
+      .single();
+
+    if (invoiceError) {
+      console.error('Invoice creation error:', invoiceError);
+      throw new Error('Kunne ikke opprette faktura: ' + invoiceError.message);
+    }
+
+    console.log('Created invoice:', invoice);
+
+    // If work order IDs are provided, create line items from them
+    if (invoiceData.work_order_ids && invoiceData.work_order_ids.length > 0) {
+      await createLineItemsFromWorkOrders(invoice.id, invoiceData.work_order_ids);
+    }
+
+    return invoice as unknown as Invoice;
+    
+  } catch (error) {
+    console.error('Full error creating invoice:', error);
+    throw error;
+  }
 };
 
 const createLineItemsFromWorkOrders = async (invoiceId: string, workOrderIds: string[]) => {
-  // Fetch work orders with their related data
-  const { data: workOrders, error } = await supabase
-    .from('work_orders')
-    .select(`
-      id,
-      title,
-      description,
-      price_value,
-      pricing_model,
-      actual_hours,
-      work_order_materials(quantity, unit_price, material:materials(name)),
-      work_order_equipment(actual_quantity, rate, equipment:equipment(name)),
-      work_order_time_adjustments(id, extra_minutes, extra_cost, reason, adjustment_type)
-    `)
-    .in('id', workOrderIds);
+  try {
+    // Fetch work orders with basic data only (avoid problematic relations for now)
+    const { data: workOrders, error } = await supabase
+      .from('work_orders')
+      .select(`
+        id,
+        title,
+        description,
+        price_value,
+        pricing_model,
+        pricing_type,
+        actual_hours
+      `)
+      .in('id', workOrderIds);
 
-  if (error) {
-    throw new Error('Kunne ikke hente arbeidsordrer: ' + error.message);
-  }
+    if (error) {
+      console.error('Work orders fetch error:', error);
+      throw new Error('Kunne ikke hente arbeidsordrer: ' + error.message);
+    }
 
-  const lineItems: any[] = [];
+    console.log('Fetched work orders for invoice:', workOrders);
 
-  for (const workOrder of workOrders || []) {
-    // Main service line item
-    lineItems.push({
-      invoice_id: invoiceId,
-      work_order_id: workOrder.id,
-      description: `${workOrder.title} - ${workOrder.description || ''}`,
-      quantity: 1,
-      unit_price: workOrder.price_value || 0,
-      line_total: workOrder.price_value || 0,
-      item_type: 'service',
-      reference_id: workOrder.id
-    });
+    const lineItems: any[] = [];
 
-    // Materials
-    if (workOrder.work_order_materials && Array.isArray(workOrder.work_order_materials)) {
-      for (const material of workOrder.work_order_materials) {
-        lineItems.push({
-          invoice_id: invoiceId,
-          work_order_id: workOrder.id,
-          description: `Materiale: ${(material.material as any)?.name || 'Ukjent'}`,
-          quantity: material.quantity || 0,
-          unit_price: material.unit_price || 0,
-          line_total: (material.quantity || 0) * (material.unit_price || 0),
-          item_type: 'material',
-          reference_id: null
-        });
+    for (const workOrder of workOrders || []) {
+      console.log('Processing work order:', workOrder);
+      
+      // Calculate price based on pricing model
+      let unitPrice = 0;
+      let description = `${workOrder.title}${workOrder.description ? ' - ' + workOrder.description : ''}`;
+      
+      // Check pricing model (fixed vs hourly)
+      if (workOrder.pricing_model === 'fixed') {
+        // Fixed price - use price_value directly
+        description += ' (Fastpris)';
+        if (workOrder.price_value && workOrder.price_value > 0) {
+          unitPrice = workOrder.price_value;
+        } else {
+          console.warn('Fixed price work order has no price_value:', workOrder);
+          description += ' (Pris ikke satt)';
+        }
+      } else {
+        // Hourly pricing - calculate based on hours
+        if (workOrder.actual_hours && workOrder.actual_hours > 0) {
+          const defaultHourlyRate = 800; // Default rate per hour
+          unitPrice = workOrder.actual_hours * defaultHourlyRate;
+          description += ` (${workOrder.actual_hours} timer @ kr ${defaultHourlyRate}/time)`;
+        } else {
+          console.warn('Hourly work order has no actual_hours:', workOrder);
+          description += ' (Timer ikke registrert)';
+        }
       }
+
+      // Main service line item
+      lineItems.push({
+        invoice_id: invoiceId,
+        work_order_id: workOrder.id,
+        description: description,
+        quantity: 1,
+        unit_price: unitPrice,
+        line_total: unitPrice,
+        item_type: 'service',
+        reference_id: workOrder.id
+      });
     }
 
-    // Equipment
-    if (workOrder.work_order_equipment && Array.isArray(workOrder.work_order_equipment)) {
-      for (const equipment of workOrder.work_order_equipment) {
-        lineItems.push({
-          invoice_id: invoiceId,
-          work_order_id: workOrder.id,
-          description: `Utstyr: ${(equipment.equipment as any)?.name || 'Ukjent'}`,
-          quantity: equipment.actual_quantity || 0,
-          unit_price: equipment.rate || 0,
-          line_total: (equipment.actual_quantity || 0) * (equipment.rate || 0),
-          item_type: 'equipment',
-          reference_id: null
-        });
+    console.log('Created line items:', lineItems);
+
+    // Insert all line items if there are any
+    if (lineItems.length > 0) {
+      const { error: lineItemsError } = await supabase
+        .from('invoice_line_items')
+        .insert(lineItems);
+
+      if (lineItemsError) {
+        console.error('Line items insertion error:', lineItemsError);
+        throw new Error('Kunne ikke opprette fakturalinjer: ' + lineItemsError.message);
       }
-    }
 
-    // Time adjustments
-    if (workOrder.work_order_time_adjustments && Array.isArray(workOrder.work_order_time_adjustments)) {
-      for (const adjustment of workOrder.work_order_time_adjustments) {
-        lineItems.push({
-          invoice_id: invoiceId,
-          work_order_id: workOrder.id,
-          description: `Tillegg: ${adjustment.reason} (${adjustment.adjustment_type})`,
-          quantity: 1,
-          unit_price: adjustment.extra_cost || 0,
-          line_total: adjustment.extra_cost || 0,
-          item_type: 'extra_time',
-          reference_id: adjustment.id
-        });
+      console.log('Inserted line items successfully');
+
+      // Update invoice totals
+      const subtotal = lineItems.reduce((sum, item) => sum + item.line_total, 0);
+      const taxAmount = subtotal * 0.25; // 25% MVA
+      const totalAmount = subtotal + taxAmount;
+
+      console.log('Updating invoice totals:', { subtotal, taxAmount, totalAmount });
+
+      const { error: updateError } = await supabase
+        .from('invoices')
+        .update({
+          subtotal,
+          tax_amount: taxAmount,
+          total_amount: totalAmount
+        })
+        .eq('id', invoiceId);
+
+      if (updateError) {
+        console.error('Invoice totals update error:', updateError);
+        throw new Error('Kunne ikke oppdatere fakturatotaler: ' + updateError.message);
       }
+
+      console.log('Updated invoice totals successfully');
     }
-  }
-
-  // Insert all line items if there are any
-  if (lineItems.length > 0) {
-    const { error: lineItemsError } = await supabase
-      .from('invoice_line_items')
-      .insert(lineItems);
-
-    if (lineItemsError) {
-      throw new Error('Kunne ikke opprette fakturalinjer: ' + lineItemsError.message);
-    }
-
-    // Update invoice totals
-    const subtotal = lineItems.reduce((sum, item) => sum + item.line_total, 0);
-    const taxAmount = subtotal * 0.25; // 25% MVA
-    const totalAmount = subtotal + taxAmount;
-
-    const { error: updateError } = await supabase
-      .from('invoices')
-      .update({
-        subtotal,
-        tax_amount: taxAmount,
-        total_amount: totalAmount
-      })
-      .eq('id', invoiceId);
-
-    if (updateError) {
-      throw new Error('Kunne ikke oppdatere fakturatotaler: ' + updateError.message);
-    }
+  } catch (error) {
+    console.error('Error in createLineItemsFromWorkOrders:', error);
+    throw error;
   }
 };
 
@@ -322,6 +338,85 @@ export const useUpdateInvoiceStatus = () => {
     onError: (error: Error) => {
       toast({
         title: "Feil ved oppdatering",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+// Add update invoice functionality
+const updateInvoice = async (invoiceId: string, updates: Partial<Invoice>): Promise<Invoice> => {
+  const { data, error } = await supabase
+    .from('invoices')
+    .update(updates)
+    .eq('id', invoiceId)
+    .select(`
+      *,
+      customer:customers(id, name, email),
+      line_items:invoice_line_items!fk_invoice_line_items_invoice_id(*)
+    `)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as unknown as Invoice;
+};
+
+export const useUpdateInvoice = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<Invoice> }) =>
+      updateInvoice(id, updates),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invoices });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invoice(data.id) });
+      toast({
+        title: "Faktura oppdatert",
+        description: "Fakturaen ble oppdatert successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Feil ved oppdatering",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useDownloadInvoicePDF = () => {
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (invoiceId: string) => {
+      // Fetch the complete invoice data
+      const invoice = await fetchInvoice(invoiceId);
+      
+      // Ensure customer data is present for PDF generation
+      if (!invoice.customer) {
+        throw new Error('Kunde data mangler for PDF generering');
+      }
+      
+      // Generate and download PDF
+      generateInvoicePDF(invoice as any);
+      
+      return invoice;
+    },
+    onSuccess: (invoice) => {
+      toast({
+        title: "PDF lastet ned",
+        description: `Faktura ${invoice.invoice_number} ble lastet ned som PDF.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Feil ved PDF-generering",
         description: error.message,
         variant: "destructive",
       });
