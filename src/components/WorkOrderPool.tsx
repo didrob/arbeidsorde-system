@@ -39,37 +39,7 @@ export function WorkOrderPool({ isMobile = false }: WorkOrderPoolProps) {
     return matchesSearch && matchesPriority;
   });
 
-  // Realtime updates for immediate pool changes
-  useEffect(() => {
-    const channel = supabase
-      .channel('work-order-pool-realtime')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'work_orders' }, (payload) => {
-        // New orders might be available in pool
-        queryClient.invalidateQueries({ queryKey: queryKeys.workOrders() });
-        if (!payload.new.assigned_to) {
-          toast({
-            title: 'Ny arbeidsordre',
-            description: `${payload.new.title} er tilgjengelig i pool`,
-          });
-        }
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'work_orders' }, (payload) => {
-        // Assignment changes move orders in/out of pool
-        queryClient.invalidateQueries({ queryKey: queryKeys.workOrders() });
-        // If someone just claimed an order, show feedback
-        if (payload.old.assigned_to === null && payload.new.assigned_to !== null) {
-          toast({
-            title: 'Ordre tatt',
-            description: `${payload.new.title} ble tatt av en annen`,
-            variant: 'destructive'
-          });
-        }
-      })
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient, toast]);
+  // Note: Real-time updates now handled by useFieldWorkerRealtime hook in MobileFieldWorker
 
   const handleClaimOrder = async (orderId: string) => {
     try {

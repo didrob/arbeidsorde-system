@@ -29,7 +29,8 @@ import {
   useActiveTimer, 
   useActiveWorkOrder,
   useFieldWorkerRealtime,
-  useRefreshFieldWorkerData
+  useRefreshFieldWorkerData,
+  usePoolNotifications
 } from '@/hooks/useFieldWorkerState';
 import { cn } from '@/lib/utils';
 
@@ -64,6 +65,7 @@ export const MobileFieldWorker = () => {
   const { data: workOrders = [], isLoading: workOrdersLoading, refetch: refetchWorkOrders } = useAssignedWorkOrders();
   const { data: activeTimer, refetch: refetchActiveTimer } = useActiveTimer();
   const { data: activeOrder } = useActiveWorkOrder();
+  const { data: poolNotificationCount = 0 } = usePoolNotifications();
   const refreshFieldWorkerData = useRefreshFieldWorkerData();
   
   // Setup realtime updates
@@ -290,7 +292,15 @@ export const MobileFieldWorker = () => {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => setShowPool(!showPool)}>
                     <Search className="h-4 w-4 mr-2" />
-                    {showPool ? 'Mine ordrer' : 'Ledig pool'}
+                    <span>{showPool ? 'Mine ordrer' : 'Ledig pool'}</span>
+                    {!showPool && poolNotificationCount > 0 && (
+                      <Badge 
+                        variant="secondary" 
+                        className="ml-2 h-4 text-xs bg-primary/10 text-primary"
+                      >
+                        {poolNotificationCount}
+                      </Badge>
+                    )}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-destructive">
@@ -323,7 +333,14 @@ export const MobileFieldWorker = () => {
           {showPool ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Ledige Ordrer</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-semibold">Ledige Ordrer</h2>
+                  {poolNotificationCount > 0 && (
+                    <Badge variant="secondary" className="bg-primary/10 text-primary">
+                      {poolNotificationCount} nye
+                    </Badge>
+                  )}
+                </div>
                 <Button 
                   variant="outline" 
                   size="sm" 

@@ -27,6 +27,8 @@ const FIELD_WORKER_KEYS = {
   assignedOrders: (userId: string) => ['fieldWorker', 'assignedOrders', userId],
   activeTimer: (userId: string) => ['fieldWorker', 'activeTimer', userId],
   activeOrder: (userId: string) => ['fieldWorker', 'activeOrder', userId],
+  poolOrders: () => ['fieldWorker', 'poolOrders'],
+  poolNotifications: (userId: string) => ['fieldWorker', 'poolNotifications', userId],
 } as const;
 
 // Hook for getting assigned work orders with persistent cache
@@ -56,7 +58,7 @@ export const useAssignedWorkOrders = () => {
       })) || [];
     },
     enabled: !!user?.id,
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 10 * 1000, // 10 seconds for faster updates
     gcTime: 5 * 60 * 1000, // 5 minutes - keep in cache for offline
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
@@ -105,7 +107,61 @@ export const useActiveWorkOrder = () => {
   });
 };
 
-// Hook for realtime updates with automatic cache invalidation
+// Hook for pool orders with notifications
+export const usePoolOrders = () => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: FIELD_WORKER_KEYS.poolOrders(),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('work_orders')
+        .select(`
+          *,
+          customers (name, address)
+        `)
+        .is('assigned_to', null)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+    staleTime: 10 * 1000, // 10 seconds
+    gcTime: 2 * 60 * 1000, // 2 minutes
+    refetchOnWindowFocus: true,
+  });
+};
+
+// Hook for pool notifications counter
+export const usePoolNotifications = () => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: FIELD_WORKER_KEYS.poolNotifications(user?.id || ''),
+    queryFn: async () => {
+      // Count unassigned orders created in the last hour as "new"
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      
+      const { count, error } = await supabase
+        .from('work_orders')
+        .select('*', { count: 'exact', head: true })
+        .is('assigned_to', null)
+        .eq('status', 'pending')
+        .gte('created_at', oneHourAgo);
+
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!user?.id,
+    staleTime: 30 * 1000, // 30 seconds
+    gcTime: 5 * 60 * 1000,
+    refetchInterval: 60 * 1000, // Check every minute
+  });
+};
+
+// Enhanced realtime updates with pool monitoring and better notifications
 export const useFieldWorkerRealtime = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -113,8 +169,11 @@ export const useFieldWorkerRealtime = () => {
   useEffect(() => {
     if (!user?.id) return;
 
+    console.log('🔄 Setting up field worker realtime listeners');
+
     const channel = supabase
-      .channel('field-worker-realtime')
+      .channel('enhanced-field-worker-realtime')
+      // Listen for assigned orders (existing functionality)
       .on(
         'postgres_changes',
         {
@@ -124,11 +183,22 @@ export const useFieldWorkerRealtime = () => {
           filter: `assigned_to=eq.${user.id}`
         },
         (payload) => {
+          console.log('📥 New assigned order:', payload.new);
+          
           // Invalidate assigned orders to show new order
           queryClient.invalidateQueries({ 
             queryKey: FIELD_WORKER_KEYS.assignedOrders(user.id) 
           });
-          toast.success(`Ny arbeidsordre: ${payload.new.title}`);
+          
+          // Enhanced notification with vibration
+          if (navigator.vibrate) {
+            navigator.vibrate([200, 100, 200]);
+          }
+          
+          toast.success(`🎯 Ny arbeidsordre tildelt: ${payload.new.title}`, {
+            description: "Ordren er nå klar for start",
+            duration: 5000,
+          });
         }
       )
       .on(
@@ -140,6 +210,8 @@ export const useFieldWorkerRealtime = () => {
           filter: `assigned_to=eq.${user.id}`
         },
         (payload) => {
+          console.log('📝 Assigned order updated:', payload.new);
+          
           // Invalidate all related queries
           queryClient.invalidateQueries({ 
             queryKey: FIELD_WORKER_KEYS.assignedOrders(user.id) 
@@ -149,10 +221,78 @@ export const useFieldWorkerRealtime = () => {
           });
           
           if (payload.old.status !== payload.new.status) {
-            toast.success(`Ordre oppdatert: ${payload.new.title}`);
+            toast.success(`📋 Ordre oppdatert: ${payload.new.title}`, {
+              description: `Status endret til: ${payload.new.status}`,
+            });
           }
         }
       )
+      // NEW: Listen for ALL work orders (pool monitoring)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'work_orders'
+        },
+        (payload) => {
+          console.log('🔍 New work order in system:', payload.new);
+          
+          // Always invalidate pool data
+          queryClient.invalidateQueries({ 
+            queryKey: FIELD_WORKER_KEYS.poolOrders() 
+          });
+          queryClient.invalidateQueries({ 
+            queryKey: FIELD_WORKER_KEYS.poolNotifications(user.id) 
+          });
+          
+          // If it's unassigned, notify about pool availability
+          if (!payload.new.assigned_to) {
+            toast.success(`📢 Ny ordre i pool: ${payload.new.title}`, {
+              description: "Klikk for å se ledige ordrer",
+              duration: 4000,
+            });
+            
+            // Gentle vibration for pool notifications
+            if (navigator.vibrate) {
+              navigator.vibrate([100]);
+            }
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'work_orders'
+        },
+        (payload) => {
+          console.log('🔄 Work order updated:', payload.new);
+          
+          // Always invalidate pool data for assignment changes
+          queryClient.invalidateQueries({ 
+            queryKey: FIELD_WORKER_KEYS.poolOrders() 
+          });
+          queryClient.invalidateQueries({ 
+            queryKey: FIELD_WORKER_KEYS.poolNotifications(user.id) 
+          });
+          
+          // Notify if order moved to/from pool
+          if (payload.old.assigned_to !== payload.new.assigned_to) {
+            if (!payload.new.assigned_to) {
+              toast.info(`🔄 Ordre tilbake i pool: ${payload.new.title}`, {
+                description: "Ordren er nå ledig igjen",
+              });
+            } else if (!payload.old.assigned_to) {
+              toast.info(`👤 Ordre tatt: ${payload.new.title}`, {
+                description: "Ordren ble tatt av en annen",
+              });
+            }
+          }
+        }
+      )
+      // Time entries monitoring
       .on(
         'postgres_changes',
         {
@@ -162,6 +302,7 @@ export const useFieldWorkerRealtime = () => {
           filter: `user_id=eq.${user.id}`
         },
         () => {
+          console.log('⏱️ Time entry changed');
           // Invalidate timer queries when time entries change
           queryClient.invalidateQueries({ 
             queryKey: FIELD_WORKER_KEYS.activeTimer(user.id) 
@@ -171,6 +312,7 @@ export const useFieldWorkerRealtime = () => {
       .subscribe();
 
     return () => {
+      console.log('🔌 Cleaning up field worker realtime listeners');
       supabase.removeChannel(channel);
     };
   }, [user?.id, queryClient]);
@@ -184,6 +326,8 @@ export const useRefreshFieldWorkerData = () => {
   return async () => {
     if (!user?.id) return;
     
+    console.log('🔄 Refreshing all field worker data');
+    
     await Promise.all([
       queryClient.invalidateQueries({ 
         queryKey: FIELD_WORKER_KEYS.assignedOrders(user.id) 
@@ -193,6 +337,12 @@ export const useRefreshFieldWorkerData = () => {
       }),
       queryClient.invalidateQueries({ 
         queryKey: FIELD_WORKER_KEYS.activeOrder(user.id) 
+      }),
+      queryClient.invalidateQueries({ 
+        queryKey: FIELD_WORKER_KEYS.poolOrders() 
+      }),
+      queryClient.invalidateQueries({ 
+        queryKey: FIELD_WORKER_KEYS.poolNotifications(user.id) 
       }),
     ]);
   };
