@@ -81,6 +81,7 @@ export const MobileFieldWorker = () => {
   const [completingOrder, setCompletingOrder] = useState<WorkOrder | null>(null);
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
   const [pendingCompletionOrder, setPendingCompletionOrder] = useState<WorkOrder | null>(null);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [extraTimeForm, setExtraTimeForm] = useState({
     reason: '',
     extra_minutes: '',
@@ -99,7 +100,7 @@ export const MobileFieldWorker = () => {
   const { data: customers } = useCustomers();
   const createWorkOrder = useCreateWorkOrder();
   const startTimeEntry = useStartTimeEntry();
-  const { notifications, unreadCount } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } = useNotifications();
   
   // Time adjustment hooks
   const createTimeAdjustment = useCreateTimeAdjustment();
@@ -270,6 +271,7 @@ export const MobileFieldWorker = () => {
                 variant="ghost"
                 size="sm"
                 className="relative focus-ring"
+                onClick={() => setShowNotifications(true)}
               >
                 <Bell className="h-4 w-4" />
                 {unreadCount > 0 && (
@@ -295,10 +297,10 @@ export const MobileFieldWorker = () => {
                     <span>{showPool ? 'Mine ordrer' : 'Ledig pool'}</span>
                     {!showPool && poolNotificationCount > 0 && (
                       <Badge 
-                        variant="secondary" 
-                        className="ml-2 h-4 text-xs bg-primary/10 text-primary"
+                        variant="destructive" 
+                        className="ml-2 h-4 text-xs"
                       >
-                        {poolNotificationCount}
+                        {poolNotificationCount} nye
                       </Badge>
                     )}
                   </DropdownMenuItem>
@@ -336,7 +338,7 @@ export const MobileFieldWorker = () => {
                 <div className="flex items-center gap-2">
                   <h2 className="text-lg font-semibold">Ledige Ordrer</h2>
                   {poolNotificationCount > 0 && (
-                    <Badge variant="secondary" className="bg-primary/10 text-primary">
+                    <Badge variant="destructive" className="text-xs">
                       {poolNotificationCount} nye
                     </Badge>
                   )}
@@ -586,6 +588,69 @@ export const MobileFieldWorker = () => {
                 refreshFieldWorkerData();
               }}
             />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Notifications Dialog */}
+      <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>Varsler</span>
+              {unreadCount > 0 && (
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={markAllAsRead}
+                >
+                  Merk alle som lest
+                </Button>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-96 overflow-y-auto space-y-2">
+            {notifications.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">
+                Ingen varsler
+              </p>
+            ) : (
+              notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`p-3 rounded-lg border ${
+                    !notification.read ? 'bg-muted/50' : ''
+                  }`}
+                  onClick={() => !notification.read && markAsRead(notification.id)}
+                >
+                  <div className="flex items-start gap-2">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-sm">{notification.title}</h4>
+                      <p className="text-sm text-muted-foreground">{notification.message}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(notification.created_at).toLocaleTimeString('nb-NO', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                    {!notification.read && (
+                      <div className="w-2 h-2 rounded-full bg-destructive mt-2" />
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          {notifications.length > 0 && (
+            <div className="flex justify-between">
+              <Button variant="outline" size="sm" onClick={clearAll}>
+                Tøm alle
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setShowNotifications(false)}>
+                Lukk
+              </Button>
+            </div>
           )}
         </DialogContent>
       </Dialog>
