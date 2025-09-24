@@ -97,7 +97,8 @@ export const WorkOrderCompletionDialog = ({
     { title: 'Materialer', icon: Package },
     { title: 'Sluttrapport', icon: FileText },
     { title: 'Vedlegg', icon: Camera },
-    { title: 'Bekreftelse', icon: CheckCircle }
+    { title: 'Bekreftelse', icon: CheckCircle },
+    { title: 'Fullført', icon: CheckCircle }
   ];
 
   useEffect(() => {
@@ -253,9 +254,9 @@ export const WorkOrderCompletionDialog = ({
 
       if (timeError) throw timeError;
 
+      // Show success step instead of closing immediately
+      setCurrentStep(5); // Success step
       toast.success('Arbeidsordre fullført!');
-      onComplete();
-      onClose();
       
     } catch (error) {
       console.error('Error completing work order:', error);
@@ -272,6 +273,7 @@ export const WorkOrderCompletionDialog = ({
       case 2: return completionData.finalNotes.trim().length > 0; // Final notes required
       case 3: return true; // Attachments (optional)
       case 4: return true; // Confirmation
+      case 5: return true; // Success (can close)
       default: return false;
     }
   };
@@ -593,6 +595,55 @@ export const WorkOrderCompletionDialog = ({
           </div>
         );
 
+      case 5: // Success
+        return (
+          <div className="space-y-6 text-center">
+            <div className="flex justify-center">
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                <CheckCircle className="h-10 w-10 text-green-600" />
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">
+                Arbeidsordre fullført!
+              </h3>
+              <p className="text-muted-foreground mt-2">
+                "{workOrder.title}" er nå registrert som fullført
+              </p>
+            </div>
+
+            <Card className="border-green-200 dark:border-green-800">
+              <CardContent className="pt-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="font-medium">Total tid brukt</p>
+                    <p className="text-lg text-green-600">{formatHours(totalTime)} timer</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Materialer brukt</p>
+                    <p className="text-lg text-green-600">{completionData.materialsUsed.length} stk</p>
+                  </div>
+                </div>
+                
+                {completionData.timeAdjustments.length > 0 && (
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="font-medium text-sm text-amber-600">
+                      {completionData.timeAdjustments.length} tidsjustering(er) registrert
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
+              <p className="text-sm text-green-800 dark:text-green-200">
+                Arbeidsordren er klar for fakturering og vil vises som fullført i systemet.
+              </p>
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }
@@ -652,20 +703,30 @@ export const WorkOrderCompletionDialog = ({
               Avbryt
             </Button>
             
-            {currentStep < steps.length - 1 ? (
+            {currentStep < steps.length - 2 ? (
               <Button
                 onClick={() => setCurrentStep(prev => prev + 1)}
                 disabled={!canProceedToNext()}
               >
                 Neste
               </Button>
-            ) : (
+            ) : currentStep === steps.length - 2 ? (
               <Button
                 onClick={handleComplete}
                 disabled={!canProceedToNext() || isSubmitting}
                 className="bg-green-600 hover:bg-green-700"
               >
                 {isSubmitting ? 'Fullører...' : 'Fullfør arbeidsordre'}
+              </Button>
+            ) : (
+              <Button
+                onClick={() => {
+                  onComplete();
+                  onClose();
+                }}
+                className="bg-primary hover:bg-primary/90"
+              >
+                Lukk
               </Button>
             )}
           </div>

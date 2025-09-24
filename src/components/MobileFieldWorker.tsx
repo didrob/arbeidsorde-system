@@ -22,6 +22,7 @@ import { PullToRefresh } from './mobile/PullToRefresh';
 import { SwipeableCard } from './mobile/SwipeableCard';
 import { QuickStartModal } from './QuickStartModal';
 import { WorkOrderCompletionDialog } from './WorkOrderCompletionDialog';
+import { WorkOrderConfirmationDialog } from './WorkOrderConfirmationDialog';
 import { TimeTracker } from './TimeTracker';
 import { 
   useAssignedWorkOrders, 
@@ -76,6 +77,8 @@ export const MobileFieldWorker = () => {
   const [showPool, setShowPool] = useState(false);
   const [showCompletionDialog, setShowCompletionDialog] = useState(false);
   const [completingOrder, setCompletingOrder] = useState<WorkOrder | null>(null);
+  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [pendingCompletionOrder, setPendingCompletionOrder] = useState<WorkOrder | null>(null);
   const [extraTimeForm, setExtraTimeForm] = useState({
     reason: '',
     extra_minutes: '',
@@ -174,22 +177,11 @@ export const MobileFieldWorker = () => {
         
         toast.success('Arbeidsordre startet! Start tidssporing i TimeTracker.');
       } else if (status === 'completed') {
-        // For completion, first check if there's an active timer and stop it
-        if (activeTimer && activeTimer.work_order_id === workOrderId) {
-          // Stop the active timer first
-          const { error: stopErr } = await supabase
-            .from('work_order_time_entries')
-            .update({ end_time: new Date().toISOString() })
-            .eq('id', activeTimer.id);
-          
-          if (stopErr) throw stopErr;
-        }
-        
-        // Then open completion dialog
+        // Show confirmation dialog first
         const order = workOrders.find(wo => wo.id === workOrderId);
         if (order) {
-          setCompletingOrder(order);
-          setShowCompletionDialog(true);
+          setPendingCompletionOrder(order);
+          setShowConfirmationDialog(true);
         }
       }
     } catch (error) {
@@ -202,6 +194,44 @@ export const MobileFieldWorker = () => {
     // Refresh all data after successful completion
     await refreshFieldWorkerData();
     setCompletingOrder(null);
+    setShowCompletionDialog(false);
+    
+    // Show enhanced success message
+    toast.success(
+      `Arbeidsordre "${completingOrder?.title}" er fullført!`,
+      {
+        description: "Ordren er nå registrert som fullført og klar for fakturering."
+      }
+    );
+  };
+
+  const handleConfirmCompletion = async () => {
+    if (!pendingCompletionOrder) return;
+
+    try {
+      // Stop active timer if exists
+      if (activeTimer && activeTimer.work_order_id === pendingCompletionOrder.id) {
+        const { error: stopErr } = await supabase
+          .from('work_order_time_entries')
+          .update({ end_time: new Date().toISOString() })
+          .eq('id', activeTimer.id);
+        
+        if (stopErr) throw stopErr;
+        
+        // Refresh active timer state
+        await refetchActiveTimer();
+      }
+      
+      // Close confirmation and open completion dialog
+      setShowConfirmationDialog(false);
+      setCompletingOrder(pendingCompletionOrder);
+      setShowCompletionDialog(true);
+      setPendingCompletionOrder(null);
+      
+    } catch (error) {
+      console.error('Error stopping timer:', error);
+      toast.error('Kunne ikke stoppe tidssporing');
+    }
   };
 
   if (workOrdersLoading) {
@@ -494,6 +524,19 @@ export const MobileFieldWorker = () => {
         onClose={() => setShowQuickStart(false)}
         onSuccess={refreshFieldWorkerData}
       />
+
+      {/* Work Order Confirmation Dialog */}
+      {pendingCompletionOrder && (
+        <WorkOrderConfirmationDialog
+          open={showConfirmationDialog}
+          onClose={() => {
+            setShowConfirmationDialog(false);
+            setPendingCompletionOrder(null);
+          }}
+          workOrder={pendingCompletionOrder}
+          onConfirm={handleConfirmCompletion}
+        />
+      )}
 
       {/* Work Order Completion Dialog */}
       {completingOrder && (
