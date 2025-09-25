@@ -288,10 +288,63 @@ export const useGrantSiteAccess = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.userSiteAccess });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('Site-tilgang tildelt');
     },
     onError: (error: any) => {
       toast.error(`Kunne ikke tildele site-tilgang: ${error.message}`);
     },
+  });
+};
+
+export const useRevokeSiteAccess = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ userId, siteId }: { userId: string; siteId: string }) => {
+      const { error } = await supabase
+        .from('user_site_access')
+        .delete()
+        .eq('user_id', userId)
+        .eq('site_id', siteId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.userSiteAccess });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('Site-tilgang fjernet');
+    },
+    onError: (error: any) => {
+      toast.error(`Kunne ikke fjerne site-tilgang: ${error.message}`);
+    },
+  });
+};
+
+export const useUserAdditionalSites = (userId?: string) => {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.userSiteAccess, userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      
+      const { data, error } = await supabase
+        .from('user_site_access')
+        .select(`
+          *,
+          sites!inner (
+            id,
+            name,
+            organizations!inner (
+              id,
+              name
+            )
+          )
+        `)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!userId,
   });
 };

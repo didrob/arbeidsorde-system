@@ -9,10 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useOrganizations } from "@/hooks/useOrganizations";
+import { useOrganizations, useSites, useUserAdditionalSites, useGrantSiteAccess, useRevokeSiteAccess } from "@/hooks/useOrganizations";
 import { useInvitations, useResendInvitation, useCancelInvitation } from "@/hooks/useInvitations";
 import { InviteUserDialog } from "./InviteUserDialog";
-import { Pencil, UserPlus, Mail, Search, RotateCcw, X, Download } from "lucide-react";
+import { AdditionalSiteAccessManager } from "./AdditionalSiteAccessManager";
+import { Pencil, UserPlus, Mail, Search, RotateCcw, X, Download, Plus, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -90,8 +91,13 @@ export function UserManagement() {
   const queryClient = useQueryClient();
   const { data: organizations = [] } = useOrganizations();
   const { data: invitations = [] } = useInvitations();
+  const { data: createSites = [] } = useSites(createForm.organization_id);
+  const { data: editSites = [] } = useSites(editForm.organization_id);
+  const { data: userAdditionalSites = [] } = useUserAdditionalSites(selectedUser?.user_id);
   const resendInvitation = useResendInvitation();
   const cancelInvitation = useCancelInvitation();
+  const grantSiteAccess = useGrantSiteAccess();
+  const revokeSiteAccess = useRevokeSiteAccess();
 
   // Fetch users
   const users = useQuery({
@@ -522,7 +528,10 @@ export function UserManagement() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="create-org">Organization (Optional)</Label>
-              <Select onValueChange={(value) => setCreateForm({ ...createForm, organization_id: value === 'none' ? '' : value })}>
+              <Select onValueChange={(value) => {
+                const orgId = value === 'none' ? '' : value;
+                setCreateForm({ ...createForm, organization_id: orgId, site_id: '' });
+              }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select organization" />
                 </SelectTrigger>
@@ -531,6 +540,26 @@ export function UserManagement() {
                   {organizations.map((org) => (
                     <SelectItem key={org.id} value={org.id}>
                       {org.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-site">Primary Site (Optional)</Label>
+              <Select 
+                value={createForm.site_id || 'none'} 
+                onValueChange={(value) => setCreateForm({ ...createForm, site_id: value === 'none' ? '' : value })}
+                disabled={!createForm.organization_id}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={!createForm.organization_id ? "Select organization first" : "Select primary site"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No primary site</SelectItem>
+                  {createSites.map((site) => (
+                    <SelectItem key={site.id} value={site.id}>
+                      {site.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -589,7 +618,10 @@ export function UserManagement() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-org">Organization</Label>
-              <Select value={editForm.organization_id || 'none'} onValueChange={(value) => setEditForm({ ...editForm, organization_id: value === 'none' ? '' : value })}>
+              <Select value={editForm.organization_id || 'none'} onValueChange={(value) => {
+                const orgId = value === 'none' ? '' : value;
+                setEditForm({ ...editForm, organization_id: orgId, site_id: '' });
+              }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select organization" />
                 </SelectTrigger>
@@ -603,6 +635,43 @@ export function UserManagement() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-site">Primary Site</Label>
+              <Select 
+                value={editForm.site_id || 'none'} 
+                onValueChange={(value) => setEditForm({ ...editForm, site_id: value === 'none' ? '' : value })}
+                disabled={!editForm.organization_id}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={!editForm.organization_id ? "Select organization first" : "Select primary site"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No primary site</SelectItem>
+                  {editSites.map((site) => (
+                    <SelectItem key={site.id} value={site.id}>
+                      {site.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Additional Site Access Section */}
+            {selectedUser && (
+              <AdditionalSiteAccessManager
+                availableSites={editSites}
+                userAdditionalSites={userAdditionalSites}
+                onGrantAccess={(siteId) => grantSiteAccess.mutate({ 
+                  userId: selectedUser.user_id, 
+                  siteId 
+                })}
+                onRevokeAccess={(siteId) => revokeSiteAccess.mutate({ 
+                  userId: selectedUser.user_id, 
+                  siteId 
+                })}
+                isLoading={grantSiteAccess.isPending || revokeSiteAccess.isPending}
+              />
+            )}
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="edit-active"
