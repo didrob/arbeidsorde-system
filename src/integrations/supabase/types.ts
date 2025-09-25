@@ -551,6 +551,69 @@ export type Database = {
           },
         ]
       }
+      user_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invitation_token: string
+          invited_by: string
+          notes: string | null
+          organization_id: string | null
+          role: string
+          site_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          invited_by: string
+          notes?: string | null
+          organization_id?: string | null
+          role: string
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          invited_by?: string
+          notes?: string | null
+          organization_id?: string | null
+          role?: string
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_invitations_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_site_access: {
         Row: {
           granted_at: string
