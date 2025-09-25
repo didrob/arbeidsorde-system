@@ -311,6 +311,19 @@ All colors MUST be HSL.
     }
   }
 
+  /* Mobile dialog optimizations */
+  .mobile-dialog {
+    @apply w-[calc(100vw-2rem)] max-w-full;
+    margin: 1rem;
+  }
+  
+  @media (max-width: 640px) {
+    .mobile-dialog {
+      @apply w-[calc(100vw-1rem)] max-w-full;
+      margin: 0.5rem;
+    }
+  }
+
   /* Extra small breakpoint for very narrow screens */
   @media (max-width: 480px) {
     .xs\:flex-row {
@@ -323,6 +336,31 @@ All colors MUST be HSL.
     
     .xs\:w-auto {
       width: auto;
+    }
+    
+    .mobile-dialog {
+      @apply w-[calc(100vw-0.5rem)] max-w-full;
+      margin: 0.25rem;
+    }
+  }
+  
+  /* Landscape orientation improvements for mobile */
+  @media (orientation: landscape) and (max-height: 600px) {
+    .mobile-dialog {
+      max-height: 95vh;
+    }
+    
+    /* Reduce vertical spacing in landscape */
+    .mobile-dialog .space-y-4 > * + * {
+      margin-top: 0.75rem;
+    }
+    
+    .mobile-dialog .mb-4 {
+      margin-bottom: 0.75rem;
+    }
+    
+    .mobile-dialog .mb-6 {
+      margin-bottom: 1rem;
     }
   }
 }

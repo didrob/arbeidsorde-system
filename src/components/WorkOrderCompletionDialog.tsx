@@ -651,55 +651,61 @@ export const WorkOrderCompletionDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full max-w-4xl sm:max-w-2xl max-h-[95vh] overflow-y-auto mobile-dialog">
         <DialogHeader>
-          <DialogTitle>Fullfør arbeidsordre</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">Fullfør arbeidsordre</DialogTitle>
         </DialogHeader>
 
-        {/* Progress Steps */}
-        <div className="flex items-center justify-between mb-6">
-          {steps.map((step, index) => {
-            const Icon = step.icon;
-            const isActive = index === currentStep;
-            const isCompleted = index < currentStep;
-            
-            return (
-              <div key={index} className="flex items-center">
-                <div className={`
-                  flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors
-                  ${isActive ? 'border-primary bg-primary text-primary-foreground' : 
-                    isCompleted ? 'border-green-500 bg-green-500 text-white' : 
-                    'border-muted-foreground bg-background'}
-                `}>
-                  <Icon className="h-4 w-4" />
+        {/* Progress Steps - Mobile Optimized */}
+        <div className="mb-4 sm:mb-6">
+          <div className="flex items-center justify-between overflow-x-auto pb-2">
+            {steps.map((step, index) => {
+              const Icon = step.icon;
+              const isActive = index === currentStep;
+              const isCompleted = index < currentStep;
+              
+              return (
+                <div key={index} className="flex items-center flex-shrink-0">
+                  <div className={`
+                    flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 transition-colors
+                    ${isActive ? 'border-primary bg-primary text-primary-foreground' : 
+                      isCompleted ? 'border-green-500 bg-green-500 text-white' : 
+                      'border-muted-foreground bg-background'}
+                  `}>
+                    <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div className={`w-4 sm:w-8 h-0.5 mx-1 sm:mx-2 ${
+                      isCompleted ? 'bg-green-500' : 'bg-muted'
+                    }`} />
+                  )}
                 </div>
-                {index < steps.length - 1 && (
-                  <div className={`w-8 h-0.5 mx-2 ${
-                    isCompleted ? 'bg-green-500' : 'bg-muted'
-                  }`} />
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+          <div className="text-xs sm:text-sm text-muted-foreground mt-2 text-center">
+            {steps[currentStep].title}
+          </div>
         </div>
 
         {/* Step Content */}
-        <div className="min-h-[300px]">
+        <div className="min-h-[250px] sm:min-h-[300px]">
           {renderStep()}
         </div>
 
-        {/* Navigation */}
-        <div className="flex justify-between pt-4 border-t">
+        {/* Navigation - Mobile Optimized */}
+        <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 pt-4 border-t">
           <Button
             variant="outline"
             onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
             disabled={currentStep === 0}
+            className="order-2 sm:order-1"
           >
             Forrige
           </Button>
           
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onClose}>
+          <div className="flex gap-2 order-1 sm:order-2">
+            <Button variant="outline" onClick={onClose} className="flex-1 sm:flex-initial">
               Avbryt
             </Button>
             
@@ -707,6 +713,7 @@ export const WorkOrderCompletionDialog = ({
               <Button
                 onClick={() => setCurrentStep(prev => prev + 1)}
                 disabled={!canProceedToNext()}
+                className="flex-1 sm:flex-initial"
               >
                 Neste
               </Button>
@@ -714,7 +721,7 @@ export const WorkOrderCompletionDialog = ({
               <Button
                 onClick={handleComplete}
                 disabled={!canProceedToNext() || isSubmitting}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-initial"
               >
                 {isSubmitting ? 'Fullører...' : 'Fullfør arbeidsordre'}
               </Button>
@@ -724,7 +731,7 @@ export const WorkOrderCompletionDialog = ({
                   onComplete();
                   onClose();
                 }}
-                className="bg-primary hover:bg-primary/90"
+                className="bg-primary hover:bg-primary/90 flex-1 sm:flex-initial"
               >
                 Lukk
               </Button>
