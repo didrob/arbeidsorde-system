@@ -18,6 +18,11 @@ interface QuickStartData {
     rate: number;
     pricing_type: 'hourly' | 'daily' | 'fixed';
   }[];
+  personnel?: {
+    id: string;
+    estimated_hours: number;
+    hourly_rate: number;
+  }[];
 }
 
 export const useQuickStartWorkOrder = () => {
@@ -88,6 +93,30 @@ export const useQuickStartWorkOrder = () => {
             await supabase.from('work_order_time_entries').delete().eq('id', timeEntry.id);
             await supabase.from('work_orders').delete().eq('id', workOrder.id);
             throw new Error(`Failed to add equipment: ${equipmentError.message}`);
+          }
+        }
+      }
+
+      // Step 4: Add personnel if specified
+      if (data.personnel && data.personnel.length > 0) {
+        for (const person of data.personnel) {
+          const { error: personnelError } = await supabase
+            .from('work_order_personnel')
+            .insert({
+              work_order_id: workOrder.id,
+              personnel_id: person.id,
+              estimated_hours: person.estimated_hours,
+              hourly_rate: person.hourly_rate
+            });
+
+          if (personnelError) {
+            // Rollback: Delete work order, time entry, and equipment
+            if (data.equipment && data.equipment.length > 0) {
+              await supabase.from('work_order_equipment').delete().eq('work_order_id', workOrder.id);
+            }
+            await supabase.from('work_order_time_entries').delete().eq('id', timeEntry.id);
+            await supabase.from('work_orders').delete().eq('id', workOrder.id);
+            throw new Error(`Failed to add personnel: ${personnelError.message}`);
           }
         }
       }

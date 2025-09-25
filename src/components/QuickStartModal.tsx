@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useCustomers } from '@/hooks/useApi';
-import { useEquipment } from '@/hooks/useResources';
+import { useEquipment, usePersonnel } from '@/hooks/useResources';
 import { useQuickStartWorkOrder } from '@/hooks/useQuickStart';
 import { toast } from 'sonner';
 import { Loader2, Zap, Calculator, Plus, X } from 'lucide-react';
@@ -22,6 +22,12 @@ interface SelectedEquipment {
   pricing_type: 'hourly' | 'daily' | 'fixed';
 }
 
+interface SelectedPersonnel {
+  id: string;
+  estimated_hours: number;
+  hourly_rate: number;
+}
+
 interface QuickStartModalProps {
   open: boolean;
   onClose: () => void;
@@ -31,6 +37,7 @@ interface QuickStartModalProps {
 export const QuickStartModal = ({ open, onClose, onSuccess }: QuickStartModalProps) => {
   const { data: customers = [], isLoading: customersLoading } = useCustomers();
   const { data: equipmentList = [], isLoading: equipmentLoading } = useEquipment();
+  const { data: personnelList = [], isLoading: personnelLoading } = usePersonnel();
   const quickStartMutation = useQuickStartWorkOrder();
   
   // Form state
@@ -43,6 +50,9 @@ export const QuickStartModal = ({ open, onClose, onSuccess }: QuickStartModalPro
   const [selectedEquipment, setSelectedEquipment] = useState<SelectedEquipment[]>([]);
   const [newEquipmentId, setNewEquipmentId] = useState<string>('');
   const [newEquipmentQuantity, setNewEquipmentQuantity] = useState<string>('1');
+  const [selectedPersonnel, setSelectedPersonnel] = useState<SelectedPersonnel[]>([]);
+  const [newPersonnelId, setNewPersonnelId] = useState<string>('');
+  const [newPersonnelHours, setNewPersonnelHours] = useState<string>('8');
 
   const generateTitle = (customerName: string) => {
     const today = new Intl.DateTimeFormat('nb-NO', {
@@ -67,8 +77,12 @@ export const QuickStartModal = ({ open, onClose, onSuccess }: QuickStartModalPro
       total += eq.quantity * eq.rate;
     });
     
+    selectedPersonnel.forEach(person => {
+      total += person.estimated_hours * person.hourly_rate;
+    });
+    
     return total;
-  }, [pricingModel, fixedPrice, estimatedHours, hourlyRate, selectedEquipment]);
+  }, [pricingModel, fixedPrice, estimatedHours, hourlyRate, selectedEquipment, selectedPersonnel]);
 
   const addEquipment = () => {
     if (!newEquipmentId) return;
@@ -91,6 +105,28 @@ export const QuickStartModal = ({ open, onClose, onSuccess }: QuickStartModalPro
 
   const removeEquipment = (index: number) => {
     setSelectedEquipment(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const addPersonnel = () => {
+    if (!newPersonnelId) return;
+    
+    const personnel = personnelList.find(p => p.id === newPersonnelId);
+    if (!personnel) return;
+    
+    const estimatedHours = parseFloat(newPersonnelHours) || 8;
+    
+    setSelectedPersonnel(prev => [...prev, {
+      id: personnel.id,
+      estimated_hours: estimatedHours,
+      hourly_rate: personnel.standard_hourly_rate || 500
+    }]);
+    
+    setNewPersonnelId('');
+    setNewPersonnelHours('8');
+  };
+
+  const removePersonnel = (index: number) => {
+    setSelectedPersonnel(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleQuickStart = async () => {
@@ -125,7 +161,8 @@ export const QuickStartModal = ({ open, onClose, onSuccess }: QuickStartModalPro
         price_value: pricingModel === 'fixed' ? parseFloat(fixedPrice) : undefined,
         estimated_hours: pricingModel === 'hourly' ? parseFloat(estimatedHours) : undefined,
         hourly_rate: pricingModel === 'hourly' ? parseFloat(hourlyRate) : undefined,
-        equipment: selectedEquipment.length > 0 ? selectedEquipment : undefined
+        equipment: selectedEquipment.length > 0 ? selectedEquipment : undefined,
+        personnel: selectedPersonnel.length > 0 ? selectedPersonnel : undefined
       };
 
       await quickStartMutation.mutateAsync(requestData);
@@ -138,6 +175,7 @@ export const QuickStartModal = ({ open, onClose, onSuccess }: QuickStartModalPro
       setEstimatedHours('');
       setHourlyRate('500');
       setSelectedEquipment([]);
+      setSelectedPersonnel([]);
       
       onSuccess?.();
       onClose();
@@ -311,6 +349,79 @@ export const QuickStartModal = ({ open, onClose, onSuccess }: QuickStartModalPro
             </div>
           </div>
 
+          {/* Personnel Section */}
+          <div className="space-y-3">
+            <Label>Personell (valgfritt)</Label>
+            <div className="space-y-3">
+              {/* Add Personnel */}
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Select
+                        value={newPersonnelId}
+                        onValueChange={setNewPersonnelId}
+                        disabled={personnelLoading}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={personnelLoading ? "Laster personell..." : "Velg personell"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {personnelList
+                            .filter(p => !selectedPersonnel.find(sp => sp.id === p.id))
+                            .map(personnel => (
+                            <SelectItem key={personnel.id} value={personnel.id}>
+                              {personnel.name} - {personnel.standard_hourly_rate || 500} kr/time
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="w-20">
+                      <Input
+                        type="number"
+                        placeholder="8"
+                        value={newPersonnelHours}
+                        onChange={(e) => setNewPersonnelHours(e.target.value)}
+                        min="0.5"
+                        step="0.5"
+                      />
+                    </div>
+                    <Button onClick={addPersonnel} disabled={!newPersonnelId} size="icon">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Selected Personnel List */}
+              {selectedPersonnel.map((person, index) => {
+                const personnelData = personnelList.find(p => p.id === person.id);
+                return (
+                  <Card key={index}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium">{personnelData?.name}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {person.estimated_hours} timer × {person.hourly_rate} kr = {(person.estimated_hours * person.hourly_rate).toLocaleString('no-NO')} kr
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => removePersonnel(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Optional Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Beskrivelse (valgfritt)</Label>
@@ -348,8 +459,18 @@ export const QuickStartModal = ({ open, onClose, onSuccess }: QuickStartModalPro
                   {pricingModel === 'hourly' && estimatedHours && hourlyRate && (
                     <p className="text-sm text-muted-foreground mt-1">
                       {estimatedHours} timer × {hourlyRate} kr/time
-                      {selectedEquipment.length > 0 && ' + utstyr'}
+                      {(selectedEquipment.length > 0 || selectedPersonnel.length > 0) && ' + ressurser'}
                     </p>
+                  )}
+                  {(selectedEquipment.length > 0 || selectedPersonnel.length > 0) && (
+                    <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                      {selectedEquipment.length > 0 && (
+                        <p>Utstyr: {selectedEquipment.reduce((sum, eq) => sum + (eq.quantity * eq.rate), 0).toLocaleString('no-NO')} kr</p>
+                      )}
+                      {selectedPersonnel.length > 0 && (
+                        <p>Personell: {selectedPersonnel.reduce((sum, person) => sum + (person.estimated_hours * person.hourly_rate), 0).toLocaleString('no-NO')} kr</p>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
