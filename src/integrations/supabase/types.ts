@@ -1097,7 +1097,69 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      site_productivity_stats: {
+        Row: {
+          active_workers: number | null
+          avg_efficiency_percentage: number | null
+          organization_name: string | null
+          site_id: string | null
+          site_name: string | null
+          total_hours_worked: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_revenue_stats: {
+        Row: {
+          avg_project_value: number | null
+          completed_revenue: number | null
+          organization_name: string | null
+          site_id: string | null
+          site_name: string | null
+          total_projects: number | null
+          total_revenue: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_work_order_stats: {
+        Row: {
+          avg_actual_hours: number | null
+          avg_estimated_hours: number | null
+          cancelled_orders: number | null
+          completed_orders: number | null
+          completed_today: number | null
+          in_progress_orders: number | null
+          organization_name: string | null
+          pending_orders: number | null
+          site_id: string | null
+          site_name: string | null
+          total_orders: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       claim_work_order: {
