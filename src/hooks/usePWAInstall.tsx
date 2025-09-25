@@ -23,6 +23,7 @@ export const usePWAInstall = () => {
     setIsIOS(iOS);
 
     const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
+      console.log('PWA: beforeinstallprompt event fired');
       // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
       // Stash the event so it can be triggered later
@@ -32,20 +33,27 @@ export const usePWAInstall = () => {
       const dismissed = localStorage.getItem('pwa-install-dismissed');
       const neverShow = localStorage.getItem('pwa-install-never-show');
       
-      if (neverShow === 'true') return;
+      if (neverShow === 'true') {
+        console.log('PWA: Install prompt permanently dismissed');
+        return;
+      }
       
       if (dismissed) {
         const dismissedTime = parseInt(dismissed);
         const hoursSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60);
-        if (hoursSinceDismissed < 24) return;
+        if (hoursSinceDismissed < 24) {
+          console.log('PWA: Install prompt dismissed recently, waiting...');
+          return;
+        }
       }
       
       // Show install prompt after user has had time to interact with app
       setTimeout(() => {
         if (!isStandalone && !isIOSStandalone) {
+          console.log('PWA: Showing install prompt');
           setShowInstallPrompt(true);
         }
-      }, 10000); // 10 seconds delay
+      }, 3000); // 3 seconds delay for testing
     };
 
     const handleAppInstalled = () => {
@@ -118,7 +126,10 @@ export const usePWAInstall = () => {
       }
       
       // Show iOS prompt after delay
-      setTimeout(() => setShowInstallPrompt(true), 10000);
+      setTimeout(() => {
+        console.log('PWA: Showing iOS install prompt');
+        setShowInstallPrompt(true);
+      }, 3000);
     }
   }, [isIOS, isInstalled]);
 
