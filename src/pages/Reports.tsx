@@ -8,6 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, Clock, DollarSign, Users, BarChart, Download, Eye } from 'lucide-react';
 import { WorkOrderDetails } from '@/components/WorkOrderDetails';
+import { SiteSelector } from '@/components/site/SiteSelector';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 interface ProjectStats {
   id: string;
@@ -23,6 +26,7 @@ interface ProjectStats {
 export default function Reports() {
   const [timeFilter, setTimeFilter] = useState('last_30_days');
   const [userFilter, setUserFilter] = useState('all');
+  const [selectedSiteId, setSelectedSiteId] = useState<string | undefined>(undefined);
   const [projectStats, setProjectStats] = useState<ProjectStats[]>([]);
   const [overallStats, setOverallStats] = useState({
     totalRevenue: 0,
@@ -30,6 +34,8 @@ export default function Reports() {
     totalProjects: 0,
     avgEfficiency: 0
   });
+  const [trendData, setTrendData] = useState<any[]>([]);
+  const [siteComparisonData, setSiteComparisonData] = useState<any[]>([]);
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -38,13 +44,15 @@ export default function Reports() {
 
   useEffect(() => {
     calculateStats();
-  }, [timeFilter]);
+    fetchTrendData();
+    fetchSiteComparison();
+  }, [timeFilter, selectedSiteId]);
 
   const calculateStats = async () => {
     try {
       setLoading(true);
       
-      const { data: workOrdersWithTime, error } = await supabase
+      let query = supabase
         .from('work_orders')
         .select(`
           *,
@@ -55,6 +63,12 @@ export default function Reports() {
           )
         `)
         .eq('status', 'completed');
+
+      if (selectedSiteId) {
+        query = query.eq('site_id', selectedSiteId);
+      }
+
+      const { data: workOrdersWithTime, error } = await query;
 
       if (error) throw error;
 
@@ -113,6 +127,57 @@ export default function Reports() {
       console.error('Error calculating stats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTrendData = async () => {
+    try {
+      let query = supabase
+        .from('work_orders')
+        .select('completed_at, price_value')
+        .eq('status', 'completed')
+        .not('completed_at', 'is', null)
+        .order('completed_at');
+
+      if (selectedSiteId) {
+        query = query.eq('site_id', selectedSiteId);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      // Group by month for trend analysis
+      const monthlyData = (data || []).reduce((acc: any, order: any) => {
+        const month = new Date(order.completed_at).toLocaleString('nb-NO', { 
+          year: 'numeric', 
+          month: 'short' 
+        });
+        if (!acc[month]) {
+          acc[month] = { month, revenue: 0, count: 0 };
+        }
+        acc[month].revenue += order.price_value || 0;
+        acc[month].count += 1;
+        return acc;
+      }, {});
+
+      setTrendData(Object.values(monthlyData));
+    } catch (error) {
+      console.error('Error fetching trend data:', error);
+    }
+  };
+
+  const fetchSiteComparison = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_revenue_stats')
+        .select('*')
+        .order('total_revenue', { ascending: false })
+        .limit(8);
+      
+      if (error) throw error;
+      setSiteComparisonData(data || []);
+    } catch (error) {
+      console.error('Error fetching site comparison:', error);
     }
   };
 
@@ -181,7 +246,15 @@ export default function Reports() {
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-background">
-      <TopBar title="Rapporter" />
+      <TopBar 
+        title="Rapporter" 
+        actions={
+          <SiteSelector 
+            selectedSiteId={selectedSiteId} 
+            onSiteChange={setSelectedSiteId}
+          />
+        }
+      />
       
       <div className="flex-1 p-8">
         {/* Filters */}
@@ -227,6 +300,68 @@ export default function Reports() {
             icon={TrendingUp}
             format="percentage"
           />
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Revenue Trend Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Omsetningstrend</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer
+                config={{
+                  revenue: {
+                    label: "Omsetning",
+                    color: "hsl(var(--chart-1))",
+                  },
+                }}
+                className="h-[200px]"
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={trendData}>
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="revenue" 
+                      stroke="var(--color-revenue)" 
+                      strokeWidth={2}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+
+          {/* Site Comparison Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Site-sammenligning</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer
+                config={{
+                  total_revenue: {
+                    label: "Omsetning",
+                    color: "hsl(var(--chart-2))",
+                  },
+                }}
+                className="h-[200px]"
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsBarChart data={siteComparisonData}>
+                    <XAxis dataKey="site_name" />
+                    <YAxis />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="total_revenue" fill="var(--color-total_revenue)" />
+                  </RechartsBarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Project Performance */}
