@@ -12,8 +12,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { PendingUsersView } from '@/components/admin/PendingUsersView';
+import { OrganizationManagement } from '@/components/admin/OrganizationManagement';
+import { SiteManagement } from '@/components/admin/SiteManagement';
 import { RoleGuard } from '@/components/access/RoleGuard';
-import { User, Bell, Shield, Palette, Database, Save, Users, Clock } from 'lucide-react';
+import { User, Bell, Shield, Palette, Database, Save, Users, Clock, Building2, MapPin } from 'lucide-react';
 
 export default function Settings() {
   const { user } = useAuth();
@@ -62,6 +64,38 @@ export default function Settings() {
                   </TabsContent>
                   <TabsContent value="pending">
                     <PendingUsersView />
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+          </RoleGuard>
+
+          {/* System Administration - Only for System Administrators */}
+          <RoleGuard allowedRoles={['system_admin']} showMessage={false}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="w-5 h-5" />
+                  Systemadministrasjon
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="organizations" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="organizations" className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4" />
+                      Organisasjoner
+                    </TabsTrigger>
+                    <TabsTrigger value="sites" className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      Sites
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="organizations">
+                    <OrganizationManagement />
+                  </TabsContent>
+                  <TabsContent value="sites">
+                    <SiteManagement />
                   </TabsContent>
                 </Tabs>
               </CardContent>
