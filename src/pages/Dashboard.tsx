@@ -11,6 +11,8 @@ import { TopBar } from '@/components/TopBar';
 import { SiteSelector } from '@/components/site/SiteSelector';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { MobileOptimizedChart } from '@/components/charts/MobileOptimizedChart';
+import { MobileStatsGrid } from '@/components/mobile/MobileStatsGrid';
 
 interface WorkOrder {
   id: string;
@@ -258,62 +260,39 @@ const Dashboard = () => {
           />
         }
       />
-      <div className="flex-1 p-8 bg-background overflow-auto">
+      <div className="flex-1 p-4 md:p-8 bg-background overflow-auto">
         <div className="max-w-7xl mx-auto space-y-8">
           
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Totale ordrer</p>
-                    <p className="text-2xl font-bold">{stats.totalWorkOrders}</p>
-                  </div>
-                  <FileText className="h-8 w-8 text-primary" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Fullført i dag</p>
-                    <p className="text-2xl font-bold text-green-600">{stats.completedToday}</p>
-                  </div>
-                  <CheckCircle className="h-8 w-8 text-green-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Ventende ordrer</p>
-                    <p className="text-2xl font-bold text-orange-600">{stats.pendingOrders}</p>
-                  </div>
-                  <AlertCircle className="h-8 w-8 text-orange-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Aktive arbeidere</p>
-                    <p className="text-2xl font-bold">{stats.activeWorkers}</p>
-                  </div>
-                  <Users className="h-8 w-8 text-primary" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <MobileStatsGrid 
+            stats={[
+              {
+                title: "Totale ordrer",
+                value: stats.totalWorkOrders,
+                icon: <FileText className="h-full w-full text-primary" />,
+              },
+              {
+                title: "Fullført i dag", 
+                value: stats.completedToday,
+                icon: <CheckCircle className="h-full w-full text-green-600" />,
+                color: "success"
+              },
+              {
+                title: "Ventende ordrer",
+                value: stats.pendingOrders, 
+                icon: <AlertCircle className="h-full w-full text-orange-600" />,
+                color: "warning"
+              },
+              {
+                title: "Aktive arbeidere",
+                value: stats.activeWorkers,
+                icon: <Users className="h-full w-full text-primary" />,
+              }
+            ]}
+          />
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             <Card 
               className="hover:shadow-md transition-shadow cursor-pointer"
               onClick={() => navigate('/work-orders')}
@@ -367,90 +346,92 @@ const Dashboard = () => {
           </div>
 
           {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
             {/* Site Performance Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Site-ytelse
-                </CardTitle>
-                <CardDescription>Arbeidsordrer per site</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    total_orders: {
-                      label: "Ordrer",
-                      color: "hsl(var(--chart-1))",
-                    },
-                  }}
-                  className="h-[200px]"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={siteStats}>
-                      <XAxis dataKey="site_name" />
-                      <YAxis />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="total_orders" fill="var(--color-total_orders)" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+            <MobileOptimizedChart
+              title="Site-ytelse"
+              description="Arbeidsordrer per site"
+              icon={<BarChart3 className="h-5 w-5" />}
+              config={{
+                total_orders: {
+                  label: "Ordrer",
+                  color: "hsl(var(--chart-1))",
+                },
+              }}
+              mobileHeight="h-[160px]"
+              desktopHeight="h-[200px]"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={siteStats}>
+                  <XAxis 
+                    dataKey="site_name" 
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `${value}`}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar 
+                    dataKey="total_orders" 
+                    fill="var(--color-total_orders)" 
+                    radius={[2, 2, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </MobileOptimizedChart>
 
             {/* Status Distribution Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Statusfordeling
-                </CardTitle>
-                <CardDescription>Fordeling av arbeidsordrer etter status</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    pending: {
-                      label: "Venter",
-                      color: "hsl(var(--chart-1))",
-                    },
-                    in_progress: {
-                      label: "Pågår", 
-                      color: "hsl(var(--chart-2))",
-                    },
-                    completed: {
-                      label: "Ferdig",
-                      color: "hsl(var(--chart-3))",
-                    },
-                    cancelled: {
-                      label: "Avbrutt",
-                      color: "hsl(var(--chart-4))",
-                    },
-                  }}
-                  className="h-[200px]"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={statusChartData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#8884d8"
-                      >
-                        {statusChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+            <MobileOptimizedChart
+              title="Statusfordeling"
+              description="Fordeling av arbeidsordrer etter status"
+              icon={<TrendingUp className="h-5 w-5" />}
+              config={{
+                pending: {
+                  label: "Venter",
+                  color: "hsl(var(--chart-1))",
+                },
+                in_progress: {
+                  label: "Pågår", 
+                  color: "hsl(var(--chart-2))",
+                },
+                completed: {
+                  label: "Ferdig",
+                  color: "hsl(var(--chart-3))",
+                },
+                cancelled: {
+                  label: "Avbrutt",
+                  color: "hsl(var(--chart-4))",
+                },
+              }}
+              mobileHeight="h-[160px]"
+              desktopHeight="h-[200px]"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusChartData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius="80%"
+                    innerRadius="40%"
+                    fill="#8884d8"
+                    paddingAngle={2}
+                  >
+                    {statusChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </MobileOptimizedChart>
           </div>
 
           {/* Recent Work Orders */}

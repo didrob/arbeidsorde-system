@@ -11,6 +11,11 @@ import { WorkOrderDetails } from '@/components/WorkOrderDetails';
 import { SiteSelector } from '@/components/site/SiteSelector';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { MobileOptimizedChart } from '@/components/charts/MobileOptimizedChart';
+import { MobileDataTable } from '@/components/mobile/MobileDataTable';
+import { MobileStatsGrid } from '@/components/mobile/MobileStatsGrid';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 interface ProjectStats {
   id: string;
@@ -39,6 +44,7 @@ export default function Reports() {
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   const { data: workOrders } = useWorkOrders();
 
@@ -256,11 +262,14 @@ export default function Reports() {
         }
       />
       
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-4 md:p-8">
         {/* Filters */}
-        <div className="flex gap-4 mb-8">
+        <div className={cn(
+          "flex gap-4 mb-8",
+          isMobile && "flex-col"
+        )}>
           <Select value={timeFilter} onValueChange={setTimeFilter}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className={isMobile ? "w-full" : "w-48"}>
               <SelectValue placeholder="Velg tidsperiode" />
             </SelectTrigger>
             <SelectContent>
@@ -270,158 +279,175 @@ export default function Reports() {
               <SelectItem value="year_to_date">År til dato</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline">
+          <Button variant="outline" className={isMobile ? "w-full" : "w-auto"}>
             <Download className="h-4 w-4 mr-2" />
             Eksporter
           </Button>
         </div>
 
         {/* Overview Statistics */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          <StatCard 
-            title="Total omsetning" 
-            value={overallStats.totalRevenue} 
-            icon={DollarSign}
-            format="currency"
-          />
-          <StatCard 
-            title="Total timer arbeidet" 
-            value={overallStats.totalHours} 
-            icon={Clock}
-          />
-          <StatCard 
-            title="Fullførte prosjekter" 
-            value={overallStats.totalProjects} 
-            icon={BarChart}
-          />
-          <StatCard 
-            title="Gjennomsnittlig effektivitet" 
-            value={overallStats.avgEfficiency} 
-            icon={TrendingUp}
-            format="percentage"
-          />
-        </div>
+        <MobileStatsGrid 
+          stats={[
+            {
+              title: "Total omsetning",
+              value: overallStats.totalRevenue,
+              icon: <DollarSign className="h-full w-full text-muted-foreground" />,
+              format: "currency"
+            },
+            {
+              title: "Total timer arbeidet", 
+              value: overallStats.totalHours,
+              icon: <Clock className="h-full w-full text-muted-foreground" />,
+            },
+            {
+              title: "Fullførte prosjekter",
+              value: overallStats.totalProjects,
+              icon: <BarChart className="h-full w-full text-muted-foreground" />,
+            },
+            {
+              title: "Gjennomsnittlig effektivitet",
+              value: overallStats.avgEfficiency,
+              icon: <TrendingUp className="h-full w-full text-muted-foreground" />,
+              format: "percentage"
+            }
+          ]}
+          className="mb-8"
+        />
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-8">
           {/* Revenue Trend Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Omsetningstrend</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{
-                  revenue: {
-                    label: "Omsetning",
-                    color: "hsl(var(--chart-1))",
-                  },
-                }}
-                className="h-[200px]"
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={trendData}>
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Line 
-                      type="monotone" 
-                      dataKey="revenue" 
-                      stroke="var(--color-revenue)" 
-                      strokeWidth={2}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+          <MobileOptimizedChart
+            title="Omsetningstrend"
+            description="Månedlig omsetningsutvikling"
+            config={{
+              revenue: {
+                label: "Omsetning",
+                color: "hsl(var(--chart-1))",
+              },
+            }}
+            mobileHeight="h-[160px]"
+            desktopHeight="h-[200px]"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={trendData}>
+                <XAxis 
+                  dataKey="month" 
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis 
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value) => `${Math.round(value/1000)}k`}
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Line 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="var(--color-revenue)" 
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                  activeDot={{ r: 5 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </MobileOptimizedChart>
 
           {/* Site Comparison Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Site-sammenligning</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{
-                  total_revenue: {
-                    label: "Omsetning",
-                    color: "hsl(var(--chart-2))",
-                  },
-                }}
-                className="h-[200px]"
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <RechartsBarChart data={siteComparisonData}>
-                    <XAxis dataKey="site_name" />
-                    <YAxis />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="total_revenue" fill="var(--color-total_revenue)" />
-                  </RechartsBarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+          <MobileOptimizedChart
+            title="Site-sammenligning"
+            description="Omsetning per site"
+            config={{
+              total_revenue: {
+                label: "Omsetning",
+                color: "hsl(var(--chart-2))",
+              },
+            }}
+            mobileHeight="h-[160px]"
+            desktopHeight="h-[200px]"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <RechartsBarChart data={siteComparisonData}>
+                <XAxis 
+                  dataKey="site_name" 
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis 
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value) => `${Math.round(value/1000)}k`}
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar 
+                  dataKey="total_revenue" 
+                  fill="var(--color-total_revenue)" 
+                  radius={[2, 2, 0, 0]}
+                />
+              </RechartsBarChart>
+            </ResponsiveContainer>
+          </MobileOptimizedChart>
         </div>
 
         {/* Project Performance */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Prosjektytelse med effektivitetsanalyse</CardTitle>
+            <CardTitle className={isMobile ? "text-base" : "text-lg"}>
+              Prosjektytelse med effektivitetsanalyse
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="flex items-center justify-center h-32">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              </div>
-            ) : projectStats.length > 0 ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-6 gap-4 pb-2 border-b font-medium text-sm text-muted-foreground">
-                  <div>Prosjekt</div>
-                  <div>Estimert tid</div>
-                  <div>Faktisk tid</div>
-                  <div>Effektivitet</div>
-                  <div>Omsetning</div>
-                  <div>Handlinger</div>
-                </div>
-                {projectStats.map((project) => (
-                  <div key={project.id} className="grid grid-cols-6 gap-4 py-3 border-b last:border-b-0">
+          <CardContent className={isMobile ? "px-2" : "p-6"}>
+            <MobileDataTable
+              data={projectStats}
+              columns={[
+                {
+                  key: 'title',
+                  label: 'Prosjekt',
+                  render: (_, item) => (
                     <div>
-                      <div className="font-medium">{project.title}</div>
-                      <div className="text-sm text-muted-foreground">{project.customer_name}</div>
+                      <div className="font-medium">{item.title}</div>
+                      <div className="text-sm text-muted-foreground">{item.customer_name}</div>
                     </div>
-                    <div className="text-sm">
-                      {project.estimated_hours.toFixed(1)}t
-                    </div>
-                    <div className="text-sm">
-                      {project.actual_hours.toFixed(1)}t
-                    </div>
-                    <div>
-                      <Badge className={`${getEfficiencyColor(project.efficiency)} border-0`}>
-                        {project.efficiency}%
-                      </Badge>
-                    </div>
-                    <div className="text-sm font-medium">
-                      {formatCurrency(project.revenue)}
-                    </div>
-                    <div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewDetails(project)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        Detaljer
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                Ingen fullførte prosjekter funnet for valgt periode.
-              </div>
-            )}
+                  ),
+                },
+                {
+                  key: 'estimated_hours',
+                  label: 'Estimert tid',
+                  render: (value) => `${value.toFixed(1)}t`,
+                  mobileHidden: true,
+                },
+                {
+                  key: 'actual_hours',
+                  label: 'Faktisk tid',
+                  render: (value) => `${value.toFixed(1)}t`,
+                  mobileHidden: true,
+                },
+                {
+                  key: 'efficiency',
+                  label: 'Effektivitet',
+                  render: (value) => (
+                    <Badge className={`${getEfficiencyColor(value)} border-0`}>
+                      {value}%
+                    </Badge>
+                  ),
+                },
+                {
+                  key: 'revenue',
+                  label: 'Omsetning',
+                  render: (value) => (
+                    <span className="font-medium">{formatCurrency(value)}</span>
+                  ),
+                },
+              ]}
+              onRowClick={handleViewDetails}
+              loading={loading}
+              emptyMessage="Ingen fullførte prosjekter funnet for valgt periode."
+            />
           </CardContent>
         </Card>
 

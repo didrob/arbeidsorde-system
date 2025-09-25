@@ -3,6 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { MapPin } from 'lucide-react';
 import { useUserAccessibleSites } from '@/hooks/useOrganizations';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SiteSelectorProps {
   selectedSiteId?: string;
@@ -12,6 +13,7 @@ interface SiteSelectorProps {
 
 export function SiteSelector({ selectedSiteId, onSiteChange, className }: SiteSelectorProps) {
   const { data: accessibleSites, isLoading } = useUserAccessibleSites();
+  const isMobile = useIsMobile();
 
   if (isLoading) {
     return (
@@ -35,9 +37,9 @@ export function SiteSelector({ selectedSiteId, onSiteChange, className }: SiteSe
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <MapPin className="w-4 h-4" />
+      <MapPin className="w-4 h-4 flex-shrink-0" />
       <Select value={selectedSiteId || 'all'} onValueChange={(value) => onSiteChange(value === 'all' ? undefined : value)}>
-        <SelectTrigger className="w-[200px]">
+        <SelectTrigger className={isMobile ? "w-full min-w-[140px]" : "w-[200px]"}>
           <SelectValue placeholder="Velg site" />
         </SelectTrigger>
         <SelectContent>

@@ -317,6 +317,38 @@ All colors MUST be HSL.
     @apply hidden md:block;
   }
 
+  /* Chart mobile optimizations */
+  .mobile-chart-text {
+    font-size: 10px;
+  }
+  
+  @media (min-width: 640px) {
+    .mobile-chart-text {
+      font-size: 12px;
+    }
+  }
+  
+  /* Data table mobile optimizations */
+  .mobile-table-spacing {
+    @apply space-y-2;
+  }
+  
+  @media (min-width: 768px) {
+    .mobile-table-spacing {
+      @apply space-y-4;
+    }
+  }
+  
+  .mobile-card-compact {
+    @apply p-3 rounded-lg border;
+  }
+  
+  @media (min-width: 640px) {
+    .mobile-card-compact {
+      @apply p-4;
+    }
+  }
+
   /* Haptic feedback simulation */
   .haptic-tap {
     animation: hapticTap 0.1s ease-out;
