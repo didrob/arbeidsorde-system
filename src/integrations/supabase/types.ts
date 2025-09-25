@@ -1073,11 +1073,27 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_accessible_sites: {
+        Args: { user_uuid?: string }
+        Returns: {
+          organization_name: string
+          site_id: string
+          site_name: string
+        }[]
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
       is_field_worker: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_site_manager: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_system_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
