@@ -1,30 +1,32 @@
-import { useState } from 'react';
-import { useSites, useCreateSite } from '@/hooks/useOrganizations';
+import { useState, useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Plus, Search, Edit, ToggleLeft, ToggleRight, MapPin, Building } from 'lucide-react';
+import { useSites, useToggleSiteStatus } from '@/hooks/useOrganizations';
 import { CreateSiteDialog } from './CreateSiteDialog';
-import { Loader2, Plus, Search, MapPin, Building2 } from 'lucide-react';
+import { EditSiteDialog } from './EditSiteDialog';
+import { LoadingState } from '@/components/common/LoadingState';
 
 export function SiteManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  
+  const [editingSite, setEditingSite] = useState<any>(null);
   const { data: sites, isLoading } = useSites();
+  const toggleStatus = useToggleSiteStatus();
 
-  const filteredSites = sites?.filter(site =>
-    site.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    site.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    site.address?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const filteredSites = useMemo(() => {
+    return sites?.filter(site =>
+      site.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      site.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      site.address?.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || [];
+  }, [sites, searchTerm]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
+    return <LoadingState />;
   }
 
   return (
@@ -71,7 +73,7 @@ export function SiteManagement() {
                       <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                         {site.organizations && (
                           <div className="flex items-center gap-1">
-                            <Building2 className="w-3 h-3" />
+                            <Building className="w-3 h-3" />
                             <span>{site.organizations.name}</span>
                           </div>
                         )}
@@ -97,11 +99,31 @@ export function SiteManagement() {
                     Opprettet: {new Date(site.created_at).toLocaleDateString('nb-NO')}
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setEditingSite(site)}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
                       Rediger
                     </Button>
-                    <Button variant="outline" size="sm">
-                      {site.is_active ? 'Deaktiver' : 'Aktiver'}
+                    <Button
+                      size="sm"
+                      variant={site.is_active ? "secondary" : "default"}
+                      onClick={() => toggleStatus.mutate({ id: site.id, is_active: !site.is_active })}
+                      disabled={toggleStatus.isPending}
+                    >
+                      {site.is_active ? (
+                        <>
+                          <ToggleLeft className="h-4 w-4 mr-1" />
+                          Deaktiver
+                        </>
+                      ) : (
+                        <>
+                          <ToggleRight className="h-4 w-4 mr-1" />
+                          Aktiver
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -111,9 +133,14 @@ export function SiteManagement() {
         )}
       </div>
 
-      <CreateSiteDialog
+      <CreateSiteDialog 
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
+      />
+      <EditSiteDialog
+        open={!!editingSite}
+        onOpenChange={(open) => !open && setEditingSite(null)}
+        site={editingSite}
       />
     </div>
   );

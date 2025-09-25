@@ -1,29 +1,31 @@
-import { useState } from 'react';
-import { useOrganizations, useCreateOrganization } from '@/hooks/useOrganizations';
+import { useState, useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Plus, Search, Edit, ToggleLeft, ToggleRight, Building2 } from 'lucide-react';
+import { useOrganizations, useToggleOrganizationStatus, type Organization } from '@/hooks/useOrganizations';
 import { CreateOrganizationDialog } from './CreateOrganizationDialog';
-import { Loader2, Plus, Search, Building2 } from 'lucide-react';
+import { EditOrganizationDialog } from './EditOrganizationDialog';
+import { LoadingState } from '@/components/common/LoadingState';
 
 export function OrganizationManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  
+  const [editingOrganization, setEditingOrganization] = useState<Organization | null>(null);
   const { data: organizations, isLoading } = useOrganizations();
+  const toggleStatus = useToggleOrganizationStatus();
 
-  const filteredOrganizations = organizations?.filter(org =>
-    org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    org.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const filteredOrganizations = useMemo(() => {
+    return organizations?.filter(org =>
+      org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      org.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || [];
+  }, [organizations, searchTerm]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
+    return <LoadingState />;
   }
 
   return (
@@ -85,11 +87,31 @@ export function OrganizationManagement() {
                     Opprettet: {new Date(org.created_at).toLocaleDateString('nb-NO')}
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setEditingOrganization(org)}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
                       Rediger
                     </Button>
-                    <Button variant="outline" size="sm">
-                      {org.is_active ? 'Deaktiver' : 'Aktiver'}
+                    <Button
+                      size="sm"
+                      variant={org.is_active ? "secondary" : "default"}
+                      onClick={() => toggleStatus.mutate({ id: org.id, is_active: !org.is_active })}
+                      disabled={toggleStatus.isPending}
+                    >
+                      {org.is_active ? (
+                        <>
+                          <ToggleLeft className="h-4 w-4 mr-1" />
+                          Deaktiver
+                        </>
+                      ) : (
+                        <>
+                          <ToggleRight className="h-4 w-4 mr-1" />
+                          Aktiver
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -99,9 +121,14 @@ export function OrganizationManagement() {
         )}
       </div>
 
-      <CreateOrganizationDialog
+      <CreateOrganizationDialog 
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
+      />
+      <EditOrganizationDialog
+        open={!!editingOrganization}
+        onOpenChange={(open) => !open && setEditingOrganization(null)}
+        organization={editingOrganization}
       />
     </div>
   );

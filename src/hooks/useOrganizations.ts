@@ -78,6 +78,56 @@ export const useCreateOrganization = () => {
   });
 };
 
+export const useUpdateOrganization = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Organization> }) => {
+      const { data, error } = await supabase
+        .from('organizations')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.organizations });
+      toast.success('Organisasjon oppdatert');
+    },
+    onError: (error: any) => {
+      toast.error(`Kunne ikke oppdatere organisasjon: ${error.message}`);
+    },
+  });
+};
+
+export const useToggleOrganizationStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
+      const { data, error } = await supabase
+        .from('organizations')
+        .update({ is_active })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.organizations });
+      toast.success(`Organisasjon ${data.is_active ? 'aktivert' : 'deaktivert'}`);
+    },
+    onError: (error: any) => {
+      toast.error(`Kunne ikke endre organisasjonsstatus: ${error.message}`);
+    },
+  });
+};
+
 // Sites hooks
 export const useSites = (organizationId?: string) => {
   return useQuery({
@@ -139,6 +189,56 @@ export const useCreateSite = () => {
     },
     onError: (error: any) => {
       toast.error(`Kunne ikke opprette site: ${error.message}`);
+    },
+  });
+};
+
+export const useUpdateSite = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Site> }) => {
+      const { data, error } = await supabase
+        .from('sites')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.sites });
+      toast.success('Site oppdatert');
+    },
+    onError: (error: any) => {
+      toast.error(`Kunne ikke oppdatere site: ${error.message}`);
+    },
+  });
+};
+
+export const useToggleSiteStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
+      const { data, error } = await supabase
+        .from('sites')
+        .update({ is_active })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.sites });
+      toast.success(`Site ${data.is_active ? 'aktivert' : 'deaktivert'}`);
+    },
+    onError: (error: any) => {
+      toast.error(`Kunne ikke endre site-status: ${error.message}`);
     },
   });
 };
