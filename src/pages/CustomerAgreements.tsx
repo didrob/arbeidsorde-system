@@ -333,12 +333,12 @@ export default function CustomerAgreements() {
               
               <div>
                 <Label htmlFor="customer_filter">Filtrer på kunde</Label>
-                <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
+                <Select value={selectedCustomer || 'all'} onValueChange={(value) => setSelectedCustomer(value === 'all' ? '' : value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Alle kunder" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Alle kunder</SelectItem>
+                    <SelectItem value="all">Alle kunder</SelectItem>
                     {customers?.map(customer => (
                       <SelectItem key={customer.id} value={customer.id}>
                         {customer.name}

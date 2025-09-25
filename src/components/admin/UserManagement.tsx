@@ -522,12 +522,12 @@ export function UserManagement() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="create-org">Organization (Optional)</Label>
-              <Select onValueChange={(value) => setCreateForm({ ...createForm, organization_id: value })}>
+              <Select onValueChange={(value) => setCreateForm({ ...createForm, organization_id: value === 'none' ? '' : value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select organization" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No organization</SelectItem>
+                  <SelectItem value="none">No organization</SelectItem>
                   {organizations.map((org) => (
                     <SelectItem key={org.id} value={org.id}>
                       {org.name}
@@ -589,12 +589,12 @@ export function UserManagement() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-org">Organization</Label>
-              <Select value={editForm.organization_id} onValueChange={(value) => setEditForm({ ...editForm, organization_id: value })}>
+              <Select value={editForm.organization_id || 'none'} onValueChange={(value) => setEditForm({ ...editForm, organization_id: value === 'none' ? '' : value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select organization" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No organization</SelectItem>
+                  <SelectItem value="none">No organization</SelectItem>
                   {organizations.map((org) => (
                     <SelectItem key={org.id} value={org.id}>
                       {org.name}

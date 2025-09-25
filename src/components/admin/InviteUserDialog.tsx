@@ -61,10 +61,10 @@ export function InviteUserDialog({ open, onOpenChange }: InviteUserDialogProps) 
   // Fetch sites when organization changes
   const handleOrganizationChange = async (orgId: string) => {
     setSelectedOrgId(orgId);
-    form.setValue('organizationId', orgId);
+    form.setValue('organizationId', orgId === 'none' ? '' : orgId);
     form.setValue('siteId', '');
     
-    if (orgId) {
+    if (orgId && orgId !== 'none') {
       const { data: orgSites } = await supabase
         .from('sites')
         .select('id, name')
@@ -196,7 +196,7 @@ export function InviteUserDialog({ open, onOpenChange }: InviteUserDialogProps) 
                 <SelectValue placeholder="Select organization" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No organization</SelectItem>
+                <SelectItem value="none">No organization</SelectItem>
                 {organizations.map((org) => (
                   <SelectItem key={org.id} value={org.id}>
                     {org.name}
@@ -209,12 +209,12 @@ export function InviteUserDialog({ open, onOpenChange }: InviteUserDialogProps) 
           {selectedOrgId && sites.length > 0 && (
             <div className="space-y-2">
               <Label htmlFor="site">Site (Optional)</Label>
-              <Select onValueChange={(value) => form.setValue('siteId', value)}>
+              <Select onValueChange={(value) => form.setValue('siteId', value === 'none' ? '' : value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select site" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No specific site</SelectItem>
+                  <SelectItem value="none">No specific site</SelectItem>
                   {sites.map((site) => (
                     <SelectItem key={site.id} value={site.id}>
                       {site.name}

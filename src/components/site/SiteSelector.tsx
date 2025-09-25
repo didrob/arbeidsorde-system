@@ -36,12 +36,12 @@ export function SiteSelector({ selectedSiteId, onSiteChange, className }: SiteSe
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <MapPin className="w-4 h-4" />
-      <Select value={selectedSiteId || ''} onValueChange={(value) => onSiteChange(value || undefined)}>
+      <Select value={selectedSiteId || 'all'} onValueChange={(value) => onSiteChange(value === 'all' ? undefined : value)}>
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Velg site" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">Alle sites</SelectItem>
+          <SelectItem value="all">Alle sites</SelectItem>
           {accessibleSites.map((site) => (
             <SelectItem key={site.site_id} value={site.site_id}>
               <div className="flex flex-col">
