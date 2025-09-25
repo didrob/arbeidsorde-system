@@ -172,6 +172,27 @@ export type Database = {
             foreignKeyName: "customers_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "customers_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "customers_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "customers_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
             referencedRelation: "sites"
             referencedColumns: ["id"]
           },
@@ -215,6 +236,27 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "equipment_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "equipment_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "equipment_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
           {
             foreignKeyName: "equipment_site_id_fkey"
             columns: ["site_id"]
@@ -377,6 +419,27 @@ export type Database = {
             foreignKeyName: "materials_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "materials_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "materials_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "materials_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
             referencedRelation: "sites"
             referencedColumns: ["id"]
           },
@@ -451,6 +514,27 @@ export type Database = {
             foreignKeyName: "personnel_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "personnel_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "personnel_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "personnel_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
             referencedRelation: "sites"
             referencedColumns: ["id"]
           },
@@ -500,6 +584,27 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "profiles_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "profiles_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
           },
           {
             foreignKeyName: "profiles_site_id_fkey"
@@ -609,6 +714,27 @@ export type Database = {
             foreignKeyName: "user_invitations_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "user_invitations_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "user_invitations_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "user_invitations_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
             referencedRelation: "sites"
             referencedColumns: ["id"]
           },
@@ -637,6 +763,27 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_site_access_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "user_site_access_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "user_site_access_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
           {
             foreignKeyName: "user_site_access_site_id_fkey"
             columns: ["site_id"]
@@ -1090,6 +1237,27 @@ export type Database = {
             foreignKeyName: "work_orders_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "work_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "work_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "work_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
             referencedRelation: "sites"
             referencedColumns: ["id"]
           },
@@ -1106,15 +1274,7 @@ export type Database = {
           site_name: string | null
           total_hours_worked: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "work_orders_site_id_fkey"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       site_revenue_stats: {
         Row: {
@@ -1126,15 +1286,7 @@ export type Database = {
           total_projects: number | null
           total_revenue: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "work_orders_site_id_fkey"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       site_work_order_stats: {
         Row: {
@@ -1150,15 +1302,7 @@ export type Database = {
           site_name: string | null
           total_orders: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "work_orders_site_id_fkey"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
