@@ -7,19 +7,24 @@ export function useIsMobile() {
 
   React.useEffect(() => {
     const checkIfMobile = () => {
-      // Check for touch capability and screen size
+      // Prioritize touch capability over screen size for true mobile detection
       const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
       const isSmallScreen = window.innerWidth < MOBILE_BREAKPOINT;
       
-      // Consider it mobile if it has touch OR is small screen
-      // This ensures mobile layout persists even in landscape orientation
-      setIsMobile(hasTouch || isSmallScreen);
+      // Primary check: if device has touch capability, it's mobile regardless of orientation
+      // Secondary check: if screen is small, treat as mobile (for desktop browsers in narrow windows)
+      const isMobileDevice = hasTouch || isSmallScreen;
+      
+      setIsMobile(isMobileDevice);
     };
 
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
     
-    // Listen for both resize and orientation changes
-    const handleChange = () => checkIfMobile();
+    // Listen for multiple events to catch all orientation changes
+    const handleChange = () => {
+      // Use requestAnimationFrame to ensure layout has updated after orientation change
+      requestAnimationFrame(checkIfMobile);
+    };
     
     mql.addEventListener("change", handleChange);
     window.addEventListener("orientationchange", handleChange);

@@ -158,11 +158,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    toast({
-      title: "Logget ut",
-      description: "Du er nå logget ut av systemet.",
-    });
+    try {
+      // Always clear local state first to ensure UI updates immediately
+      setUser(null);
+      setSession(null);
+      setUserRole(null);
+      setNeedsOnboarding(false);
+      
+      // Attempt server logout
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.log('Logout error (forcing local logout):', error.message);
+        // Even if server logout fails, we've already cleared local state
+      }
+      
+      toast({
+        title: "Logget ut",
+        description: "Du er nå logget ut av systemet.",
+      });
+      
+      // Force navigation to auth page
+      window.location.href = '/auth';
+      
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force logout anyway by clearing state and redirecting
+      setUser(null);
+      setSession(null);
+      setUserRole(null);
+      setNeedsOnboarding(false);
+      
+      toast({
+        title: "Logget ut",
+        description: "Du er nå logget ut av systemet.",
+      });
+      
+      window.location.href = '/auth';
+    }
   };
 
   const value = {

@@ -445,7 +445,7 @@ export const MobileFieldWorker = () => {
                           )}
                            
                           {order.status === 'in_progress' && (
-                            <div className="flex flex-col xs:flex-row gap-2 w-full xs:w-auto">
+                            <div className="flex flex-col gap-2 w-full">
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -453,7 +453,7 @@ export const MobileFieldWorker = () => {
                                   setActiveWorkOrderId(order.id);
                                   setShowTimeTracker(true);
                                 }}
-                                className="focus-ring w-full xs:w-auto"
+                                className="focus-ring w-full"
                               >
                                 <Clock className="h-4 w-4 mr-2" />
                                 Timer
@@ -462,7 +462,7 @@ export const MobileFieldWorker = () => {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => updateWorkOrderStatus(order.id, 'completed')}
-                                className="focus-ring bg-green-50 border-green-200 text-green-700 hover:bg-green-100 w-full xs:w-auto"
+                                className="focus-ring bg-green-50 border-green-200 text-green-700 hover:bg-green-100 w-full"
                               >
                                 <CheckCircle className="h-4 w-4 mr-2" />
                                 Fullfør
