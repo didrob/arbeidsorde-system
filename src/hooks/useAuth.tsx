@@ -10,6 +10,10 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   isFieldWorker: boolean;
+  isSystemAdmin: boolean;
+  isSiteManager: boolean;
+  isBillingManager: boolean;
+  isFieldSupervisor: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -157,6 +161,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     isAdmin: userRole === 'admin',
     isFieldWorker: userRole === 'field_worker',
+    isSystemAdmin: userRole === 'system_admin',
+    isSiteManager: userRole === 'site_manager',
+    isBillingManager: userRole === 'billing_manager',
+    isFieldSupervisor: userRole === 'field_supervisor',
     signIn,
     signUp,
     signOut,

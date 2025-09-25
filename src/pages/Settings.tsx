@@ -9,6 +9,8 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { UserManagement } from '@/components/admin/UserManagement';
+import { RoleGuard } from '@/components/access/RoleGuard';
 import { User, Bell, Shield, Palette, Database, Save } from 'lucide-react';
 
 export default function Settings() {
@@ -32,6 +34,11 @@ export default function Settings() {
       
       <div className="flex-1 p-8">
         <div className="max-w-4xl mx-auto space-y-8">
+          {/* User Management - Only for system admins */}
+          <RoleGuard allowedRoles={['system_admin']} showMessage={false}>
+            <UserManagement />
+          </RoleGuard>
+
           {/* Profile Settings */}
           <Card>
             <CardHeader>
