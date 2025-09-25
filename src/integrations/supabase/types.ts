@@ -142,6 +142,7 @@ export type Database = {
           id: string
           name: string
           phone: string | null
+          site_id: string | null
           updated_at: string
         }
         Insert: {
@@ -152,6 +153,7 @@ export type Database = {
           id?: string
           name: string
           phone?: string | null
+          site_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -162,9 +164,18 @@ export type Database = {
           id?: string
           name?: string
           phone?: string | null
+          site_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customers_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       equipment: {
         Row: {
@@ -175,6 +186,7 @@ export type Database = {
           is_active: boolean | null
           name: string
           pricing_type: string
+          site_id: string | null
           standard_rate: number | null
           updated_at: string
         }
@@ -186,6 +198,7 @@ export type Database = {
           is_active?: boolean | null
           name: string
           pricing_type?: string
+          site_id?: string | null
           standard_rate?: number | null
           updated_at?: string
         }
@@ -197,10 +210,19 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           pricing_type?: string
+          site_id?: string | null
           standard_rate?: number | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "equipment_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoice_line_items: {
         Row: {
@@ -328,6 +350,7 @@ export type Database = {
           id: string
           name: string
           price: number | null
+          site_id: string | null
           unit: string
           updated_at: string
         }
@@ -336,6 +359,7 @@ export type Database = {
           id?: string
           name: string
           price?: number | null
+          site_id?: string | null
           unit?: string
           updated_at?: string
         }
@@ -344,7 +368,43 @@ export type Database = {
           id?: string
           name?: string
           price?: number | null
+          site_id?: string | null
           unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materials_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
           updated_at?: string
         }
         Relationships: []
@@ -358,6 +418,7 @@ export type Database = {
           name: string
           phone: string | null
           role: string | null
+          site_id: string | null
           standard_hourly_rate: number | null
           updated_at: string
         }
@@ -369,6 +430,7 @@ export type Database = {
           name: string
           phone?: string | null
           role?: string | null
+          site_id?: string | null
           standard_hourly_rate?: number | null
           updated_at?: string
         }
@@ -380,10 +442,19 @@ export type Database = {
           name?: string
           phone?: string | null
           role?: string | null
+          site_id?: string | null
           standard_hourly_rate?: number | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "personnel_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -391,8 +462,10 @@ export type Database = {
           full_name: string | null
           id: string
           is_active: boolean | null
+          organization_id: string | null
           phone: string | null
           role: string
+          site_id: string | null
           updated_at: string
           user_id: string
         }
@@ -401,8 +474,10 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_active?: boolean | null
+          organization_id?: string | null
           phone?: string | null
           role?: string
+          site_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -411,12 +486,102 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_active?: boolean | null
+          organization_id?: string | null
           phone?: string | null
           role?: string
+          site_id?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sites: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          location: string | null
+          name: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          name: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          name?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_site_access: {
+        Row: {
+          granted_at: string
+          granted_by: string
+          id: string
+          site_id: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by: string
+          id?: string
+          site_id: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string
+          id?: string
+          site_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_site_access_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       work_order_attachments: {
         Row: {
@@ -779,6 +944,7 @@ export type Database = {
           pricing_model: string | null
           pricing_type: string
           requires_time_tracking: boolean | null
+          site_id: string | null
           started_at: string | null
           status: string
           title: string
@@ -803,6 +969,7 @@ export type Database = {
           pricing_model?: string | null
           pricing_type?: string
           requires_time_tracking?: boolean | null
+          site_id?: string | null
           started_at?: string | null
           status?: string
           title: string
@@ -827,6 +994,7 @@ export type Database = {
           pricing_model?: string | null
           pricing_type?: string
           requires_time_tracking?: boolean | null
+          site_id?: string | null
           started_at?: string | null
           status?: string
           title?: string
@@ -855,6 +1023,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "work_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
@@ -882,6 +1057,7 @@ export type Database = {
           pricing_model: string | null
           pricing_type: string
           requires_time_tracking: boolean | null
+          site_id: string | null
           started_at: string | null
           status: string
           title: string
@@ -925,6 +1101,7 @@ export type Database = {
           pricing_model: string | null
           pricing_type: string
           requires_time_tracking: boolean | null
+          site_id: string | null
           started_at: string | null
           status: string
           title: string
@@ -934,7 +1111,13 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "admin"
+        | "system_admin"
+        | "site_manager"
+        | "billing_manager"
+        | "field_supervisor"
+        | "field_worker"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1061,6 +1244,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "admin",
+        "system_admin",
+        "site_manager",
+        "billing_manager",
+        "field_supervisor",
+        "field_worker",
+      ],
+    },
   },
 } as const
