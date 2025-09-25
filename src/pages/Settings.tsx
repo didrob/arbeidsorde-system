@@ -7,11 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { UserManagement } from '@/components/admin/UserManagement';
+import { PendingUsersView } from '@/components/admin/PendingUsersView';
 import { RoleGuard } from '@/components/access/RoleGuard';
-import { User, Bell, Shield, Palette, Database, Save } from 'lucide-react';
+import { User, Bell, Shield, Palette, Database, Save, Users, Clock } from 'lucide-react';
 
 export default function Settings() {
   const { user } = useAuth();
@@ -34,9 +36,36 @@ export default function Settings() {
       
       <div className="flex-1 p-8">
         <div className="max-w-4xl mx-auto space-y-8">
-          {/* User Management - Only for system admins */}
+          {/* User Management - Only for System Administrators */}
           <RoleGuard allowedRoles={['system_admin']} showMessage={false}>
-            <UserManagement />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Brukeradministrasjon
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="users" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="users" className="flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      Alle brukere
+                    </TabsTrigger>
+                    <TabsTrigger value="pending" className="flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      Ventende
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="users">
+                    <UserManagement />
+                  </TabsContent>
+                  <TabsContent value="pending">
+                    <PendingUsersView />
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
           </RoleGuard>
 
           {/* Profile Settings */}

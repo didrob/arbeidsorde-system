@@ -7,6 +7,7 @@ import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
 import { useSmartRouting } from "@/hooks/useSmartRouting";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { UserOnboarding } from "@/components/onboarding/UserOnboarding";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import FieldWorker from "./pages/FieldWorker";
@@ -33,9 +34,9 @@ function PWAWrapper() {
   return <PWAInstallPrompt />;
 }
 
-// Protected route wrapper with role-based routing
+// Protected route wrapper with role-based routing and onboarding
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, userRole, loading, isFieldWorker } = useAuth();
+  const { user, userRole, loading, isFieldWorker, needsOnboarding } = useAuth();
   
   // Use smart routing for field workers
   useSmartRouting();
@@ -53,6 +54,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Show onboarding for users who need it (unless they're system admins who can manage themselves)
+  if (needsOnboarding && userRole !== 'system_admin') {
+    return <UserOnboarding />;
   }
 
   // Field workers should use mobile interface
