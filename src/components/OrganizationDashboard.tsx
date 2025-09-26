@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { getOrgCustomers, getOrgMaterials, getOrgEquipment, getOrgPersonnel, getOrgWorkOrders } from '@/lib/api';
+import { useSiteFilter } from '@/hooks/useSiteFilter';
+import { api } from '@/lib/api';
+import { TopBar } from '@/components/TopBar';
+import { SiteSelector } from '@/components/site/SiteSelector';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,6 +11,7 @@ import { Building2, Users, Package, Wrench, FileText, TrendingUp } from 'lucide-
 
 export function OrganizationDashboard() {
   const { user } = useAuth();
+  const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
   const [orgData, setOrgData] = useState({
     customers: [],
     materials: [],
@@ -25,11 +29,11 @@ export function OrganizationDashboard() {
   const fetchOrgData = async () => {
     try {
       const [customersRes, materialsRes, equipmentRes, personnelRes, workOrdersRes] = await Promise.all([
-        getOrgCustomers(),
-        getOrgMaterials(),
-        getOrgEquipment(),
-        getOrgPersonnel(),
-        getOrgWorkOrders()
+        api.getOrgCustomers(),
+        api.getOrgMaterials(),
+        api.getOrgEquipment(),
+        api.getOrgPersonnel(),
+        api.getOrgWorkOrders()
       ]);
 
       setOrgData({
@@ -70,6 +74,15 @@ export function OrganizationDashboard() {
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-background">
+      <TopBar 
+        title="Organisasjonsoversikt" 
+        actions={
+          <SiteSelector 
+            selectedSiteId={selectedSiteId} 
+            onSiteChange={setSelectedSiteId}
+          />
+        }
+      />
       <div className="p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Organisasjonsoversikt</h1>
