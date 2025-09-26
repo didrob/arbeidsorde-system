@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSiteFilter } from '@/hooks/useSiteFilter';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,6 @@ import { FileText, Users, Package, Plus, Clock, AlertCircle, CheckCircle, BarCha
 import { Navigate, useNavigate } from 'react-router-dom';
 import { FieldWorkerDashboard } from '@/components/FieldWorkerDashboard';
 import { TopBar } from '@/components/TopBar';
-import { SiteSelector } from '@/components/site/SiteSelector';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { MobileOptimizedChart } from '@/components/charts/MobileOptimizedChart';
@@ -36,7 +36,7 @@ const Dashboard = () => {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loadingOrders, setLoadingOrders] = useState(true);
-  const [selectedSiteId, setSelectedSiteId] = useState<string | undefined>(undefined);
+  const { selectedSiteId } = useSiteFilter();
   const [siteStats, setSiteStats] = useState<any[]>([]);
   const [statusChartData, setStatusChartData] = useState<any[]>([]);
   
@@ -252,12 +252,6 @@ const Dashboard = () => {
     <>
       <TopBar 
         title="Dashboard" 
-        actions={
-          <SiteSelector 
-            selectedSiteId={selectedSiteId} 
-            onSiteChange={setSelectedSiteId}
-          />
-        }
       />
       <div className="flex-1 p-4 md:p-8 bg-background overflow-auto">
         <div className="max-w-7xl mx-auto space-y-8">
