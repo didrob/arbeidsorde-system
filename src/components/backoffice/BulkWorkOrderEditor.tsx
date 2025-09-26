@@ -77,6 +77,9 @@ export function BulkWorkOrderEditor({ selectedOrders, isOpen, onClose, onUpdate 
 
   const bulkUpdateMutation = useMutation({
     mutationFn: async (data: { updates: BulkUpdateData; orderIds: string[]; reason: string }) => {
+      // Get current user once
+      const currentUser = await supabase.auth.getUser();
+      
       // Create audit log entry first
       const auditPromises = data.orderIds.map(orderId =>
         supabase.from('work_order_audit_log').insert({
@@ -87,7 +90,7 @@ export function BulkWorkOrderEditor({ selectedOrders, isOpen, onClose, onUpdate 
             reason: data.reason,
             order_count: data.orderIds.length
           })),
-          performed_by: (await supabase.auth.getUser()).data.user?.id
+          performed_by: currentUser.data.user?.id
         })
       );
 
