@@ -424,3 +424,6 @@ export const useDownloadInvoicePDF = () => {
     },
   });
 };
+
+// Backward-compatible alias for modules still importing the old name
+export { useUpdateInvoiceMutation as useUpdateInvoice };
