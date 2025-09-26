@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useCustomers, useCreateCustomer, useUpdateCustomer } from '@/hooks/useApi';
+import { useSiteFilter } from '@/hooks/useSiteFilter';
+import { SiteSelector } from '@/components/site/SiteSelector';
 import { TopBar } from '@/components/TopBar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +24,7 @@ export default function Customers() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
   
   const { data: customers, isLoading } = useCustomers();
   const createCustomer = useCreateCustomer();
@@ -31,11 +34,13 @@ export default function Customers() {
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CustomerForm>();
   const { register: registerEdit, handleSubmit: handleSubmitEdit, reset: resetEdit, setValue, formState: { errors: editErrors } } = useForm<CustomerForm>();
 
-  const filteredCustomers = customers?.filter((customer: any) => 
-    customer.name.toLowerCase().includes(search.toLowerCase()) ||
-    customer.email?.toLowerCase().includes(search.toLowerCase()) ||
-    customer.contact_person?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredCustomers = customers?.filter((customer: any) => {
+    const matchesSearch = customer.name.toLowerCase().includes(search.toLowerCase()) ||
+                         customer.email?.toLowerCase().includes(search.toLowerCase()) ||
+                         customer.contact_person?.toLowerCase().includes(search.toLowerCase());
+    const matchesSite = !selectedSiteId || customer.site_id === selectedSiteId;
+    return matchesSearch && matchesSite;
+  });
 
   const onSubmit = async (data: CustomerForm) => {
     try {
@@ -73,7 +78,14 @@ export default function Customers() {
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-background">
       <TopBar 
-        title="Kunder" 
+        title="Kunder"
+        onCreateClick={() => setIsCreateDialogOpen(true)}
+        actions={
+          <SiteSelector
+            selectedSiteId={selectedSiteId}
+            onSiteChange={setSelectedSiteId}
+          />
+        }
       />
       
       <div className="flex-1 p-8">

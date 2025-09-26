@@ -19,6 +19,7 @@ export interface Customer {
   phone?: string;
   address?: string;
   contact_person?: string;
+  site_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -28,6 +29,7 @@ export interface Material {
   name: string;
   unit: string;
   price?: number;
+  site_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -47,6 +49,7 @@ export interface Personnel {
   standard_hourly_rate?: number;
   role: string;
   is_active: boolean;
+  site_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -59,6 +62,7 @@ export interface Equipment {
   standard_rate?: number;
   description?: string;
   is_active: boolean;
+  site_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -124,6 +128,7 @@ export interface WorkOrder {
   user_id: string;
   assigned_to?: string;
   notes?: string;
+  site_id?: string;
   gps_location?: { x: number; y: number };
   started_at?: string;
   completed_at?: string;
