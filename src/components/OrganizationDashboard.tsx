@@ -50,7 +50,7 @@ export function OrganizationDashboard() {
     const statusConfig = {
       pending: { label: 'Venter', variant: 'secondary' as const },
       in_progress: { label: 'Pågår', variant: 'default' as const },
-      completed: { label: 'Fullført', variant: 'success' as const },
+      completed: { label: 'Fullført', variant: 'outline' as const },
       cancelled: { label: 'Avbrutt', variant: 'destructive' as const }
     };
     

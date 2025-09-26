@@ -280,7 +280,7 @@ class ApiClient {
   // Organization-level API for system admins
   async getOrgCustomers(): Promise<ApiResponse<any[]>> {
     const { data, error } = await supabase
-      .from('org_customers')
+      .from('customers')
       .select('*')
       .order('name');
 
@@ -289,7 +289,7 @@ class ApiClient {
 
   async getOrgMaterials(): Promise<ApiResponse<any[]>> {
     const { data, error } = await supabase
-      .from('org_materials')
+      .from('materials')
       .select('*')
       .order('name');
 
@@ -298,7 +298,7 @@ class ApiClient {
 
   async getOrgEquipment(): Promise<ApiResponse<any[]>> {
     const { data, error } = await supabase
-      .from('org_equipment')
+      .from('equipment')
       .select('*')
       .order('name');
 
@@ -307,7 +307,7 @@ class ApiClient {
 
   async getOrgPersonnel(): Promise<ApiResponse<any[]>> {
     const { data, error } = await supabase
-      .from('org_personnel')
+      .from('personnel')
       .select('*')
       .order('name');
 
@@ -316,7 +316,7 @@ class ApiClient {
 
   async getOrgWorkOrders(): Promise<ApiResponse<any[]>> {
     const { data, error } = await supabase
-      .from('org_work_orders')
+      .from('work_orders')
       .select('*')
       .order('created_at', { ascending: false });
 

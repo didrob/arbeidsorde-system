@@ -1342,6 +1342,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_accessible_site_ids: {
+        Args: { user_uuid?: string }
+        Returns: string[]
+      }
       get_user_accessible_sites: {
         Args: { user_uuid?: string }
         Returns: {
@@ -1393,6 +1397,10 @@ export type Database = {
           updated_at: string
           user_id: string
         }
+      }
+      user_has_site_access: {
+        Args: { target_site_id: string; user_uuid: string }
+        Returns: boolean
       }
     }
     Enums: {
