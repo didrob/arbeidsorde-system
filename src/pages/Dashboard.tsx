@@ -252,7 +252,6 @@ const Dashboard = () => {
     <>
       <TopBar 
         title="Dashboard" 
-        onCreateClick={() => navigate('/work-orders')}
         actions={
           <SiteSelector 
             selectedSiteId={selectedSiteId} 

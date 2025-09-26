@@ -189,18 +189,6 @@ export default function Resources() {
                 <p className="text-muted-foreground">Administrer arbeidstakere og timepriser</p>
               </div>
               <Dialog open={personnelDialogOpen} onOpenChange={setPersonnelDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button 
-                    onClick={() => {
-                      setEditingPersonnel(null);
-                      personnelForm.reset();
-                    }}
-                    className="flex items-center gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Legg til Personell
-                  </Button>
-                </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
                     <DialogTitle>
@@ -342,18 +330,6 @@ export default function Resources() {
                 <p className="text-muted-foreground">Administrer utstyr og priser</p>
               </div>
               <Dialog open={equipmentDialogOpen} onOpenChange={setEquipmentDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button 
-                    onClick={() => {
-                      setEditingEquipment(null);
-                      equipmentForm.reset();
-                    }}
-                    className="flex items-center gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Legg til Utstyr
-                  </Button>
-                </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
                     <DialogTitle>

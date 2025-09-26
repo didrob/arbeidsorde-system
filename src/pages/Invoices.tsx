@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, FileText, Download, Send, Eye, Edit, Archive } from "lucide-react";
+import { FileText, Download, Send, Eye, Edit, Archive } from "lucide-react";
 import { useInvoices, useCreateInvoice, useDownloadInvoicePDF } from "@/hooks/useInvoices";
 import { LoadingState } from "@/components/common/LoadingState";
 import { CreateInvoiceDialog } from "@/components/invoices/CreateInvoiceDialog";
@@ -161,10 +161,6 @@ export default function Invoices() {
               Administrer fakturagrunnlag fra fullførte arbeidsordrer
             </p>
           </div>
-          <Button onClick={handleCreateInvoice} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Ny faktura
-          </Button>
         </div>
 
         {/* Summary Cards */}
@@ -276,10 +272,6 @@ export default function Invoices() {
                   <Button variant="outline" onClick={() => window.location.href = '/work-orders'}>
                     <FileText className="h-4 w-4 mr-2" />
                     Arbeidsordrer
-                  </Button>
-                  <Button onClick={handleCreateInvoice}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Opprett faktura
                   </Button>
                 </div>
               </div>

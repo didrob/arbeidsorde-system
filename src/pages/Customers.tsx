@@ -74,7 +74,6 @@ export default function Customers() {
     <div className="flex-1 flex flex-col min-h-screen bg-background">
       <TopBar 
         title="Kunder" 
-        onCreateClick={() => setIsCreateDialogOpen(true)}
       />
       
       <div className="flex-1 p-8">
