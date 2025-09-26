@@ -366,7 +366,7 @@ const updateInvoice = async (invoiceId: string, updates: Partial<Invoice>): Prom
 };
 
 // Hook for updating invoice data
-export const useUpdateInvoice = () => {
+export const useUpdateInvoiceMutation = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
