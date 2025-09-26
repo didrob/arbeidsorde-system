@@ -281,7 +281,7 @@ const QUERY_KEYS = {
   invoice: (id: string) => ['invoices', id] as const,
 };
 
-// Hooks
+// Hooks for invoice management
 export const useInvoices = () => {
   return useQuery({
     queryKey: QUERY_KEYS.invoices,
@@ -345,7 +345,7 @@ export const useUpdateInvoiceStatus = () => {
   });
 };
 
-// Add update invoice functionality
+// Add update invoice functionality with proper typing
 const updateInvoice = async (invoiceId: string, updates: Partial<Invoice>): Promise<Invoice> => {
   const { data, error } = await supabase
     .from('invoices')
@@ -365,6 +365,7 @@ const updateInvoice = async (invoiceId: string, updates: Partial<Invoice>): Prom
   return data as unknown as Invoice;
 };
 
+// Hook for updating invoice data
 export const useUpdateInvoice = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
