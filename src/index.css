@@ -76,6 +76,13 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 215 25% 15%;
     --sidebar-border: 215 16% 90%;
     --sidebar-ring: 214 84% 56%;
+
+    /* Chart palette (light) */
+    --chart-1: 214 84% 56%;
+    --chart-2: 142 76% 36%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 0 84% 60%;
+    --chart-5: 262 83% 58%;
   }
 
   .dark {
@@ -139,11 +146,26 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 210 25% 92%;
     --sidebar-border: 215 25% 18%;
     --sidebar-ring: 214 84% 56%;
+
+    /* Chart palette (dark) */
+    --chart-1: 214 84% 60%;
+    --chart-2: 142 60% 45%;
+    --chart-3: 38 90% 58%;
+    --chart-4: 0 78% 62%;
+    --chart-5: 262 72% 64%;
   }
 }
 
 /* Mobile-first optimizations */
 @layer utilities {
+  /* Global Recharts color defaults using palette */
+  .recharts-bar-rectangle path { fill: hsl(var(--chart-1)) !important; }
+  .recharts-pie .recharts-sector:nth-of-type(5n+1) path { fill: hsl(var(--chart-1)) !important; }
+  .recharts-pie .recharts-sector:nth-of-type(5n+2) path { fill: hsl(var(--chart-2)) !important; }
+  .recharts-pie .recharts-sector:nth-of-type(5n+3) path { fill: hsl(var(--chart-3)) !important; }
+  .recharts-pie .recharts-sector:nth-of-type(5n+4) path { fill: hsl(var(--chart-4)) !important; }
+  .recharts-pie .recharts-sector:nth-of-type(5n+5) path { fill: hsl(var(--chart-5)) !important; }
+
   /* Touch-friendly button sizes */
   .btn-mobile {
     @apply min-h-[44px] min-w-[44px] text-base px-6 py-3;
