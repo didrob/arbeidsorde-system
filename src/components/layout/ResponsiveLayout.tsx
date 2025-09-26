@@ -1,10 +1,8 @@
 import { ReactNode } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
-import { useSiteFilter } from '@/hooks/useSiteFilter';
 import { MobileNav } from '@/components/mobile/MobileNav';
 import { SimpleSidebar } from '@/components/SimpleSidebar';
-import { SiteSelector } from '@/components/site/SiteSelector';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 
@@ -20,8 +18,7 @@ export function ResponsiveLayout({
   notificationCount = 0 
 }: ResponsiveLayoutProps) {
   const isMobile = useIsMobile();
-  const { isFieldWorker, isSystemAdmin } = useAuth();
-  const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
+  const { isFieldWorker } = useAuth();
 
   // Field workers ALWAYS get mobile interface, regardless of screen size or device
   if (isFieldWorker) {
@@ -65,15 +62,6 @@ export function ResponsiveLayout({
       <div className="min-h-screen flex w-full bg-background">
         <SimpleSidebar />
         <div className="flex-1 flex flex-col">
-          {/* Site selector for multi-site users */}
-          {(isSystemAdmin || selectedSiteId !== undefined) && (
-            <div className="border-b p-4">
-              <SiteSelector 
-                selectedSiteId={selectedSiteId}
-                onSiteChange={setSelectedSiteId}
-              />
-            </div>
-          )}
           <main className="flex-1 overflow-auto">
             {children}
           </main>
