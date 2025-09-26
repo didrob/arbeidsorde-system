@@ -16,6 +16,7 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}'],
         runtimeCaching: [
           {
@@ -38,7 +39,7 @@ export default defineConfig(({ mode }) => ({
         theme_color: '#2563eb',
         background_color: '#ffffff',
         display: 'standalone',
-        orientation: 'portrait-primary',
+        orientation: 'any',
         scope: '/',
         start_url: '/',
         icons: [

@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Clock, Play, Pause, Square } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { usePauseManager } from '@/hooks/usePauseManager';
+import { PauseDialog } from '@/components/PauseDialog';
+import { PauseHistoryView } from '@/components/PauseHistoryView';
 
 interface TimeEntry {
   id: string;
@@ -26,8 +29,19 @@ export function TimeTracker({ workOrderId, onComplete }: TimeTrackerProps) {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [notes, setNotes] = useState('');
   const [totalTime, setTotalTime] = useState(0);
+  const [showPauseDialog, setShowPauseDialog] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  
+  const {
+    pauseState,
+    breaks,
+    startPause,
+    endPause,
+    getTotalPauseTime,
+    isStartingPause,
+    isEndingPause
+  } = usePauseManager(currentEntry?.id || null);
 
   useEffect(() => {
     fetchActiveTimeEntry();
@@ -37,12 +51,14 @@ export function TimeTracker({ workOrderId, onComplete }: TimeTrackerProps) {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
-    if (isTracking && currentEntry) {
+    if (isTracking && currentEntry && !pauseState.isOnPause) {
       interval = setInterval(() => {
         const startTime = new Date(currentEntry.start_time);
         const now = new Date();
-        const elapsed = Math.floor((now.getTime() - startTime.getTime()) / 1000);
-        setElapsedTime(elapsed);
+        const totalElapsed = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+        const pauseTime = getTotalPauseTime();
+        const workingTime = totalElapsed - pauseTime;
+        setElapsedTime(Math.max(0, workingTime));
       }, 1000);
     }
 
@@ -51,7 +67,7 @@ export function TimeTracker({ workOrderId, onComplete }: TimeTrackerProps) {
         clearInterval(interval);
       }
     };
-  }, [isTracking, currentEntry]);
+  }, [isTracking, currentEntry, pauseState.isOnPause, getTotalPauseTime]);
 
   const fetchActiveTimeEntry = async () => {
     try {
@@ -217,18 +233,32 @@ export function TimeTracker({ workOrderId, onComplete }: TimeTrackerProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="text-center">
-          <div className="text-3xl font-mono font-bold text-primary">
-            {formatTime(elapsedTime)}
+        {pauseState.isOnPause ? (
+          <div className="text-center">
+            <div className="text-3xl font-mono font-bold text-orange-500 animate-pulse">
+              {formatTime(pauseState.pauseElapsedTime)}
+            </div>
+            <p className="text-sm text-muted-foreground">På pause</p>
           </div>
-          <p className="text-sm text-muted-foreground">Aktiv tid</p>
-        </div>
+        ) : (
+          <div className="text-center">
+            <div className="text-3xl font-mono font-bold text-primary">
+              {formatTime(elapsedTime)}
+            </div>
+            <p className="text-sm text-muted-foreground">Aktiv tid</p>
+          </div>
+        )}
 
         <div className="text-center">
           <div className="text-lg font-semibold">
             {formatHours(totalTime + elapsedTime)} timer totalt
           </div>
           <p className="text-sm text-muted-foreground">Total registrert tid</p>
+          {getTotalPauseTime() > 0 && (
+            <p className="text-xs text-muted-foreground">
+              ({formatTime(getTotalPauseTime())} pauser)
+            </p>
+          )}
         </div>
 
         <div className="flex gap-2">
@@ -237,15 +267,37 @@ export function TimeTracker({ workOrderId, onComplete }: TimeTrackerProps) {
               <Play className="h-4 w-4 mr-2" />
               Start Timer
             </Button>
-          ) : (
-            <Button onClick={stopTimer} variant="destructive" className="flex-1" size="lg">
-              <Square className="h-4 w-4 mr-2" />
-              Stopp Timer
+          ) : pauseState.isOnPause ? (
+            <Button 
+              onClick={endPause} 
+              disabled={isEndingPause}
+              className="flex-1" 
+              size="lg"
+            >
+              <Play className="h-4 w-4 mr-2" />
+              Fortsett arbeid
             </Button>
+          ) : (
+            <>
+              <Button 
+                onClick={() => setShowPauseDialog(true)}
+                disabled={isStartingPause}
+                variant="outline" 
+                className="flex-1" 
+                size="lg"
+              >
+                <Pause className="h-4 w-4 mr-2" />
+                Pause
+              </Button>
+              <Button onClick={stopTimer} variant="destructive" className="flex-1" size="lg">
+                <Square className="h-4 w-4 mr-2" />
+                Stopp Timer
+              </Button>
+            </>
           )}
         </div>
 
-        {isTracking && (
+        {isTracking && !pauseState.isOnPause && (
           <div className="space-y-2">
             <Textarea
               placeholder="Legg til notater for denne arbeidsperioden..."
@@ -255,7 +307,19 @@ export function TimeTracker({ workOrderId, onComplete }: TimeTrackerProps) {
             />
           </div>
         )}
+
+        <PauseHistoryView 
+          breaks={breaks} 
+          currentPauseElapsed={pauseState.isOnPause ? pauseState.pauseElapsedTime : undefined}
+        />
       </CardContent>
+
+      <PauseDialog
+        open={showPauseDialog}
+        onOpenChange={setShowPauseDialog}
+        onStartPause={startPause}
+        isLoading={isStartingPause}
+      />
     </Card>
   );
 }

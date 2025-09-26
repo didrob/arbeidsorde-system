@@ -32,8 +32,9 @@ export const useWorkOrders = (filters?: WorkOrderFilters) => {
       }
       return response.data!;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 30 * 1000, // 30 seconds for realtime feel
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 60 * 1000, // Auto-refresh every minute as backup
   });
 };
 
@@ -97,12 +98,35 @@ export const useUpdateWorkOrder = () => {
   });
 };
 
-export const useDeleteWorkOrder = () => {
+export const useClaimWorkOrder = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await api.deleteWorkOrder(id);
+      const response = await api.claimWorkOrder(id);
+      if (!response.success) {
+        throw new Error(response.error?.message || 'Kunne ikke ta arbeidsordre');
+      }
+      return response.data!;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['workOrders'] });
+      toast.success('Arbeidsordre tildelt til deg');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Allerede plukket av en annen');
+    },
+  });
+};
+
+export const useDeleteWorkOrder = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (params: { id: string; reason?: string } | string) => {
+      const id = typeof params === 'string' ? params : params.id;
+      const reason = typeof params === 'string' ? undefined : params.reason;
+      const response = await api.deleteWorkOrder(id, reason);
       if (!response.success) {
         throw new Error(response.error?.message || 'Failed to delete work order');
       }

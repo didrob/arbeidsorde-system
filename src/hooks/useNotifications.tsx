@@ -19,36 +19,13 @@ export const useNotifications = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Fetch notifications
+  // Fetch notifications - now only real notifications, not mock data
   const fetchNotifications = async () => {
     if (!user) return;
-
-    try {
-      // For now, we'll simulate notifications based on work order changes
-      // In a real app, you'd have a notifications table
-      const { data: workOrders } = await supabase
-        .from('work_orders')
-        .select('*')
-        .eq('assigned_to', user.id)
-        .order('updated_at', { ascending: false })
-        .limit(10);
-
-      // Convert recent work order updates to notifications
-      const mockNotifications: Notification[] = workOrders?.map(order => ({
-        id: `wo-${order.id}`,
-        type: 'assignment' as const,
-        title: 'Ny arbeidsordre tildelt',
-        message: `Du har fått tildelt: ${order.title}`,
-        work_order_id: order.id,
-        read: false,
-        created_at: order.updated_at
-      })) || [];
-
-      setNotifications(mockNotifications);
-      setUnreadCount(mockNotifications.filter(n => !n.read).length);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    }
+    // Real notifications would be fetched from a notifications table
+    // For now, we start with empty notifications
+    setNotifications([]);
+    setUnreadCount(0);
   };
 
   // Listen for real-time work order changes
@@ -79,8 +56,19 @@ export const useNotifications = () => {
             });
           }
 
-          // Refresh notifications
-          fetchNotifications();
+          // Add real notification for status change
+          const newNotification: Notification = {
+            id: `wo-update-${workOrder.id}`,
+            type: 'status_change',
+            title: 'Arbeidsordre oppdatert',
+            message: `${workOrder.title} er nå i gang`,
+            work_order_id: workOrder.id,
+            read: false,
+            created_at: new Date().toISOString()
+          };
+
+          setNotifications(prev => [newNotification, ...prev]);
+          setUnreadCount(prev => prev + 1);
         }
       )
       .on(

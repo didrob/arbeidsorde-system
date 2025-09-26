@@ -4,10 +4,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Users, Package, Plus, Clock, AlertCircle, CheckCircle } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
+import { FileText, Users, Package, Plus, Clock, AlertCircle, CheckCircle, BarChart3, TrendingUp } from 'lucide-react';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { FieldWorkerDashboard } from '@/components/FieldWorkerDashboard';
 import { TopBar } from '@/components/TopBar';
+import { SiteSelector } from '@/components/site/SiteSelector';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { MobileOptimizedChart } from '@/components/charts/MobileOptimizedChart';
+import { MobileStatsGrid } from '@/components/mobile/MobileStatsGrid';
 
 interface WorkOrder {
   id: string;
@@ -27,9 +32,13 @@ interface UserProfile {
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [selectedSiteId, setSelectedSiteId] = useState<string | undefined>(undefined);
+  const [siteStats, setSiteStats] = useState<any[]>([]);
+  const [statusChartData, setStatusChartData] = useState<any[]>([]);
   
   const [stats, setStats] = useState({
     totalWorkOrders: 0,
@@ -57,7 +66,7 @@ const Dashboard = () => {
 
   const fetchWorkOrders = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('work_orders')
         .select(`
           id,
@@ -65,12 +74,19 @@ const Dashboard = () => {
           status,
           customer_id,
           created_at,
+          site_id,
           customers (
             name
           )
         `)
         .order('created_at', { ascending: false })
         .limit(5);
+      
+      if (selectedSiteId) {
+        query = query.eq('site_id', selectedSiteId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       
@@ -102,22 +118,34 @@ const Dashboard = () => {
 
   const fetchStats = async () => {
     try {
+      // Build base queries
+      let workOrdersQuery = supabase.from('work_orders').select('*', { count: 'exact', head: true });
+      let completedTodayQuery = supabase
+        .from('work_orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'completed')
+        .gte('completed_at', new Date().toISOString().split('T')[0]);
+      let pendingQuery = supabase
+        .from('work_orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+
+      // Apply site filter if selected
+      if (selectedSiteId) {
+        workOrdersQuery = workOrdersQuery.eq('site_id', selectedSiteId);
+        completedTodayQuery = completedTodayQuery.eq('site_id', selectedSiteId);
+        pendingQuery = pendingQuery.eq('site_id', selectedSiteId);
+      }
+
       const [
         { count: totalCount },
         { count: completedTodayCount },
         { count: pendingCount },
         { count: activeWorkerCount }
       ] = await Promise.all([
-        supabase.from('work_orders').select('*', { count: 'exact', head: true }),
-        supabase
-          .from('work_orders')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'completed')
-          .gte('completed_at', new Date().toISOString().split('T')[0]),
-        supabase
-          .from('work_orders')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'pending'),
+        workOrdersQuery,
+        completedTodayQuery,
+        pendingQuery,
         supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true })
@@ -137,13 +165,65 @@ const Dashboard = () => {
     }
   };
 
+  const fetchSiteStats = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_work_order_stats')
+        .select('*')
+        .order('total_orders', { ascending: false })
+        .limit(5);
+      
+      if (error) throw error;
+      setSiteStats(data || []);
+    } catch (error) {
+      console.error('Error fetching site stats:', error);
+    }
+  };
+
+  const fetchStatusChartData = async () => {
+    try {
+      let query = supabase
+        .from('work_orders')
+        .select('status')
+        .eq('is_deleted', false);
+
+      if (selectedSiteId) {
+        query = query.eq('site_id', selectedSiteId);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      const statusCounts = (data || []).reduce((acc: any, order: any) => {
+        acc[order.status] = (acc[order.status] || 0) + 1;
+        return acc;
+      }, {});
+
+      const chartData = Object.entries(statusCounts).map(([status, count]) => ({
+        name: status === 'pending' ? 'Venter' : 
+              status === 'in_progress' ? 'Pågår' :
+              status === 'completed' ? 'Ferdig' : 'Avbrutt',
+        value: count,
+        fill: status === 'pending' ? 'hsl(var(--chart-1))' :
+              status === 'in_progress' ? 'hsl(var(--chart-2))' :
+              status === 'completed' ? 'hsl(var(--chart-3))' : 'hsl(var(--chart-4))'
+      }));
+
+      setStatusChartData(chartData);
+    } catch (error) {
+      console.error('Error fetching status chart data:', error);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       fetchUserProfile();
       fetchWorkOrders();
       fetchStats();
+      fetchSiteStats();
+      fetchStatusChartData();
     }
-  }, [user]);
+  }, [user, selectedSiteId]);
 
   // Show loading state
   if (loading) {
@@ -172,69 +252,55 @@ const Dashboard = () => {
     <>
       <TopBar 
         title="Dashboard" 
-        onCreateClick={() => console.log('Opprett ny arbeidsordre')} 
+        onCreateClick={() => navigate('/work-orders')}
+        actions={
+          <SiteSelector 
+            selectedSiteId={selectedSiteId} 
+            onSiteChange={setSelectedSiteId}
+          />
+        }
       />
-      <div className="flex-1 p-8 bg-background overflow-auto">
+      <div className="flex-1 p-4 md:p-8 bg-background overflow-auto">
         <div className="max-w-7xl mx-auto space-y-8">
           
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Totale ordrer</p>
-                    <p className="text-2xl font-bold">{stats.totalWorkOrders}</p>
-                  </div>
-                  <FileText className="h-8 w-8 text-primary" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Fullført i dag</p>
-                    <p className="text-2xl font-bold text-green-600">{stats.completedToday}</p>
-                  </div>
-                  <CheckCircle className="h-8 w-8 text-green-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Ventende ordrer</p>
-                    <p className="text-2xl font-bold text-orange-600">{stats.pendingOrders}</p>
-                  </div>
-                  <AlertCircle className="h-8 w-8 text-orange-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Aktive arbeidere</p>
-                    <p className="text-2xl font-bold">{stats.activeWorkers}</p>
-                  </div>
-                  <Users className="h-8 w-8 text-primary" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <MobileStatsGrid 
+            stats={[
+              {
+                title: "Totale ordrer",
+                value: stats.totalWorkOrders,
+                icon: <FileText className="h-full w-full text-primary" />,
+              },
+              {
+                title: "Fullført i dag", 
+                value: stats.completedToday,
+                icon: <CheckCircle className="h-full w-full text-green-600" />,
+                color: "success"
+              },
+              {
+                title: "Ventende ordrer",
+                value: stats.pendingOrders, 
+                icon: <AlertCircle className="h-full w-full text-orange-600" />,
+                color: "warning"
+              },
+              {
+                title: "Aktive arbeidere",
+                value: stats.activeWorkers,
+                icon: <Users className="h-full w-full text-primary" />,
+              }
+            ]}
+          />
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <Card 
+              className="hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => navigate('/work-orders')}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
                   <div className="p-3 bg-primary/10 rounded-lg">
-                    <FileText className="h-6 w-6 text-primary" />
+                    <Plus className="h-6 w-6 text-primary" />
                   </div>
                   <div>
                     <h3 className="font-semibold">Ny arbeidsordre</h3>
@@ -244,10 +310,13 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <Card 
+              className="hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => navigate('/customers')}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
-                  <div className="p-3 bg-blue-100 rounded-lg">
+                  <div className="p-3 bg-blue-500/10 rounded-lg">
                     <Users className="h-6 w-6 text-blue-600" />
                   </div>
                   <div>
@@ -258,10 +327,13 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <Card 
+              className="hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => navigate('/materials')}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
-                  <div className="p-3 bg-green-100 rounded-lg">
+                  <div className="p-3 bg-green-500/10 rounded-lg">
                     <Package className="h-6 w-6 text-green-600" />
                   </div>
                   <div>
@@ -271,6 +343,95 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            {/* Site Performance Chart */}
+            <MobileOptimizedChart
+              title="Site-ytelse"
+              description="Arbeidsordrer per site"
+              icon={<BarChart3 className="h-5 w-5" />}
+              config={{
+                total_orders: {
+                  label: "Ordrer",
+                  color: "hsl(var(--chart-1))",
+                },
+              }}
+              mobileHeight="h-[160px]"
+              desktopHeight="h-[200px]"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={siteStats}>
+                  <XAxis 
+                    dataKey="site_name" 
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `${value}`}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar 
+                    dataKey="total_orders" 
+                    fill="var(--color-total_orders)" 
+                    radius={[2, 2, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </MobileOptimizedChart>
+
+            {/* Status Distribution Chart */}
+            <MobileOptimizedChart
+              title="Statusfordeling"
+              description="Fordeling av arbeidsordrer etter status"
+              icon={<TrendingUp className="h-5 w-5" />}
+              config={{
+                pending: {
+                  label: "Venter",
+                  color: "hsl(var(--chart-1))",
+                },
+                in_progress: {
+                  label: "Pågår", 
+                  color: "hsl(var(--chart-2))",
+                },
+                completed: {
+                  label: "Ferdig",
+                  color: "hsl(var(--chart-3))",
+                },
+                cancelled: {
+                  label: "Avbrutt",
+                  color: "hsl(var(--chart-4))",
+                },
+              }}
+              mobileHeight="h-[160px]"
+              desktopHeight="h-[200px]"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusChartData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius="80%"
+                    innerRadius="40%"
+                    fill="#8884d8"
+                    paddingAngle={2}
+                  >
+                    {statusChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </MobileOptimizedChart>
           </div>
 
           {/* Recent Work Orders */}

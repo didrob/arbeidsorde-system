@@ -76,6 +76,13 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 215 25% 15%;
     --sidebar-border: 215 16% 90%;
     --sidebar-ring: 214 84% 56%;
+
+    /* Chart palette (light) */
+    --chart-1: 214 84% 56%;
+    --chart-2: 142 76% 36%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 0 84% 60%;
+    --chart-5: 262 83% 58%;
   }
 
   .dark {
@@ -139,11 +146,28 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 210 25% 92%;
     --sidebar-border: 215 25% 18%;
     --sidebar-ring: 214 84% 56%;
+
+    /* Chart palette (dark) */
+    --chart-1: 214 84% 60%;
+    --chart-2: 142 60% 45%;
+    --chart-3: 38 90% 58%;
+    --chart-4: 0 78% 62%;
+    --chart-5: 262 72% 64%;
   }
 }
 
 /* Mobile-first optimizations */
 @layer utilities {
+  /* Global Recharts color defaults using palette */
+  /* Bars */
+  .recharts-bar-rectangle .recharts-rectangle { fill: hsl(var(--chart-1)) !important; }
+  /* Pie slices */
+  .recharts-pie .recharts-sector:nth-of-type(5n+1) { fill: hsl(var(--chart-1)) !important; }
+  .recharts-pie .recharts-sector:nth-of-type(5n+2) { fill: hsl(var(--chart-2)) !important; }
+  .recharts-pie .recharts-sector:nth-of-type(5n+3) { fill: hsl(var(--chart-3)) !important; }
+  .recharts-pie .recharts-sector:nth-of-type(5n+4) { fill: hsl(var(--chart-4)) !important; }
+  .recharts-pie .recharts-sector:nth-of-type(5n+5) { fill: hsl(var(--chart-5)) !important; }
+
   /* Touch-friendly button sizes */
   .btn-mobile {
     @apply min-h-[44px] min-w-[44px] text-base px-6 py-3;
@@ -183,6 +207,40 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Mobile viewport and rotation fixes */
+  html, body {
+    height: 100%;
+    overflow-x: hidden;
+  }
+  
+  /* Use dynamic viewport height for mobile */
+  @supports (height: 100dvh) {
+    body {
+      min-height: 100dvh;
+    }
+    
+    .min-h-screen {
+      min-height: 100dvh;
+    }
+  }
+
+  /* Android Chrome landscape fixes */
+  @media screen and (orientation: landscape) and (max-height: 600px) {
+    body {
+      min-height: 100vh;
+    }
+    
+    /* Ensure content fits in landscape */
+    .min-h-screen {
+      min-height: 100vh;
+    }
+    
+    /* Reduce header heights in landscape */
+    .safe-area-padding-top {
+      padding-top: max(env(safe-area-inset-top), 0.25rem);
+    }
   }
 }
 
@@ -283,6 +341,38 @@ All colors MUST be HSL.
     @apply hidden md:block;
   }
 
+  /* Chart mobile optimizations */
+  .mobile-chart-text {
+    font-size: 10px;
+  }
+  
+  @media (min-width: 640px) {
+    .mobile-chart-text {
+      font-size: 12px;
+    }
+  }
+  
+  /* Data table mobile optimizations */
+  .mobile-table-spacing {
+    @apply space-y-2;
+  }
+  
+  @media (min-width: 768px) {
+    .mobile-table-spacing {
+      @apply space-y-4;
+    }
+  }
+  
+  .mobile-card-compact {
+    @apply p-3 rounded-lg border;
+  }
+  
+  @media (min-width: 640px) {
+    .mobile-card-compact {
+      @apply p-4;
+    }
+  }
+
   /* Haptic feedback simulation */
   .haptic-tap {
     animation: hapticTap 0.1s ease-out;
@@ -292,5 +382,75 @@ All colors MUST be HSL.
     0% { transform: scale(1); }
     50% { transform: scale(0.95); }
     100% { transform: scale(1); }
+  }
+
+  /* Landscape mode optimizations */
+  @media (orientation: landscape) {
+    .dialog-content {
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .card-mobile {
+      @apply shadow-sm;
+    }
+    
+    /* Optimize header spacing in landscape */
+    .safe-area-padding-top {
+      padding-top: max(env(safe-area-inset-top), 0.5rem);
+    }
+  }
+
+  /* Mobile dialog optimizations */
+  .mobile-dialog {
+    @apply w-[calc(100vw-2rem)] max-w-full;
+    margin: 1rem;
+  }
+  
+  @media (max-width: 640px) {
+    .mobile-dialog {
+      @apply w-[calc(100vw-1rem)] max-w-full;
+      margin: 0.5rem;
+    }
+  }
+
+  /* Extra small breakpoint for very narrow screens */
+  @media (max-width: 480px) {
+    .xs\:flex-row {
+      flex-direction: row;
+    }
+    
+    .xs\:items-center {
+      align-items: center;
+    }
+    
+    .xs\:w-auto {
+      width: auto;
+    }
+    
+    .mobile-dialog {
+      @apply w-[calc(100vw-0.5rem)] max-w-full;
+      margin: 0.25rem;
+    }
+  }
+  
+  /* Landscape orientation improvements for mobile */
+  @media (orientation: landscape) and (max-height: 600px) {
+    .mobile-dialog {
+      max-height: 95vh;
+    }
+    
+    /* Reduce vertical spacing in landscape */
+    .mobile-dialog .space-y-4 > * + * {
+      margin-top: 0.75rem;
+    }
+    
+    .mobile-dialog .mb-4 {
+      margin-bottom: 0.75rem;
+    }
+    
+    .mobile-dialog .mb-6 {
+      margin-bottom: 1rem;
+    }
   }
 }

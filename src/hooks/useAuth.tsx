@@ -8,8 +8,13 @@ interface AuthContextType {
   session: Session | null;
   userRole: string | null;
   loading: boolean;
+  needsOnboarding: boolean;
   isAdmin: boolean;
   isFieldWorker: boolean;
+  isSystemAdmin: boolean;
+  isSiteManager: boolean;
+  isBillingManager: boolean;
+  isFieldSupervisor: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -21,6 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -29,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('Fetching user role for:', userId);
       const { data, error } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, organization_id, site_id')
         .eq('user_id', userId)
         .single();
       
@@ -40,20 +46,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error.code === 'PGRST116') {
           console.log('Profile not found, setting default role');
           setUserRole('field_worker');
+          setNeedsOnboarding(true); // New users need onboarding
         } else {
           // For other errors, keep role as null and let user try again
           console.log('Keeping role as null due to error:', error.message);
           setUserRole(null);
+          setNeedsOnboarding(false);
         }
         return;
       }
       
       console.log('User role fetched successfully:', data?.role);
       setUserRole(data?.role || 'field_worker');
+      
+      // Check if user needs onboarding (missing organization or site)
+      const needsOnboarding = !data?.organization_id || !data?.site_id;
+      setNeedsOnboarding(needsOnboarding);
+      console.log('User needs onboarding:', needsOnboarding);
     } catch (error) {
       console.error('Unexpected error fetching user role:', error);
       // Don't set fallback on unexpected errors - keep as null
       setUserRole(null);
+      setNeedsOnboarding(false);
     }
   };
 
@@ -70,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           fetchUserRole(session.user.id);
         } else {
           setUserRole(null);
+          setNeedsOnboarding(false);
         }
         setLoading(false);
       }
@@ -143,11 +158,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    toast({
-      title: "Logget ut",
-      description: "Du er nå logget ut av systemet.",
-    });
+    try {
+      // Always clear local state first to ensure UI updates immediately
+      setUser(null);
+      setSession(null);
+      setUserRole(null);
+      setNeedsOnboarding(false);
+      
+      // Attempt server logout
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.log('Logout error (forcing local logout):', error.message);
+        // Even if server logout fails, we've already cleared local state
+      }
+      
+      toast({
+        title: "Logget ut",
+        description: "Du er nå logget ut av systemet.",
+      });
+      
+      // Force navigation to auth page
+      window.location.href = '/auth';
+      
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force logout anyway by clearing state and redirecting
+      setUser(null);
+      setSession(null);
+      setUserRole(null);
+      setNeedsOnboarding(false);
+      
+      toast({
+        title: "Logget ut",
+        description: "Du er nå logget ut av systemet.",
+      });
+      
+      window.location.href = '/auth';
+    }
   };
 
   const value = {
@@ -155,8 +203,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     userRole,
     loading,
+    needsOnboarding,
     isAdmin: userRole === 'admin',
     isFieldWorker: userRole === 'field_worker',
+    isSystemAdmin: userRole === 'system_admin',
+    isSiteManager: userRole === 'site_manager',
+    isBillingManager: userRole === 'billing_manager',
+    isFieldSupervisor: userRole === 'field_supervisor',
     signIn,
     signUp,
     signOut,

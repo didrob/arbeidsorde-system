@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -6,14 +6,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { useCustomers } from '@/hooks/useApi';
+import { useEquipment, usePersonnel } from '@/hooks/useResources';
 import { useQuickStartWorkOrder } from '@/hooks/useQuickStart';
 import { toast } from 'sonner';
-import { Loader2, Zap } from 'lucide-react';
+import { Loader2, Zap, Calculator, Plus, X } from 'lucide-react';
 
-interface QuickStartForm {
-  customer_id: string;
-  description?: string;
+interface SelectedEquipment {
+  id: string;
+  quantity: number;
+  rate: number;
+  pricing_type: 'hourly' | 'daily' | 'fixed';
+}
+
+interface SelectedPersonnel {
+  id: string;
+  estimated_hours: number;
+  hourly_rate: number;
 }
 
 interface QuickStartModalProps {
@@ -24,9 +36,23 @@ interface QuickStartModalProps {
 
 export const QuickStartModal = ({ open, onClose, onSuccess }: QuickStartModalProps) => {
   const { data: customers = [], isLoading: customersLoading } = useCustomers();
+  const { data: equipmentList = [], isLoading: equipmentLoading } = useEquipment();
+  const { data: personnelList = [], isLoading: personnelLoading } = usePersonnel();
   const quickStartMutation = useQuickStartWorkOrder();
+  
+  // Form state
   const [selectedCustomer, setSelectedCustomer] = useState<string>('');
   const [description, setDescription] = useState('');
+  const [pricingModel, setPricingModel] = useState<'fixed' | 'hourly'>('fixed');
+  const [fixedPrice, setFixedPrice] = useState<string>('');
+  const [estimatedHours, setEstimatedHours] = useState<string>('');
+  const [hourlyRate, setHourlyRate] = useState<string>('500');
+  const [selectedEquipment, setSelectedEquipment] = useState<SelectedEquipment[]>([]);
+  const [newEquipmentId, setNewEquipmentId] = useState<string>('');
+  const [newEquipmentQuantity, setNewEquipmentQuantity] = useState<string>('1');
+  const [selectedPersonnel, setSelectedPersonnel] = useState<SelectedPersonnel[]>([]);
+  const [newPersonnelId, setNewPersonnelId] = useState<string>('');
+  const [newPersonnelHours, setNewPersonnelHours] = useState<string>('8');
 
   const generateTitle = (customerName: string) => {
     const today = new Intl.DateTimeFormat('nb-NO', {
@@ -37,9 +63,86 @@ export const QuickStartModal = ({ open, onClose, onSuccess }: QuickStartModalPro
     return `Hurtigstart - ${customerName} - ${today}`;
   };
 
+  // Calculate total estimated cost
+  const totalEstimatedCost = useMemo(() => {
+    let total = 0;
+    
+    if (pricingModel === 'fixed' && fixedPrice) {
+      total += parseFloat(fixedPrice) || 0;
+    } else if (pricingModel === 'hourly' && estimatedHours && hourlyRate) {
+      total += (parseFloat(estimatedHours) || 0) * (parseFloat(hourlyRate) || 0);
+    }
+    
+    selectedEquipment.forEach(eq => {
+      total += eq.quantity * eq.rate;
+    });
+    
+    selectedPersonnel.forEach(person => {
+      total += person.estimated_hours * person.hourly_rate;
+    });
+    
+    return total;
+  }, [pricingModel, fixedPrice, estimatedHours, hourlyRate, selectedEquipment, selectedPersonnel]);
+
+  const addEquipment = () => {
+    if (!newEquipmentId) return;
+    
+    const equipment = equipmentList.find(e => e.id === newEquipmentId);
+    if (!equipment) return;
+    
+    const quantity = parseFloat(newEquipmentQuantity) || 1;
+    
+    setSelectedEquipment(prev => [...prev, {
+      id: equipment.id,
+      quantity,
+      rate: equipment.standard_rate || 0,
+      pricing_type: equipment.pricing_type as 'hourly' | 'daily' | 'fixed'
+    }]);
+    
+    setNewEquipmentId('');
+    setNewEquipmentQuantity('1');
+  };
+
+  const removeEquipment = (index: number) => {
+    setSelectedEquipment(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const addPersonnel = () => {
+    if (!newPersonnelId) return;
+    
+    const personnel = personnelList.find(p => p.id === newPersonnelId);
+    if (!personnel) return;
+    
+    const estimatedHours = parseFloat(newPersonnelHours) || 8;
+    
+    setSelectedPersonnel(prev => [...prev, {
+      id: personnel.id,
+      estimated_hours: estimatedHours,
+      hourly_rate: personnel.standard_hourly_rate || 500
+    }]);
+    
+    setNewPersonnelId('');
+    setNewPersonnelHours('8');
+  };
+
+  const removePersonnel = (index: number) => {
+    setSelectedPersonnel(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleQuickStart = async () => {
     if (!selectedCustomer) {
       toast.error('Velg kunde');
+      return;
+    }
+
+    // Validate pricing inputs
+    if (pricingModel === 'fixed' && (!fixedPrice || parseFloat(fixedPrice) <= 0)) {
+      toast.error('Skriv inn gyldig fastpris');
+      return;
+    }
+
+    if (pricingModel === 'hourly' && (!estimatedHours || !hourlyRate || parseFloat(estimatedHours) <= 0 || parseFloat(hourlyRate) <= 0)) {
+      toast.error('Skriv inn gyldige timer og timepris');
       return;
     }
 
@@ -49,15 +152,30 @@ export const QuickStartModal = ({ open, onClose, onSuccess }: QuickStartModalPro
     const title = generateTitle(selectedCustomerData.name);
     
     try {
-      await quickStartMutation.mutateAsync({
+      const requestData = {
         customer_id: selectedCustomer,
         title,
         description: description || undefined,
-      });
+        pricing_model: pricingModel === 'fixed' ? 'fixed' as const : 'resource_based' as const,
+        pricing_type: pricingModel === 'fixed' ? 'fixed' as const : 'hourly' as const,
+        price_value: pricingModel === 'fixed' ? parseFloat(fixedPrice) : undefined,
+        estimated_hours: pricingModel === 'hourly' ? parseFloat(estimatedHours) : undefined,
+        hourly_rate: pricingModel === 'hourly' ? parseFloat(hourlyRate) : undefined,
+        equipment: selectedEquipment.length > 0 ? selectedEquipment : undefined,
+        personnel: selectedPersonnel.length > 0 ? selectedPersonnel : undefined
+      };
+
+      await quickStartMutation.mutateAsync(requestData);
       
       // Reset form
       setSelectedCustomer('');
       setDescription('');
+      setPricingModel('fixed');
+      setFixedPrice('');
+      setEstimatedHours('');
+      setHourlyRate('500');
+      setSelectedEquipment([]);
+      setSelectedPersonnel([]);
       
       onSuccess?.();
       onClose();
@@ -69,7 +187,7 @@ export const QuickStartModal = ({ open, onClose, onSuccess }: QuickStartModalPro
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-primary" />
@@ -77,7 +195,7 @@ export const QuickStartModal = ({ open, onClose, onSuccess }: QuickStartModalPro
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4 pt-4">
+        <div className="space-y-6 pt-4">
           {/* Customer Selection */}
           <div className="space-y-2">
             <Label htmlFor="customer">Kunde *</Label>
@@ -99,6 +217,211 @@ export const QuickStartModal = ({ open, onClose, onSuccess }: QuickStartModalPro
             </Select>
           </div>
 
+          {/* Pricing Model */}
+          <div className="space-y-3">
+            <Label>Prismodell *</Label>
+            <RadioGroup value={pricingModel} onValueChange={(value: 'fixed' | 'hourly') => setPricingModel(value)} className="grid grid-cols-2 gap-4">
+              <div>
+                <RadioGroupItem value="fixed" id="fixed" className="peer sr-only" />
+                <Label htmlFor="fixed" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                  <Calculator className="mb-3 h-6 w-6" />
+                  Fastpris
+                </Label>
+              </div>
+              <div>
+                <RadioGroupItem value="hourly" id="hourly" className="peer sr-only" />
+                <Label htmlFor="hourly" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                  <Zap className="mb-3 h-6 w-6" />
+                  Timepris
+                </Label>
+              </div>
+            </RadioGroup>
+
+            {/* Pricing Input Fields */}
+            {pricingModel === 'fixed' ? (
+              <div className="space-y-2">
+                <Label htmlFor="fixedPrice">Fastpris (kr) *</Label>
+                <Input
+                  id="fixedPrice"
+                  type="number"
+                  placeholder="0"
+                  value={fixedPrice}
+                  onChange={(e) => setFixedPrice(e.target.value)}
+                />
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="estimatedHours">Estimerte timer *</Label>
+                  <Input
+                    id="estimatedHours"
+                    type="number"
+                    step="0.5"
+                    placeholder="0"
+                    value={estimatedHours}
+                    onChange={(e) => setEstimatedHours(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="hourlyRate">Timepris (kr) *</Label>
+                  <Input
+                    id="hourlyRate"
+                    type="number"
+                    placeholder="500"
+                    value={hourlyRate}
+                    onChange={(e) => setHourlyRate(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Equipment Section */}
+          <div className="space-y-3">
+            <Label>Utstyr (valgfritt)</Label>
+            <div className="space-y-3">
+              {/* Add Equipment */}
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Select
+                        value={newEquipmentId}
+                        onValueChange={setNewEquipmentId}
+                        disabled={equipmentLoading}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={equipmentLoading ? "Laster utstyr..." : "Velg utstyr"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {equipmentList
+                            .filter(e => !selectedEquipment.find(se => se.id === e.id))
+                            .map(equipment => (
+                            <SelectItem key={equipment.id} value={equipment.id}>
+                              {equipment.name} - {equipment.standard_rate || 0} kr/{equipment.pricing_type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="w-20">
+                      <Input
+                        type="number"
+                        placeholder="1"
+                        value={newEquipmentQuantity}
+                        onChange={(e) => setNewEquipmentQuantity(e.target.value)}
+                        min="1"
+                        step="1"
+                      />
+                    </div>
+                    <Button onClick={addEquipment} disabled={!newEquipmentId} size="icon">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Selected Equipment List */}
+              {selectedEquipment.map((eq, index) => {
+                const equipmentData = equipmentList.find(e => e.id === eq.id);
+                return (
+                  <Card key={index}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium">{equipmentData?.name}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {eq.quantity} x {eq.rate} kr = {(eq.quantity * eq.rate).toLocaleString('no-NO')} kr
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => removeEquipment(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Personnel Section */}
+          <div className="space-y-3">
+            <Label>Personell (valgfritt)</Label>
+            <div className="space-y-3">
+              {/* Add Personnel */}
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Select
+                        value={newPersonnelId}
+                        onValueChange={setNewPersonnelId}
+                        disabled={personnelLoading}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={personnelLoading ? "Laster personell..." : "Velg personell"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {personnelList
+                            .filter(p => !selectedPersonnel.find(sp => sp.id === p.id))
+                            .map(personnel => (
+                            <SelectItem key={personnel.id} value={personnel.id}>
+                              {personnel.name} - {personnel.standard_hourly_rate || 500} kr/time
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="w-20">
+                      <Input
+                        type="number"
+                        placeholder="8"
+                        value={newPersonnelHours}
+                        onChange={(e) => setNewPersonnelHours(e.target.value)}
+                        min="0.5"
+                        step="0.5"
+                      />
+                    </div>
+                    <Button onClick={addPersonnel} disabled={!newPersonnelId} size="icon">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Selected Personnel List */}
+              {selectedPersonnel.map((person, index) => {
+                const personnelData = personnelList.find(p => p.id === person.id);
+                return (
+                  <Card key={index}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium">{personnelData?.name}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {person.estimated_hours} timer × {person.hourly_rate} kr = {(person.estimated_hours * person.hourly_rate).toLocaleString('no-NO')} kr
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => removePersonnel(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Optional Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Beskrivelse (valgfritt)</Label>
@@ -112,13 +435,45 @@ export const QuickStartModal = ({ open, onClose, onSuccess }: QuickStartModalPro
             />
           </div>
 
+          <Separator />
+
           {/* Preview */}
           {selectedCustomer && (
-            <div className="p-3 bg-muted rounded-lg text-sm">
-              <p className="font-medium">Tittel:</p>
-              <p className="text-muted-foreground">
-                {generateTitle(customers.find(c => c.id === selectedCustomer)?.name || '')}
-              </p>
+            <div className="space-y-3">
+              <div className="p-3 bg-muted rounded-lg text-sm">
+                <p className="font-medium">Arbeidsordre:</p>
+                <p className="text-muted-foreground">
+                  {generateTitle(customers.find(c => c.id === selectedCustomer)?.name || '')}
+                </p>
+              </div>
+              
+              {/* Cost Preview */}
+              {totalEstimatedCost > 0 && (
+                <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">Estimert kostnad:</span>
+                    <span className="text-lg font-bold text-primary">
+                      {totalEstimatedCost.toLocaleString('no-NO')} kr
+                    </span>
+                  </div>
+                  {pricingModel === 'hourly' && estimatedHours && hourlyRate && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {estimatedHours} timer × {hourlyRate} kr/time
+                      {(selectedEquipment.length > 0 || selectedPersonnel.length > 0) && ' + ressurser'}
+                    </p>
+                  )}
+                  {(selectedEquipment.length > 0 || selectedPersonnel.length > 0) && (
+                    <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                      {selectedEquipment.length > 0 && (
+                        <p>Utstyr: {selectedEquipment.reduce((sum, eq) => sum + (eq.quantity * eq.rate), 0).toLocaleString('no-NO')} kr</p>
+                      )}
+                      {selectedPersonnel.length > 0 && (
+                        <p>Personell: {selectedPersonnel.reduce((sum, person) => sum + (person.estimated_hours * person.hourly_rate), 0).toLocaleString('no-NO')} kr</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

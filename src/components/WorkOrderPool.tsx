@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useWorkOrders, useUpdateWorkOrder } from '@/hooks/useApi';
+import { useWorkOrders, useClaimWorkOrder, queryKeys } from '@/hooks/useApi';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import { Clock, MapPin, User, Search, Filter, Grab } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface WorkOrderPoolProps {
   isMobile?: boolean;
@@ -21,8 +23,9 @@ export function WorkOrderPool({ isMobile = false }: WorkOrderPoolProps) {
   
   const { user } = useAuth();
   const { data: workOrders } = useWorkOrders();
-  const updateWorkOrder = useUpdateWorkOrder();
+  const claimWorkOrder = useClaimWorkOrder();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Filter orders that are not assigned or in the pool
   const poolOrders = workOrders?.filter(order => 
@@ -36,15 +39,11 @@ export function WorkOrderPool({ isMobile = false }: WorkOrderPoolProps) {
     return matchesSearch && matchesPriority;
   });
 
+  // Note: Real-time updates now handled by useFieldWorkerRealtime hook in MobileFieldWorker
+
   const handleClaimOrder = async (orderId: string) => {
     try {
-      await updateWorkOrder.mutateAsync({
-        id: orderId,
-        data: {
-          assigned_to: user?.id,
-          status: 'pending' // Keep as pending until actually started
-        }
-      });
+      await claimWorkOrder.mutateAsync(orderId);
 
       toast({
         title: 'Suksess',
@@ -127,9 +126,10 @@ export function WorkOrderPool({ isMobile = false }: WorkOrderPoolProps) {
             onClick={() => handleClaimOrder(order.id)}
             size="sm"
             className="flex items-center gap-2"
+            disabled={claimWorkOrder.isPending}
           >
             <Grab className="w-4 h-4" />
-            Ta ordre
+            {claimWorkOrder.isPending ? 'Tar...' : 'Ta ordre'}
           </Button>
         </div>
       </CardContent>

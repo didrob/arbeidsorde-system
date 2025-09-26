@@ -9,6 +9,8 @@ export const usePWAInstall = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isInstalling, setIsInstalling] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
     // Check if already installed
@@ -16,19 +18,52 @@ export const usePWAInstall = () => {
     const isIOSStandalone = (window.navigator as any).standalone === true;
     setIsInstalled(isStandalone || isIOSStandalone);
 
+    // Detect iOS
+    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    setIsIOS(iOS);
+
     const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
+      console.log('PWA: beforeinstallprompt event fired');
       // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
       // Stash the event so it can be triggered later
       setDeferredPrompt(e);
-      // Show install prompt after a delay
-      setTimeout(() => setShowInstallPrompt(true), 3000);
+      
+      // Check if prompt was dismissed recently
+      const dismissed = localStorage.getItem('pwa-install-dismissed');
+      const neverShow = localStorage.getItem('pwa-install-never-show');
+      
+      if (neverShow === 'true') {
+        console.log('PWA: Install prompt permanently dismissed');
+        return;
+      }
+      
+      if (dismissed) {
+        const dismissedTime = parseInt(dismissed);
+        const hoursSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60);
+        if (hoursSinceDismissed < 24) {
+          console.log('PWA: Install prompt dismissed recently, waiting...');
+          return;
+        }
+      }
+      
+      // Show install prompt after user has had time to interact with app
+      setTimeout(() => {
+        if (!isStandalone && !isIOSStandalone) {
+          console.log('PWA: Showing install prompt');
+          setShowInstallPrompt(true);
+        }
+      }, 3000); // 3 seconds delay for testing
     };
 
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setShowInstallPrompt(false);
       setDeferredPrompt(null);
+      setIsInstalling(false);
+      // Clear dismiss flags on successful install
+      localStorage.removeItem('pwa-install-dismissed');
+      localStorage.removeItem('pwa-install-never-show');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as any);
@@ -41,48 +76,70 @@ export const usePWAInstall = () => {
   }, []);
 
   const installPWA = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt && !isIOS) return;
 
-    // Show the install prompt
-    await deferredPrompt.prompt();
+    setIsInstalling(true);
     
-    // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      console.log('User accepted the install prompt');
-    } else {
-      console.log('User dismissed the install prompt');
-    }
-    
-    // Clear the prompt
-    setDeferredPrompt(null);
-    setShowInstallPrompt(false);
-  };
-
-  const dismissInstallPrompt = () => {
-    setShowInstallPrompt(false);
-    // Don't show again for 24 hours
-    localStorage.setItem('pwa-install-dismissed', new Date().getTime().toString());
-  };
-
-  // Check if prompt was dismissed recently
-  useEffect(() => {
-    const dismissed = localStorage.getItem('pwa-install-dismissed');
-    if (dismissed) {
-      const dismissedTime = parseInt(dismissed);
-      const hoursSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60);
-      if (hoursSinceDismissed < 24) {
-        setShowInstallPrompt(false);
+    try {
+      if (deferredPrompt) {
+        // Android/Chrome PWA installation
+        await deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        
+        if (outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+        } else {
+          console.log('User dismissed the install prompt');
+          setShowInstallPrompt(false);
+        }
+        
+        setDeferredPrompt(null);
       }
+    } catch (error) {
+      console.error('Error installing PWA:', error);
+    } finally {
+      setIsInstalling(false);
     }
-  }, []);
+  };
+
+  const dismissInstallPrompt = (permanent = false) => {
+    setShowInstallPrompt(false);
+    if (permanent) {
+      localStorage.setItem('pwa-install-never-show', 'true');
+    } else {
+      localStorage.setItem('pwa-install-dismissed', new Date().getTime().toString());
+    }
+  };
+
+  // Show iOS-specific prompt for devices that don't support beforeinstallprompt
+  useEffect(() => {
+    if (isIOS && !isInstalled && window.matchMedia('(display-mode: browser)').matches) {
+      const dismissed = localStorage.getItem('pwa-install-dismissed');
+      const neverShow = localStorage.getItem('pwa-install-never-show');
+      
+      if (neverShow === 'true') return;
+      
+      if (dismissed) {
+        const dismissedTime = parseInt(dismissed);
+        const hoursSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60);
+        if (hoursSinceDismissed < 24) return;
+      }
+      
+      // Show iOS prompt after delay
+      setTimeout(() => {
+        console.log('PWA: Showing iOS install prompt');
+        setShowInstallPrompt(true);
+      }, 3000);
+    }
+  }, [isIOS, isInstalled]);
 
   return {
     showInstallPrompt: showInstallPrompt && !isInstalled,
     installPWA,
     dismissInstallPrompt,
     isInstalled,
-    canInstall: !!deferredPrompt
+    canInstall: !!deferredPrompt || isIOS,
+    isInstalling,
+    isIOS
   };
 };
