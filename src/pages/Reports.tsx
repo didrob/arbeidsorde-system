@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Clock, DollarSign, Users, BarChart, Download, Eye } from 'lucide-react';
+import { TrendingUp, TrendingDown, Clock, Users, BarChart, Download, Eye } from 'lucide-react';
 import { WorkOrderDetails } from '@/components/WorkOrderDetails';
 import { SiteSelector } from '@/components/site/SiteSelector';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -291,7 +291,11 @@ export default function Reports() {
             {
               title: "Total omsetning",
               value: overallStats.totalRevenue,
-              icon: <DollarSign className="h-full w-full text-muted-foreground" />,
+              icon: (
+                <span className="h-full w-full flex items-center justify-center text-muted-foreground text-2xl font-semibold">
+                  kr
+                </span>
+              ),
               format: "currency"
             },
             {
