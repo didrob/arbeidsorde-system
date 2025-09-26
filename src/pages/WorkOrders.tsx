@@ -45,10 +45,8 @@ export default function WorkOrders() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteReason, setDeleteReason] = useState('');
   
-  const { selectedSiteId } = useSiteFilter();
-  const { data: workOrders, isLoading } = useWorkOrders({ 
-    site_id: selectedSiteId 
-  });
+  // Site segregation is now handled by RLS - no manual filtering needed
+  const { data: workOrders, isLoading } = useWorkOrders();
   const createWorkOrder = useCreateWorkOrder();
   const updateWorkOrder = useUpdateWorkOrder();
   const deleteWorkOrder = useDeleteWorkOrder();

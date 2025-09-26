@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { FileText, Users, Package, Plus, Clock, AlertCircle, CheckCircle, BarChart3, TrendingUp } from 'lucide-react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { FieldWorkerDashboard } from '@/components/FieldWorkerDashboard';
+import { OrganizationDashboard } from '@/components/OrganizationDashboard';
 import { TopBar } from '@/components/TopBar';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -37,6 +38,7 @@ const Dashboard = () => {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  // Site segregation is now handled by RLS - selectedSiteId is only for UI display
   const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
   const [siteStats, setSiteStats] = useState<any[]>([]);
   const [statusChartData, setStatusChartData] = useState<any[]>([]);
@@ -131,12 +133,8 @@ const Dashboard = () => {
         .select('*', { count: 'exact', head: true })
         .eq('status', 'pending');
 
-      // Apply site filter if selected
-      if (selectedSiteId) {
-        workOrdersQuery = workOrdersQuery.eq('site_id', selectedSiteId);
-        completedTodayQuery = completedTodayQuery.eq('site_id', selectedSiteId);
-        pendingQuery = pendingQuery.eq('site_id', selectedSiteId);
-      }
+      // Site filtering is now handled by RLS automatically
+      // No manual site filtering needed
 
       const [
         { count: totalCount },
@@ -246,6 +244,11 @@ const Dashboard = () => {
   // Show field worker dashboard if user is a field worker
   if (userProfile?.role === 'field_worker') {
     return <FieldWorkerDashboard />;
+  }
+
+  // Show organization dashboard for system admins
+  if (userProfile?.role === 'system_admin') {
+    return <OrganizationDashboard />;
   }
 
   // Admin/Manager Dashboard

@@ -34,17 +34,19 @@ class ApiClient {
     };
   }
 
-  // Work Orders API
+  // Work Orders API - Site segregation handled by RLS
   async getWorkOrders(filters?: WorkOrderFilters): Promise<ApiResponse<any[]>> {
     let query = supabase
       .from('work_orders')
       .select(`
         *,
-        customer:customers(name, email, phone)
+        customer:customers(name, email, phone),
+        site:sites(name)
       `)
       .eq('is_deleted', false)
       .order('created_at', { ascending: false });
 
+    // Only apply non-security filters - site access is handled by RLS
     if (filters?.status?.length) {
       query = query.in('status', filters.status);
     }
@@ -53,9 +55,6 @@ class ApiClient {
     }
     if (filters?.customer_id) {
       query = query.eq('customer_id', filters.customer_id);
-    }
-    if (filters?.site_id) {
-      query = query.eq('site_id', filters.site_id);
     }
     if (filters?.search) {
       query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
@@ -179,11 +178,14 @@ class ApiClient {
     return this.handleResponse(data, error);
   }
 
-  // Materials API
+  // Materials API - Site segregation handled by RLS
   async getMaterials(): Promise<ApiResponse<Material[]>> {
     const { data, error } = await supabase
       .from('materials')
-      .select('*')
+      .select(`
+        *,
+        site:sites(name)
+      `)
       .order('name');
 
     return this.handleResponse(data, error);
@@ -214,11 +216,14 @@ class ApiClient {
     return this.handleResponse(data, error);
   }
 
-  // Customers API
+  // Customers API - Site segregation handled by RLS
   async getCustomers(): Promise<ApiResponse<Customer[]>> {
     const { data, error } = await supabase
       .from('customers')
-      .select('*')
+      .select(`
+        *,
+        site:sites(name)
+      `)
       .order('name');
 
     return this.handleResponse(data, error);
@@ -272,6 +277,52 @@ class ApiClient {
     return this.handleResponse(data, error);
   }
 
+  // Organization-level API for system admins
+  async getOrgCustomers(): Promise<ApiResponse<any[]>> {
+    const { data, error } = await supabase
+      .from('org_customers')
+      .select('*')
+      .order('name');
+
+    return this.handleResponse(data, error);
+  }
+
+  async getOrgMaterials(): Promise<ApiResponse<any[]>> {
+    const { data, error } = await supabase
+      .from('org_materials')
+      .select('*')
+      .order('name');
+
+    return this.handleResponse(data, error);
+  }
+
+  async getOrgEquipment(): Promise<ApiResponse<any[]>> {
+    const { data, error } = await supabase
+      .from('org_equipment')
+      .select('*')
+      .order('name');
+
+    return this.handleResponse(data, error);
+  }
+
+  async getOrgPersonnel(): Promise<ApiResponse<any[]>> {
+    const { data, error } = await supabase
+      .from('org_personnel')
+      .select('*')
+      .order('name');
+
+    return this.handleResponse(data, error);
+  }
+
+  async getOrgWorkOrders(): Promise<ApiResponse<any[]>> {
+    const { data, error } = await supabase
+      .from('org_work_orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    return this.handleResponse(data, error);
+  }
+
   // Dashboard API
   async getDashboardStats(): Promise<ApiResponse<DashboardStats>> {
     // This would require multiple queries or a database function
@@ -316,5 +367,10 @@ export const {
   updateCustomer,
   getFieldWorkers,
   getCurrentUser,
-  getDashboardStats
+  getDashboardStats,
+  getOrgCustomers,
+  getOrgMaterials,
+  getOrgEquipment,
+  getOrgPersonnel,
+  getOrgWorkOrders
 } = api;
