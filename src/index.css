@@ -159,12 +159,14 @@ All colors MUST be HSL.
 /* Mobile-first optimizations */
 @layer utilities {
   /* Global Recharts color defaults using palette */
-  .recharts-bar-rectangle path { fill: hsl(var(--chart-1)) !important; }
-  .recharts-pie .recharts-sector:nth-of-type(5n+1) path { fill: hsl(var(--chart-1)) !important; }
-  .recharts-pie .recharts-sector:nth-of-type(5n+2) path { fill: hsl(var(--chart-2)) !important; }
-  .recharts-pie .recharts-sector:nth-of-type(5n+3) path { fill: hsl(var(--chart-3)) !important; }
-  .recharts-pie .recharts-sector:nth-of-type(5n+4) path { fill: hsl(var(--chart-4)) !important; }
-  .recharts-pie .recharts-sector:nth-of-type(5n+5) path { fill: hsl(var(--chart-5)) !important; }
+  /* Bars */
+  .recharts-bar-rectangle .recharts-rectangle { fill: hsl(var(--chart-1)) !important; }
+  /* Pie slices */
+  .recharts-pie .recharts-sector:nth-of-type(5n+1) { fill: hsl(var(--chart-1)) !important; }
+  .recharts-pie .recharts-sector:nth-of-type(5n+2) { fill: hsl(var(--chart-2)) !important; }
+  .recharts-pie .recharts-sector:nth-of-type(5n+3) { fill: hsl(var(--chart-3)) !important; }
+  .recharts-pie .recharts-sector:nth-of-type(5n+4) { fill: hsl(var(--chart-4)) !important; }
+  .recharts-pie .recharts-sector:nth-of-type(5n+5) { fill: hsl(var(--chart-5)) !important; }
 
   /* Touch-friendly button sizes */
   .btn-mobile {
