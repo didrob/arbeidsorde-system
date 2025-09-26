@@ -3,6 +3,7 @@ import { useWorkOrders, useCreateWorkOrder, useUpdateWorkOrder, useDeleteWorkOrd
 import { TopBar } from '@/components/TopBar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { BulkWorkOrderEditor } from '@/components/backoffice/BulkWorkOrderEditor';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -38,6 +39,7 @@ export default function WorkOrders() {
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<any>(null);
   const [selectedOrders, setSelectedOrders] = useState<any[]>([]);
   const [bulkAssignMode, setBulkAssignMode] = useState(false);
+  const [isBulkEditorOpen, setIsBulkEditorOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteReason, setDeleteReason] = useState('');
@@ -374,6 +376,17 @@ export default function WorkOrders() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Bulk Work Order Editor */}
+        <BulkWorkOrderEditor
+          selectedOrders={selectedOrders}
+          isOpen={isBulkEditorOpen}
+          onClose={() => setIsBulkEditorOpen(false)}
+          onUpdate={() => {
+            // Clear selection after update
+            setSelectedOrders([]);
+          }}
+        />
       </div>
     </div>
   );
