@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useWorkOrders, useCreateWorkOrder, useUpdateWorkOrder, useDeleteWorkOrder, useCustomers, useFieldWorkers } from '@/hooks/useApi';
+import { useSiteFilter } from '@/hooks/useSiteFilter';
 import { TopBar } from '@/components/TopBar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,7 +45,10 @@ export default function WorkOrders() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteReason, setDeleteReason] = useState('');
   
-  const { data: workOrders, isLoading } = useWorkOrders();
+  const { selectedSiteId } = useSiteFilter();
+  const { data: workOrders, isLoading } = useWorkOrders({ 
+    site_id: selectedSiteId 
+  });
   const createWorkOrder = useCreateWorkOrder();
   const updateWorkOrder = useUpdateWorkOrder();
   const deleteWorkOrder = useDeleteWorkOrder();

@@ -54,6 +54,9 @@ class ApiClient {
     if (filters?.customer_id) {
       query = query.eq('customer_id', filters.customer_id);
     }
+    if (filters?.site_id) {
+      query = query.eq('site_id', filters.site_id);
+    }
     if (filters?.search) {
       query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
     }

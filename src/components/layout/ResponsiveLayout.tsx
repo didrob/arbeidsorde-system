@@ -1,6 +1,7 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
+import { useSiteFilter } from '@/hooks/useSiteFilter';
 import { MobileNav } from '@/components/mobile/MobileNav';
 import { SimpleSidebar } from '@/components/SimpleSidebar';
 import { SiteSelector } from '@/components/site/SiteSelector';
@@ -20,7 +21,7 @@ export function ResponsiveLayout({
 }: ResponsiveLayoutProps) {
   const isMobile = useIsMobile();
   const { isFieldWorker, isSystemAdmin } = useAuth();
-  const [selectedSiteId, setSelectedSiteId] = useState<string | undefined>();
+  const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
 
   // Field workers ALWAYS get mobile interface, regardless of screen size or device
   if (isFieldWorker) {

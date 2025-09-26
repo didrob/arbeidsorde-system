@@ -234,6 +234,7 @@ export interface WorkOrderFilters {
   status?: WorkOrderStatus[];
   assigned_to?: string;
   customer_id?: string;
+  site_id?: string;
   date_from?: string;
   date_to?: string;
   search?: string;
