@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Users, Package, Plus, Clock, AlertCircle, CheckCircle, BarChart3, TrendingUp } from 'lucide-react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { FieldWorkerDashboard } from '@/components/FieldWorkerDashboard';
 import { OrganizationDashboard } from '@/components/OrganizationDashboard';
 import { TopBar } from '@/components/TopBar';
@@ -34,7 +34,6 @@ interface UserProfile {
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loadingOrders, setLoadingOrders] = useState(true);
@@ -42,6 +41,25 @@ const Dashboard = () => {
   const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
   const [siteStats, setSiteStats] = useState<any[]>([]);
   const [statusChartData, setStatusChartData] = useState<any[]>([]);
+  
+  // Safe navigation hook usage
+  let navigate: (path: string) => void;
+  try {
+    const routerNavigate = useNavigate();
+    navigate = (path: string) => {
+      try {
+        routerNavigate(path);
+      } catch (e) {
+        console.error('Router navigation failed, using window.location:', e);
+        window.location.href = path;
+      }
+    };
+  } catch (error) {
+    console.error('Navigation hook error, using fallback:', error);
+    navigate = (path: string) => {
+      window.location.href = path;
+    };
+  }
   
   const [stats, setStats] = useState({
     totalWorkOrders: 0,
@@ -436,7 +454,10 @@ const Dashboard = () => {
                   <p className="text-muted-foreground mb-4">
                     {selectedSiteId ? "Ingen ordrer funnet for valgt site" : "Ingen arbeidsordrer tilgjengelig"}
                   </p>
-                  <Button onClick={() => navigate('/work-orders')} className="mt-2">
+                  <Button 
+                    onClick={() => navigate('/work-orders')} 
+                    className="mt-2"
+                  >
                     Opprett arbeidsordre
                   </Button>
                 </div>

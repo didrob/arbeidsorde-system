@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arbeidsordre-v2.1'; // Increment version to force cache refresh
+const CACHE_NAME = 'arbeidsordre-v2.2'; // Force another cache refresh
 const urlsToCache = [
   '/',
   '/field',
