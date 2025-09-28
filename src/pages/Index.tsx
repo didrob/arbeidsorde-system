@@ -1,47 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 import { FieldWorkerDashboard } from '@/components/FieldWorkerDashboard';
 import Dashboard from './Dashboard';
 
-interface UserProfile {
-  role: string;
-}
-
 const Index = () => {
-  const { user, loading } = useAuth();
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
-
-  const fetchUserProfile = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error) throw error;
-      setUserProfile(data);
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-    } finally {
-      setProfileLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (user) {
-      fetchUserProfile();
-    } else {
-      setProfileLoading(false);
-    }
-  }, [user]);
+  const { user, loading, isFieldWorker } = useAuth();
 
   // Show loading state
-  if (loading || profileLoading) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
@@ -54,7 +20,7 @@ const Index = () => {
 
   // Field workers should be redirected to /field by useSmartRouting
   // If they reach here, redirect them manually as fallback
-  if (userProfile?.role === 'field_worker') {
+  if (isFieldWorker) {
     window.location.href = '/field';
     return null;
   }
