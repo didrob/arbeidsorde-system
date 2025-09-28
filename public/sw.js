@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arbeidsordre-v2.2'; // Force another cache refresh
+const CACHE_NAME = 'arbeidsordre-v3.0'; // Major version bump to force complete cache clear
 const urlsToCache = [
   '/',
   '/field',
