@@ -118,17 +118,21 @@ export function OrganizationDashboard() {
   ].filter(item => item.value > 0);
 
   // Chart data for resources by site
-  const resourcesBySiteData = Object.entries(
-    filteredData.workOrders.reduce((acc: any, order: any) => {
+  const resourcesBySiteMap: Record<string, number> = filteredData.workOrders.reduce(
+    (acc: Record<string, number>, order: any) => {
       const siteName = order.site_name || 'Ukjent site';
       acc[siteName] = (acc[siteName] || 0) + 1;
       return acc;
-    }, {})
-  ).map(([site, count], index) => ({
-    name: site,
-    value: count,
-    color: `hsl(var(--chart-${(index % 5) + 1}))`
-  }));
+    },
+    {}
+  );
+  const resourcesBySiteData: { name: string; value: number; color: string }[] = Object.entries(resourcesBySiteMap).map(
+    ([site, count], index) => ({
+      name: site,
+      value: Number(count),
+      color: `hsl(var(--chart-${(index % 5) + 1}))`,
+    })
+  );
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-gradient-surface">
