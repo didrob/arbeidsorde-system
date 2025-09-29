@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { FieldWorkerDashboard } from '@/components/FieldWorkerDashboard';
-import SimpleDashboard from './SimpleDashboard';
+import Dashboard from './Dashboard';
 
 const Index = () => {
   const { user, loading, isFieldWorker } = useAuth();
@@ -25,8 +25,8 @@ const Index = () => {
     return null;
   }
 
-  // Show simple dashboard for admin/manager users
-  return <SimpleDashboard />;
+  // Show dashboard for admin/manager users
+  return <Dashboard />;
 };
 
 export default Index;

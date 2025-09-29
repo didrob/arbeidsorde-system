@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { MapPin } from 'lucide-react';
@@ -14,6 +14,13 @@ interface SiteSelectorProps {
 export function SiteSelector({ selectedSiteId, onSiteChange, className }: SiteSelectorProps) {
   const { data: accessibleSites, isLoading, error } = useUserAccessibleSites();
   const isMobile = useIsMobile();
+
+  // Auto-select site if user has only one accessible site
+  useEffect(() => {
+    if (accessibleSites && accessibleSites.length === 1 && !selectedSiteId) {
+      onSiteChange(accessibleSites[0].site_id);
+    }
+  }, [accessibleSites, selectedSiteId, onSiteChange]);
 
   // Debug logging
   console.log('SiteSelector debug:', {

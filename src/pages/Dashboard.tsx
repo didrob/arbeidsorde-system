@@ -151,8 +151,12 @@ const Dashboard = () => {
         .select('*', { count: 'exact', head: true })
         .eq('status', 'pending');
 
-      // Site filtering is now handled by RLS automatically
-      // No manual site filtering needed
+      // Apply site filter if selected
+      if (selectedSiteId) {
+        workOrdersQuery = workOrdersQuery.eq('site_id', selectedSiteId);
+        completedTodayQuery = completedTodayQuery.eq('site_id', selectedSiteId);
+        pendingQuery = pendingQuery.eq('site_id', selectedSiteId);
+      }
 
       const [
         { count: totalCount },
@@ -184,12 +188,19 @@ const Dashboard = () => {
 
   const fetchSiteStats = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('site_work_order_stats')
         .select('*')
-        .order('total_orders', { ascending: false })
-        .limit(5);
+        .order('total_orders', { ascending: false });
+        
+      // If a specific site is selected, only show that site's stats
+      if (selectedSiteId) {
+        query = query.eq('site_id', selectedSiteId);
+      } else {
+        query = query.limit(5);
+      }
       
+      const { data, error } = await query;
       if (error) throw error;
       setSiteStats(data || []);
     } catch (error) {

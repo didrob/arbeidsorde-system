@@ -8,10 +8,29 @@ interface SiteFilterContextType {
 const SiteFilterContext = createContext<SiteFilterContextType | undefined>(undefined);
 
 export function SiteFilterProvider({ children }: { children: ReactNode }) {
-  const [selectedSiteId, setSelectedSiteId] = useState<string | undefined>(undefined);
+  const [selectedSiteId, setSelectedSiteId] = useState<string | undefined>(() => {
+    try {
+      return localStorage.getItem('selectedSiteId') || undefined;
+    } catch {
+      return undefined;
+    }
+  });
+
+  const handleSetSelectedSiteId = (siteId: string | undefined) => {
+    setSelectedSiteId(siteId);
+    try {
+      if (siteId) {
+        localStorage.setItem('selectedSiteId', siteId);
+      } else {
+        localStorage.removeItem('selectedSiteId');
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  };
 
   return (
-    <SiteFilterContext.Provider value={{ selectedSiteId, setSelectedSiteId }}>
+    <SiteFilterContext.Provider value={{ selectedSiteId, setSelectedSiteId: handleSetSelectedSiteId }}>
       {children}
     </SiteFilterContext.Provider>
   );
