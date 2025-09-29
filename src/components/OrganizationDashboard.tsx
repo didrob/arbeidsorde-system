@@ -22,6 +22,15 @@ export function OrganizationDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
+  // Derived, client-side filtered data by selected site
+  const filteredData = selectedSiteId ? {
+    customers: orgData.customers.filter((c: any) => c.site_id === selectedSiteId),
+    materials: orgData.materials.filter((m: any) => m.site_id === selectedSiteId),
+    equipment: orgData.equipment.filter((e: any) => e.site_id === selectedSiteId),
+    personnel: orgData.personnel.filter((p: any) => p.site_id === selectedSiteId),
+    workOrders: orgData.workOrders.filter((o: any) => o.site_id === selectedSiteId)
+  } : orgData;
+
   useEffect(() => {
     fetchOrgData();
   }, []);
@@ -86,7 +95,7 @@ export function OrganizationDashboard() {
       <div className="p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Organisasjonsoversikt</h1>
-          <p className="text-muted-foreground">Aggregerte data fra alle sites i organisasjonen</p>
+          <p className="text-muted-foreground">{selectedSiteId ? 'Data for valgt site' : 'Aggregerte data fra alle sites i organisasjonen'}</p>
         </div>
 
         {/* Overview Stats */}
@@ -97,7 +106,7 @@ export function OrganizationDashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{orgData.customers.length}</div>
+              <div className="text-2xl font-bold">{filteredData.customers.length}</div>
             </CardContent>
           </Card>
           
@@ -107,7 +116,7 @@ export function OrganizationDashboard() {
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{orgData.materials.length}</div>
+              <div className="text-2xl font-bold">{filteredData.materials.length}</div>
             </CardContent>
           </Card>
           
@@ -117,7 +126,7 @@ export function OrganizationDashboard() {
               <Wrench className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{orgData.equipment.length}</div>
+              <div className="text-2xl font-bold">{filteredData.equipment.length}</div>
             </CardContent>
           </Card>
           
@@ -127,7 +136,7 @@ export function OrganizationDashboard() {
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{orgData.personnel.length}</div>
+              <div className="text-2xl font-bold">{filteredData.personnel.length}</div>
             </CardContent>
           </Card>
         </div>
@@ -151,7 +160,7 @@ export function OrganizationDashboard() {
                 <CardContent>
                   <div className="space-y-2">
                     {Object.entries(
-                      orgData.workOrders.reduce((acc: any, order: any) => {
+                      filteredData.workOrders.reduce((acc: any, order: any) => {
                         const siteName = order.site_name || 'Ukjent site';
                         acc[siteName] = (acc[siteName] || 0) + 1;
                         return acc;
@@ -173,7 +182,7 @@ export function OrganizationDashboard() {
                 <CardContent>
                   <div className="space-y-2">
                     {Object.entries(
-                      orgData.workOrders.reduce((acc: any, order: any) => {
+                      filteredData.workOrders.reduce((acc: any, order: any) => {
                         acc[order.status] = (acc[order.status] || 0) + 1;
                         return acc;
                       }, {})
@@ -193,11 +202,11 @@ export function OrganizationDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Alle kunder i organisasjonen</CardTitle>
-                <CardDescription>Kunder fra alle sites</CardDescription>
+                <CardDescription>{selectedSiteId ? 'Kunder for valgt site' : 'Kunder fra alle sites'}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {orgData.customers.map((customer: any) => (
+                  {filteredData.customers.map((customer: any) => (
                     <div key={customer.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <h3 className="font-medium">{customer.name}</h3>
@@ -219,11 +228,11 @@ export function OrganizationDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Alle materialer i organisasjonen</CardTitle>
-                <CardDescription>Materialer fra alle sites</CardDescription>
+                <CardDescription>{selectedSiteId ? 'Materialer for valgt site' : 'Materialer fra alle sites'}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {orgData.materials.map((material: any) => (
+                  {filteredData.materials.map((material: any) => (
                     <div key={material.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <h3 className="font-medium">{material.name}</h3>
@@ -245,11 +254,11 @@ export function OrganizationDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Alt utstyr i organisasjonen</CardTitle>
-                <CardDescription>Utstyr fra alle sites</CardDescription>
+                <CardDescription>{selectedSiteId ? 'Utstyr for valgt site' : 'Utstyr fra alle sites'}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {orgData.equipment.map((equipment: any) => (
+                  {filteredData.equipment.map((equipment: any) => (
                     <div key={equipment.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <h3 className="font-medium">{equipment.name}</h3>
@@ -271,11 +280,11 @@ export function OrganizationDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Alle arbeidsordrer i organisasjonen</CardTitle>
-                <CardDescription>Arbeidsordrer fra alle sites</CardDescription>
+                <CardDescription>{selectedSiteId ? 'Arbeidsordrer for valgt site' : 'Arbeidsordrer fra alle sites'}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {orgData.workOrders.map((order: any) => (
+                  {filteredData.workOrders.map((order: any) => (
                     <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex-1">
                         <h3 className="font-medium">{order.title}</h3>
