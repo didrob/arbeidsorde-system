@@ -270,11 +270,80 @@ class ApiClient {
 
     const { data, error } = await supabase
       .from('profiles')
-      .select('*')
+      .select(`
+        *,
+        organization:organizations(id, name),
+        site:sites(id, name)
+      `)
       .eq('user_id', authUser.user.id)
       .single();
 
     return this.handleResponse(data, error);
+  }
+
+  async updateProfile(profileData: { full_name?: string; phone?: string; avatar_url?: string }): Promise<ApiResponse<any>> {
+    const { data: authUser } = await supabase.auth.getUser();
+    if (!authUser.user) {
+      return this.handleResponse(null, { message: 'Not authenticated' });
+    }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({
+        ...profileData,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', authUser.user.id)
+      .select(`
+        *,
+        organization:organizations(id, name),
+        site:sites(id, name)
+      `)
+      .single();
+
+    return this.handleResponse(data, error);
+  }
+
+  async uploadAvatar(file: File): Promise<ApiResponse<{ avatar_url: string }>> {
+    const { data: authUser } = await supabase.auth.getUser();
+    if (!authUser.user) {
+      return this.handleResponse(null, { message: 'Not authenticated' });
+    }
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${authUser.user.id}.${fileExt}`;
+    const filePath = `avatars/${fileName}`;
+
+    // Upload file to storage
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      return this.handleResponse(null, uploadError);
+    }
+
+    // Get public URL
+    const { data: publicUrl } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+
+    // Update profile with avatar URL
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ 
+        avatar_url: publicUrl.publicUrl,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', authUser.user.id)
+      .select()
+      .single();
+
+    if (error) {
+      return this.handleResponse(null, error);
+    }
+
+    return this.handleResponse({ avatar_url: publicUrl.publicUrl }, null);
   }
 
   // Organization-level API for system admins
@@ -367,6 +436,8 @@ export const {
   updateCustomer,
   getFieldWorkers,
   getCurrentUser,
+  updateProfile,
+  uploadAvatar,
   getDashboardStats,
   getOrgCustomers,
   getOrgMaterials,
