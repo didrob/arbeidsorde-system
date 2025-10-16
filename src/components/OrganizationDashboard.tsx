@@ -39,7 +39,6 @@ export function OrganizationDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
-<<<<<<< Updated upstream
   // Derived, client-side filtered data by selected site
   const filteredData = selectedSiteId ? {
     customers: orgData.customers.filter((c: any) => c.site_id === selectedSiteId),
@@ -48,11 +47,6 @@ export function OrganizationDashboard() {
     personnel: orgData.personnel.filter((p: any) => p.site_id === selectedSiteId),
     workOrders: orgData.workOrders.filter((o: any) => o.site_id === selectedSiteId)
   } : orgData;
-=======
-  // Debug logging
-  console.log('OrganizationDashboard render - selectedSiteId:', selectedSiteId);
-  console.log('OrganizationDashboard render - loading:', loading);
->>>>>>> Stashed changes
 
   useEffect(() => {
     fetchOrgData();
@@ -183,7 +177,6 @@ export function OrganizationDashboard() {
   );
 
   return (
-<<<<<<< Updated upstream
     <div className="flex-1 flex flex-col min-h-screen bg-gradient-surface">
       <TopBar 
         title="Dashboard" 
@@ -216,21 +209,6 @@ export function OrganizationDashboard() {
               </div>
             </div>
           </div>
-=======
-    <div className="flex-1 flex flex-col bg-background">
-      <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">
-            {selectedSiteId ? 'Site-oversikt' : 'Organisasjonsoversikt'}
-          </h1>
-          <p className="text-muted-foreground">
-            {selectedSiteId 
-              ? 'Data fra valgt site' 
-              : 'Aggregerte data fra alle sites i organisasjonen'
-            }
-          </p>
-        </div>
->>>>>>> Stashed changes
 
           {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
