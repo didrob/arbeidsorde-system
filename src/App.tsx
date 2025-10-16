@@ -7,6 +7,7 @@ import { SiteFilterProvider } from "@/hooks/useSiteFilter";
 import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
 import { useSmartRouting } from "@/hooks/useSmartRouting";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { UserOnboarding } from "@/components/onboarding/UserOnboarding";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -79,6 +80,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 const App = () => (
+<<<<<<< Updated upstream
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <SiteFilterProvider>
@@ -106,6 +108,37 @@ const App = () => (
       </SiteFilterProvider>
     </AuthProvider>
   </QueryClientProvider>
+=======
+  <TooltipProvider delayDuration={300}>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <SiteFilterProvider>
+          <BrowserRouter>
+            <Toaster />
+            <Sonner />
+            <PWAWrapper />
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/field" element={<FieldWorker />} />
+              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+              <Route path="/work-orders" element={<ProtectedRoute><WorkOrders /></ProtectedRoute>} />
+              <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
+              <Route path="/customer-agreements" element={<ProtectedRoute><CustomerAgreements /></ProtectedRoute>} />
+              <Route path="/materials" element={<ProtectedRoute><Materials /></ProtectedRoute>} />
+              <Route path="/resources" element={<ProtectedRoute><Resources /></ProtectedRoute>} />
+              <Route path="/time-tracking" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
+              <Route path="/map" element={<ProtectedRoute><Map /></ProtectedRoute>} />
+              <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+              <Route path="/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </SiteFilterProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </TooltipProvider>
+>>>>>>> Stashed changes
 );
 
 

@@ -34,8 +34,8 @@ class ApiClient {
     };
   }
 
-  // Work Orders API - Site segregation handled by RLS
-  async getWorkOrders(filters?: WorkOrderFilters): Promise<ApiResponse<any[]>> {
+  // Work Orders API - Site segregation handled by RLS + manual filtering
+  async getWorkOrders(filters?: WorkOrderFilters, selectedSiteId?: string): Promise<ApiResponse<any[]>> {
     let query = supabase
       .from('work_orders')
       .select(`
@@ -46,7 +46,12 @@ class ApiClient {
       .eq('is_deleted', false)
       .order('created_at', { ascending: false });
 
-    // Only apply non-security filters - site access is handled by RLS
+    // Apply site filtering if specified
+    if (selectedSiteId) {
+      query = query.eq('site_id', selectedSiteId);
+    }
+
+    // Apply other filters
     if (filters?.status?.length) {
       query = query.in('status', filters.status);
     }
@@ -178,9 +183,9 @@ class ApiClient {
     return this.handleResponse(data, error);
   }
 
-  // Materials API - Site segregation handled by RLS
-  async getMaterials(): Promise<ApiResponse<Material[]>> {
-    const { data, error } = await supabase
+  // Materials API - Site segregation handled by RLS + manual filtering
+  async getMaterials(selectedSiteId?: string): Promise<ApiResponse<Material[]>> {
+    let query = supabase
       .from('materials')
       .select(`
         *,
@@ -188,6 +193,12 @@ class ApiClient {
       `)
       .order('name');
 
+    // Apply site filtering if specified
+    if (selectedSiteId) {
+      query = query.eq('site_id', selectedSiteId);
+    }
+
+    const { data, error } = await query;
     return this.handleResponse(data, error);
   }
 
@@ -216,9 +227,9 @@ class ApiClient {
     return this.handleResponse(data, error);
   }
 
-  // Customers API - Site segregation handled by RLS
-  async getCustomers(): Promise<ApiResponse<Customer[]>> {
-    const { data, error } = await supabase
+  // Customers API - Site segregation handled by RLS + manual filtering
+  async getCustomers(selectedSiteId?: string): Promise<ApiResponse<Customer[]>> {
+    let query = supabase
       .from('customers')
       .select(`
         *,
@@ -226,6 +237,12 @@ class ApiClient {
       `)
       .order('name');
 
+    // Apply site filtering if specified
+    if (selectedSiteId) {
+      query = query.eq('site_id', selectedSiteId);
+    }
+
+    const { data, error } = await query;
     return this.handleResponse(data, error);
   }
 
@@ -247,6 +264,44 @@ class ApiClient {
       .select()
       .single();
 
+    return this.handleResponse(data, error);
+  }
+
+  // Equipment API - Site segregation handled by RLS + manual filtering
+  async getEquipment(selectedSiteId?: string): Promise<ApiResponse<any[]>> {
+    let query = supabase
+      .from('equipment')
+      .select(`
+        *,
+        site:sites(name)
+      `)
+      .order('name');
+
+    // Apply site filtering if specified
+    if (selectedSiteId) {
+      query = query.eq('site_id', selectedSiteId);
+    }
+
+    const { data, error } = await query;
+    return this.handleResponse(data, error);
+  }
+
+  // Personnel API - Site segregation handled by RLS + manual filtering
+  async getPersonnel(selectedSiteId?: string): Promise<ApiResponse<any[]>> {
+    let query = supabase
+      .from('personnel')
+      .select(`
+        *,
+        site:sites(name)
+      `)
+      .order('name');
+
+    // Apply site filtering if specified
+    if (selectedSiteId) {
+      query = query.eq('site_id', selectedSiteId);
+    }
+
+    const { data, error } = await query;
     return this.handleResponse(data, error);
   }
 
@@ -349,7 +404,7 @@ class ApiClient {
   // Organization-level API for system admins
   async getOrgCustomers(): Promise<ApiResponse<any[]>> {
     const { data, error } = await supabase
-      .from('customers')
+      .from('org_customers')
       .select('*')
       .order('name');
 
@@ -358,7 +413,7 @@ class ApiClient {
 
   async getOrgMaterials(): Promise<ApiResponse<any[]>> {
     const { data, error } = await supabase
-      .from('materials')
+      .from('org_materials')
       .select('*')
       .order('name');
 
@@ -367,7 +422,7 @@ class ApiClient {
 
   async getOrgEquipment(): Promise<ApiResponse<any[]>> {
     const { data, error } = await supabase
-      .from('equipment')
+      .from('org_equipment')
       .select('*')
       .order('name');
 
@@ -376,7 +431,7 @@ class ApiClient {
 
   async getOrgPersonnel(): Promise<ApiResponse<any[]>> {
     const { data, error } = await supabase
-      .from('personnel')
+      .from('org_personnel')
       .select('*')
       .order('name');
 
@@ -385,7 +440,7 @@ class ApiClient {
 
   async getOrgWorkOrders(): Promise<ApiResponse<any[]>> {
     const { data, error } = await supabase
-      .from('work_orders')
+      .from('org_work_orders')
       .select('*')
       .order('created_at', { ascending: false });
 

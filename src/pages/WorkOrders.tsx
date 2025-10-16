@@ -47,7 +47,7 @@ export default function WorkOrders() {
   const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
   
   // RLS handles security, but we can still filter by site for focused viewing
-  const { data: workOrders, isLoading } = useWorkOrders();
+  const { data: workOrders, isLoading } = useWorkOrders(undefined, selectedSiteId);
   const createWorkOrder = useCreateWorkOrder();
   const updateWorkOrder = useUpdateWorkOrder();
   const deleteWorkOrder = useDeleteWorkOrder();

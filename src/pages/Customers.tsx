@@ -26,7 +26,7 @@ export default function Customers() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
   
-  const { data: customers, isLoading } = useCustomers();
+  const { data: customers, isLoading } = useCustomers(selectedSiteId);
   const createCustomer = useCreateCustomer();
   const updateCustomer = useUpdateCustomer();
   const { toast } = useToast();

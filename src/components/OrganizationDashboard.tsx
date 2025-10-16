@@ -39,6 +39,7 @@ export function OrganizationDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
+<<<<<<< Updated upstream
   // Derived, client-side filtered data by selected site
   const filteredData = selectedSiteId ? {
     customers: orgData.customers.filter((c: any) => c.site_id === selectedSiteId),
@@ -47,28 +48,75 @@ export function OrganizationDashboard() {
     personnel: orgData.personnel.filter((p: any) => p.site_id === selectedSiteId),
     workOrders: orgData.workOrders.filter((o: any) => o.site_id === selectedSiteId)
   } : orgData;
+=======
+  // Debug logging
+  console.log('OrganizationDashboard render - selectedSiteId:', selectedSiteId);
+  console.log('OrganizationDashboard render - loading:', loading);
+>>>>>>> Stashed changes
 
   useEffect(() => {
     fetchOrgData();
-  }, []);
+  }, [selectedSiteId]); // Re-fetch when selectedSiteId changes
 
   const fetchOrgData = async () => {
     try {
-      const [customersRes, materialsRes, equipmentRes, personnelRes, workOrdersRes] = await Promise.all([
-        api.getOrgCustomers(),
-        api.getOrgMaterials(),
-        api.getOrgEquipment(),
-        api.getOrgPersonnel(),
-        api.getOrgWorkOrders()
-      ]);
+      console.log('fetchOrgData called with selectedSiteId:', selectedSiteId);
+      setLoading(true);
+      
+      // If a specific site is selected, use regular API methods with site filtering
+      // Otherwise, use organization-level methods for aggregated data
+      if (selectedSiteId) {
+        console.log('Using site-specific API calls for site:', selectedSiteId);
+        const [customersRes, materialsRes, equipmentRes, personnelRes, workOrdersRes] = await Promise.all([
+          api.getCustomers(selectedSiteId),
+          api.getMaterials(selectedSiteId),
+          api.getEquipment(selectedSiteId),
+          api.getPersonnel(selectedSiteId),
+          api.getWorkOrders(undefined, selectedSiteId)
+        ]);
 
-      setOrgData({
-        customers: customersRes.data || [],
-        materials: materialsRes.data || [],
-        equipment: equipmentRes.data || [],
-        personnel: personnelRes.data || [],
-        workOrders: workOrdersRes.data || []
-      });
+        // Check if all responses are successful
+        const allSuccessful = [customersRes, materialsRes, equipmentRes, personnelRes, workOrdersRes]
+          .every(res => res.success);
+
+        if (allSuccessful) {
+          setOrgData({
+            customers: customersRes.data || [],
+            materials: materialsRes.data || [],
+            equipment: equipmentRes.data || [],
+            personnel: personnelRes.data || [],
+            workOrders: workOrdersRes.data || []
+          });
+        } else {
+          console.error('Some API calls failed:', { customersRes, materialsRes, equipmentRes, personnelRes, workOrdersRes });
+        }
+      } else {
+        console.log('Using organization-level API calls for aggregated data');
+        // No site selected - show aggregated data from all sites
+        const [customersRes, materialsRes, equipmentRes, personnelRes, workOrdersRes] = await Promise.all([
+          api.getOrgCustomers(),
+          api.getOrgMaterials(),
+          api.getOrgEquipment(),
+          api.getOrgPersonnel(),
+          api.getOrgWorkOrders()
+        ]);
+
+        // Check if all responses are successful
+        const allSuccessful = [customersRes, materialsRes, equipmentRes, personnelRes, workOrdersRes]
+          .every(res => res.success);
+
+        if (allSuccessful) {
+          setOrgData({
+            customers: customersRes.data || [],
+            materials: materialsRes.data || [],
+            equipment: equipmentRes.data || [],
+            personnel: personnelRes.data || [],
+            workOrders: workOrdersRes.data || []
+          });
+        } else {
+          console.error('Some API calls failed:', { customersRes, materialsRes, equipmentRes, personnelRes, workOrdersRes });
+        }
+      }
     } catch (error) {
       console.error('Error fetching organization data:', error);
     } finally {
@@ -135,6 +183,7 @@ export function OrganizationDashboard() {
   );
 
   return (
+<<<<<<< Updated upstream
     <div className="flex-1 flex flex-col min-h-screen bg-gradient-surface">
       <TopBar 
         title="Dashboard" 
@@ -167,6 +216,21 @@ export function OrganizationDashboard() {
               </div>
             </div>
           </div>
+=======
+    <div className="flex-1 flex flex-col bg-background">
+      <div className="p-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold">
+            {selectedSiteId ? 'Site-oversikt' : 'Organisasjonsoversikt'}
+          </h1>
+          <p className="text-muted-foreground">
+            {selectedSiteId 
+              ? 'Data fra valgt site' 
+              : 'Aggregerte data fra alle sites i organisasjonen'
+            }
+          </p>
+        </div>
+>>>>>>> Stashed changes
 
           {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

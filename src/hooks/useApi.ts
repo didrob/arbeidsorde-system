@@ -12,21 +12,21 @@ import type {
 
 // Query Keys
 export const queryKeys = {
-  workOrders: (filters?: WorkOrderFilters) => ['workOrders', filters],
+  workOrders: (filters?: WorkOrderFilters, selectedSiteId?: string) => ['workOrders', filters, selectedSiteId],
   workOrder: (id: string) => ['workOrder', id],
-  materials: () => ['materials'],
-  customers: () => ['customers'],
+  materials: (selectedSiteId?: string) => ['materials', selectedSiteId],
+  customers: (selectedSiteId?: string) => ['customers', selectedSiteId],
   fieldWorkers: () => ['fieldWorkers'],
   currentUser: () => ['currentUser'],
   dashboardStats: () => ['dashboardStats'],
 } as const;
 
 // Work Orders Hooks
-export const useWorkOrders = (filters?: WorkOrderFilters) => {
+export const useWorkOrders = (filters?: WorkOrderFilters, selectedSiteId?: string) => {
   return useQuery({
-    queryKey: queryKeys.workOrders(filters),
+    queryKey: queryKeys.workOrders(filters, selectedSiteId),
     queryFn: async () => {
-      const response = await api.getWorkOrders(filters);
+      const response = await api.getWorkOrders(filters, selectedSiteId);
       if (!response.success) {
         throw new Error(response.error?.message || 'Failed to fetch work orders');
       }
@@ -189,11 +189,11 @@ export const useEndTimeEntry = () => {
 };
 
 // Materials Hooks
-export const useMaterials = () => {
+export const useMaterials = (selectedSiteId?: string) => {
   return useQuery({
-    queryKey: queryKeys.materials(),
+    queryKey: queryKeys.materials(selectedSiteId),
     queryFn: async () => {
-      const response = await api.getMaterials();
+      const response = await api.getMaterials(selectedSiteId);
       if (!response.success) {
         throw new Error(response.error?.message || 'Failed to fetch materials');
       }
@@ -235,11 +235,11 @@ export const useAddMaterialToWorkOrder = () => {
 };
 
 // Customers Hooks
-export const useCustomers = () => {
+export const useCustomers = (selectedSiteId?: string) => {
   return useQuery({
-    queryKey: queryKeys.customers(),
+    queryKey: queryKeys.customers(selectedSiteId),
     queryFn: async () => {
-      const response = await api.getCustomers();
+      const response = await api.getCustomers(selectedSiteId);
       if (!response.success) {
         throw new Error(response.error?.message || 'Failed to fetch customers');
       }

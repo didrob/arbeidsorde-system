@@ -41,6 +41,7 @@ const Dashboard = () => {
   const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
   const [siteStats, setSiteStats] = useState<any[]>([]);
   const [statusChartData, setStatusChartData] = useState<any[]>([]);
+  const [showOrgView, setShowOrgView] = useState(true); // Move this to top level
   
   // Safe navigation hook usage
   let navigate: (path: string) => void;
@@ -270,14 +271,69 @@ const Dashboard = () => {
     return <Navigate to="/auth" replace />;
   }
 
+  // Show loading state while userProfile is being fetched
+  if (!userProfile) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Laster brukerprofil...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Show field worker dashboard if user is a field worker
-  if (userProfile?.role === 'field_worker') {
+  if (userProfile.role === 'field_worker') {
     return <FieldWorkerDashboard />;
   }
 
-  // Show organization dashboard for system admins
-  if (userProfile?.role === 'system_admin') {
-    return <OrganizationDashboard />;
+  // Show organization dashboard for system admins (but allow them to switch to normal dashboard)
+  if (userProfile.role === 'system_admin') {
+    // Debug logging
+    console.log('Dashboard render - userProfile:', userProfile);
+    console.log('Dashboard render - showOrgView:', showOrgView);
+    
+    return (
+      <>
+        <TopBar 
+          title="Dashboard" 
+          actions={
+            <div className="flex items-center gap-4">
+              <Button
+                variant={showOrgView ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowOrgView(true)}
+              >
+                Organisasjon
+              </Button>
+              <Button
+                variant={!showOrgView ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowOrgView(false)}
+              >
+                Hovedside
+              </Button>
+              <SiteSelector 
+                selectedSiteId={selectedSiteId} 
+                onSiteChange={setSelectedSiteId}
+              />
+            </div>
+          }
+        />
+        {showOrgView ? <OrganizationDashboard /> : (
+          <div className="flex-1 p-4 md:p-8 bg-background overflow-auto">
+            <div className="max-w-7xl mx-auto space-y-8">
+              {/* Normal dashboard content for system admin */}
+              <div className="text-center py-8">
+                <h2 className="text-2xl font-bold mb-4">System Admin Dashboard</h2>
+                <p className="text-muted-foreground">Du har tilgang til alle funksjoner i systemet</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
   }
 
   // Admin/Manager Dashboard

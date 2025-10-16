@@ -23,7 +23,7 @@ export default function Materials() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
   
-  const { data: materials, isLoading } = useMaterials();
+  const { data: materials, isLoading } = useMaterials(selectedSiteId);
   const { toast } = useToast();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<MaterialForm>();
