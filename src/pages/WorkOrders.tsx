@@ -19,7 +19,6 @@ import { useToast } from '@/hooks/use-toast';
 import { WorkOrderDetails } from '@/components/WorkOrderDetails';
 import { WorkOrderWizard } from '@/components/workorder-wizard/WorkOrderWizard';
 import { WorkOrderAssignment } from '@/components/WorkOrderAssignment';
-import { NotificationCenter } from '@/components/NotificationCenter';
 
 interface WorkOrderForm {
   title: string;
