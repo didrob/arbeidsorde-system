@@ -1178,6 +1178,8 @@ export type Database = {
           pricing_model: string | null
           pricing_type: string
           requires_time_tracking: boolean | null
+          scheduled_end: string | null
+          scheduled_start: string | null
           site_id: string | null
           started_at: string | null
           status: string
@@ -1203,6 +1205,8 @@ export type Database = {
           pricing_model?: string | null
           pricing_type?: string
           requires_time_tracking?: boolean | null
+          scheduled_end?: string | null
+          scheduled_start?: string | null
           site_id?: string | null
           started_at?: string | null
           status?: string
@@ -1228,6 +1232,8 @@ export type Database = {
           pricing_model?: string | null
           pricing_type?: string
           requires_time_tracking?: boolean | null
+          scheduled_end?: string | null
+          scheduled_start?: string | null
           site_id?: string | null
           started_at?: string | null
           status?: string
@@ -1350,6 +1356,8 @@ export type Database = {
           pricing_model: string | null
           pricing_type: string
           requires_time_tracking: boolean | null
+          scheduled_end: string | null
+          scheduled_start: string | null
           site_id: string | null
           started_at: string | null
           status: string
@@ -1421,6 +1429,8 @@ export type Database = {
           pricing_model: string | null
           pricing_type: string
           requires_time_tracking: boolean | null
+          scheduled_end: string | null
+          scheduled_start: string | null
           site_id: string | null
           started_at: string | null
           status: string

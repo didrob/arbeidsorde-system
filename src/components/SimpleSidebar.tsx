@@ -10,6 +10,7 @@ import {
   LogOut,
   Wrench,
   Receipt,
+  Calendar,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,6 +22,7 @@ const navigationItems = [
   { title: "Kunder", url: "/customers", icon: Users },
   { title: "Materialer", url: "/materials", icon: Package },
   { title: "Ressurser", url: "/resources", icon: Wrench },
+  { title: "Planlegger", url: "/planner", icon: Calendar },
   { title: "Tidssporing", url: "/time-tracking", icon: Clock },
   { title: "Kart", url: "/map", icon: MapPin },
   { title: "Rapporter", url: "/reports", icon: BarChart3 },

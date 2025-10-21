@@ -132,6 +132,8 @@ export interface WorkOrder {
   gps_location?: { x: number; y: number };
   started_at?: string;
   completed_at?: string;
+  scheduled_start?: string;
+  scheduled_end?: string;
   created_at: string;
   updated_at: string;
   

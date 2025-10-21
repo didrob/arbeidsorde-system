@@ -23,6 +23,7 @@ import Resources from './pages/Resources';
 import Settings from './pages/Settings';
 import CustomerAgreements from './pages/CustomerAgreements';
 import Invoices from './pages/Invoices';
+import Planner from './pages/Planner';
 
 const queryClient = new QueryClient();
 
@@ -97,6 +98,7 @@ const App = () => (
               <Route path="/customer-agreements" element={<ProtectedRoute><CustomerAgreements /></ProtectedRoute>} />
               <Route path="/materials" element={<ProtectedRoute><Materials /></ProtectedRoute>} />
               <Route path="/resources" element={<ProtectedRoute><Resources /></ProtectedRoute>} />
+              <Route path="/planner" element={<ProtectedRoute><Planner /></ProtectedRoute>} />
               <Route path="/time-tracking" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
               <Route path="/map" element={<ProtectedRoute><Map /></ProtectedRoute>} />
               <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
