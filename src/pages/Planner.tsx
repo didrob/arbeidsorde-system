@@ -6,7 +6,7 @@ import { useScheduleWorkOrder } from '@/hooks/useScheduleWorkOrder';
 import { useUnscheduleWorkOrder } from '@/hooks/useUnscheduleWorkOrder';
 import { PlannerFilters } from '@/components/planner/PlannerFilters';
 import { UnassignedOrdersList } from '@/components/planner/UnassignedOrdersList';
-import { UnallocatedOrdersPanel } from '@/components/planner/UnallocatedOrdersPanel';
+import { LeftPanelTabs } from '@/components/planner/LeftPanelTabs';
 import { PlannerTimeline } from '@/components/planner/PlannerTimeline';
 import { ResourceBoard } from '@/components/planner/ResourceBoard';
 import { TopBar } from '@/components/TopBar';
@@ -48,6 +48,11 @@ export default function Planner() {
   const { personnel, scheduledOrders, unassignedOrders, isLoading, refetchOrders } = usePlannerData(
     selectedSiteId,
     selectedDate
+  );
+
+  // Filter ongoing orders
+  const ongoingOrders = scheduledOrders.filter(
+    order => order.status === 'in_progress'
   );
 
   const scheduleOrderMutation = useScheduleWorkOrder();
@@ -252,8 +257,9 @@ export default function Planner() {
         <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           {layoutMode === 'board' ? (
             <>
-              <UnallocatedOrdersPanel 
-                orders={unassignedOrders}
+              <LeftPanelTabs
+                unassignedOrders={unassignedOrders}
+                ongoingOrders={ongoingOrders}
                 onOrderClick={handleViewDetails}
               />
               
@@ -266,7 +272,11 @@ export default function Planner() {
             </>
           ) : (
             <>
-              <UnassignedOrdersList orders={unassignedOrders} />
+              <LeftPanelTabs
+                unassignedOrders={unassignedOrders}
+                ongoingOrders={ongoingOrders}
+                onOrderClick={handleViewDetails}
+              />
               
               <PlannerTimeline
                 scheduledOrders={scheduledOrders}
