@@ -189,7 +189,15 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResult = await resendResponse.json();
-    console.log("Email sent successfully:", emailResult);
+    console.log("Email sent successfully to:", email, "by user:", user.id);
+
+    // Log successful invitation for audit
+    await supabase
+      .from("user_invitations")
+      .update({ 
+        updated_at: new Date().toISOString()
+      })
+      .eq("invitation_token", invitationToken);
 
     return new Response(JSON.stringify(emailResult), {
       status: 200,
@@ -200,8 +208,14 @@ const handler = async (req: Request): Promise<Response> => {
     });
   } catch (error: any) {
     console.error("Error in send-invitation function:", error);
+    
+    // Don't expose internal error details to client
+    const errorMessage = error.message.includes("Resend") 
+      ? "Failed to send email" 
+      : "An error occurred processing your request";
+      
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
