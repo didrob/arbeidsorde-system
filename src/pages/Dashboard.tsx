@@ -314,10 +314,13 @@ const Dashboard = () => {
               >
                 Hovedside
               </Button>
-              <SiteSelector 
-                selectedSiteId={selectedSiteId} 
-                onSiteChange={setSelectedSiteId}
-              />
+              {/* Only show SiteSelector here when NOT in organization view to avoid duplicates */}
+              {!showOrgView && (
+                <SiteSelector 
+                  selectedSiteId={selectedSiteId} 
+                  onSiteChange={setSelectedSiteId}
+                />
+              )}
             </div>
           }
         />
