@@ -269,8 +269,8 @@ export default function Planner() {
               <UnassignedOrdersList orders={unassignedOrders} />
               
               <PlannerTimeline
-                personnel={personnel}
                 scheduledOrders={scheduledOrders}
+                unassignedOrders={unassignedOrders}
                 viewMode={viewMode}
                 selectedDate={selectedDate}
                 onUnschedule={handleUnschedule}
