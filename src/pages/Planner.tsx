@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DndContext, DragEndEvent, DragOverlay } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { useSiteFilter } from '@/hooks/useSiteFilter';
 import { usePlannerData } from '@/hooks/usePlannerData';
 import { useScheduleWorkOrder } from '@/hooks/useScheduleWorkOrder';
@@ -12,12 +12,35 @@ import { LoadingState } from '@/components/common/LoadingState';
 import { WorkOrder } from '@/types';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function Planner() {
   const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
   const [activeOrder, setActiveOrder] = useState<WorkOrder | null>(null);
+  const [multiResourceDialog, setMultiResourceDialog] = useState<{
+    open: boolean;
+    order: WorkOrder | null;
+    personnelId: string;
+    scheduledStart: string;
+    scheduledEnd: string;
+  }>({
+    open: false,
+    order: null,
+    personnelId: '',
+    scheduledStart: '',
+    scheduledEnd: '',
+  });
 
   const { personnel, scheduledOrders, unassignedOrders, isLoading, refetchOrders } = usePlannerData(
     selectedSiteId,
@@ -28,7 +51,7 @@ export default function Planner() {
   const unscheduleOrderMutation = useUnscheduleWorkOrder();
   const navigate = useNavigate();
 
-  const handleDragStart = (event: any) => {
+  const handleDragStart = (event: DragStartEvent) => {
     const order = event.active.data.current?.order;
     if (order) {
       setActiveOrder(order);
@@ -79,17 +102,62 @@ export default function Planner() {
       scheduledEnd.setHours(8 + (order.estimated_hours || 8));
     }
 
-    // Schedule the order
+    // Check if this order already has personnel assigned
+    const existingPersonnel = order.personnel || [];
+    const isAlreadyAssigned = existingPersonnel.some(p => p.personnel_id === resourceId);
+    
+    if (isAlreadyAssigned && order.scheduled_start) {
+      // Just reschedule - don't add duplicate personnel
+      scheduleOrderMutation.mutate({
+        orderId: order.id,
+        personnelId: resourceId,
+        scheduledStart: scheduledStart.toISOString(),
+        scheduledEnd: scheduledEnd.toISOString(),
+      }, {
+        onSuccess: () => {
+          refetchOrders();
+        },
+      });
+    } else if (existingPersonnel.length > 0 && !order.scheduled_start) {
+      // Order has personnel but is unscheduled - show multi-resource dialog
+      setMultiResourceDialog({
+        open: true,
+        order: order,
+        personnelId: resourceId,
+        scheduledStart: scheduledStart.toISOString(),
+        scheduledEnd: scheduledEnd.toISOString(),
+      });
+    } else {
+      // First personnel assignment
+      scheduleOrderMutation.mutate({
+        orderId: order.id,
+        personnelId: resourceId,
+        scheduledStart: scheduledStart.toISOString(),
+        scheduledEnd: scheduledEnd.toISOString(),
+      }, {
+        onSuccess: () => {
+          refetchOrders();
+        },
+      });
+    }
+  };
+
+  const handleMultiResourceConfirm = () => {
+    const { order, personnelId, scheduledStart, scheduledEnd } = multiResourceDialog;
+    if (!order) return;
+
     scheduleOrderMutation.mutate({
       orderId: order.id,
-      personnelId: resourceId,
-      scheduledStart: scheduledStart.toISOString(),
-      scheduledEnd: scheduledEnd.toISOString(),
+      personnelId: personnelId,
+      scheduledStart: scheduledStart,
+      scheduledEnd: scheduledEnd,
     }, {
       onSuccess: () => {
         refetchOrders();
       },
     });
+
+    setMultiResourceDialog({ open: false, order: null, personnelId: '', scheduledStart: '', scheduledEnd: '' });
   };
 
   const handleUnschedule = (orderId: string) => {
@@ -149,6 +217,35 @@ export default function Planner() {
           </DragOverlay>
         </DndContext>
       </div>
+
+      <AlertDialog open={multiResourceDialog.open} onOpenChange={(open) => 
+        setMultiResourceDialog({ ...multiResourceDialog, open })
+      }>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Legg til ekstra ressurs?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Dette oppdraget har allerede {multiResourceDialog.order?.personnel?.length || 0} ressurs(er) tildelt:
+              <div className="mt-2 space-y-1">
+                {multiResourceDialog.order?.personnel?.map(p => (
+                  <div key={p.id} className="text-sm font-medium">
+                    • {p.personnel?.name || 'Ukjent'}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3">
+                Vil du legge til en ekstra ressurs? Dette vil øke totale manntimer for oppdraget.
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction onClick={handleMultiResourceConfirm}>
+              Ja, legg til ressurs
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
