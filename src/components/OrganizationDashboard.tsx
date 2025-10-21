@@ -177,17 +177,7 @@ export function OrganizationDashboard() {
   );
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gradient-surface">
-      <TopBar 
-        title="Dashboard" 
-        actions={
-          <SiteSelector 
-            selectedSiteId={selectedSiteId} 
-            onSiteChange={setSelectedSiteId}
-          />
-        }
-      />
-      
+    <div className="flex-1 flex flex-col bg-gradient-surface">
       <div className="flex-1 overflow-auto">
         <div className="container mx-auto p-6 space-y-6">
           {/* Header Section */}

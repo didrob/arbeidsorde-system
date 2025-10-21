@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { FileText, Users, Package, Plus, Clock, AlertCircle, CheckCircle, BarChart3, TrendingUp } from 'lucide-react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { FieldWorkerDashboard } from '@/components/FieldWorkerDashboard';
@@ -41,7 +42,7 @@ const Dashboard = () => {
   const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
   const [siteStats, setSiteStats] = useState<any[]>([]);
   const [statusChartData, setStatusChartData] = useState<any[]>([]);
-  const [showOrgView, setShowOrgView] = useState(true); // Move this to top level
+  const [activeTab, setActiveTab] = useState<'organization' | 'personal'>('organization');
   
   // Safe navigation hook usage
   let navigate: (path: string) => void;
@@ -290,52 +291,45 @@ const Dashboard = () => {
 
   // Show organization dashboard for system admins (but allow them to switch to normal dashboard)
   if (userProfile.role === 'system_admin') {
-    // Debug logging
-    console.log('Dashboard render - userProfile:', userProfile);
-    console.log('Dashboard render - showOrgView:', showOrgView);
-    
     return (
-      <>
-        <TopBar 
-          title="Dashboard" 
-          actions={
-            <div className="flex items-center gap-4">
-              <Button
-                variant={showOrgView ? "default" : "outline"}
-                size="sm"
-                onClick={() => setShowOrgView(true)}
-              >
-                Organisasjon
-              </Button>
-              <Button
-                variant={!showOrgView ? "default" : "outline"}
-                size="sm"
-                onClick={() => setShowOrgView(false)}
-              >
-                Hovedside
-              </Button>
-              {/* Only show SiteSelector here when NOT in organization view to avoid duplicates */}
-              {!showOrgView && (
-                <SiteSelector 
-                  selectedSiteId={selectedSiteId} 
-                  onSiteChange={setSelectedSiteId}
-                />
-              )}
-            </div>
-          }
-        />
-        {showOrgView ? <OrganizationDashboard /> : (
-          <div className="flex-1 p-4 md:p-8 bg-background overflow-auto">
-            <div className="max-w-7xl mx-auto space-y-8">
-              {/* Normal dashboard content for system admin */}
-              <div className="text-center py-8">
-                <h2 className="text-2xl font-bold mb-4">System Admin Dashboard</h2>
-                <p className="text-muted-foreground">Du har tilgang til alle funksjoner i systemet</p>
+      <div className="flex flex-col h-screen">
+        <TopBar title="Dashboard" />
+        
+        <div className="border-b border-border bg-background px-6 py-3">
+          <div className="flex items-center justify-between gap-4">
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'organization' | 'personal')} className="flex-1">
+              <TabsList>
+                <TabsTrigger value="organization">Organisasjonsoversikt</TabsTrigger>
+                <TabsTrigger value="personal">Min Dashboard</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            
+            {activeTab === 'organization' && (
+              <SiteSelector 
+                selectedSiteId={selectedSiteId} 
+                onSiteChange={setSelectedSiteId}
+                className="w-[200px]"
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-auto">
+          {activeTab === 'organization' ? (
+            <OrganizationDashboard />
+          ) : (
+            <div className="p-4 md:p-8 bg-background">
+              <div className="max-w-7xl mx-auto space-y-8">
+                {/* Normal dashboard content for system admin */}
+                <div className="text-center py-8">
+                  <h2 className="text-2xl font-bold mb-4">System Admin Dashboard</h2>
+                  <p className="text-muted-foreground">Du har tilgang til alle funksjoner i systemet</p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </>
+          )}
+        </div>
+      </div>
     );
   }
 
