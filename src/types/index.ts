@@ -50,6 +50,7 @@ export interface Personnel {
   role: string;
   is_active: boolean;
   site_id?: string;
+  daily_capacity_hours?: number;
   created_at: string;
   updated_at: string;
 }

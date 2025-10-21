@@ -13,6 +13,8 @@ interface PlannerFiltersProps {
   onDateChange: (date: Date) => void;
   viewMode: 'day' | 'week';
   onViewModeChange: (mode: 'day' | 'week') => void;
+  layoutMode: 'board' | 'timeline';
+  onLayoutModeChange: (mode: 'board' | 'timeline') => void;
 }
 
 export function PlannerFilters({
@@ -22,6 +24,8 @@ export function PlannerFilters({
   onDateChange,
   viewMode,
   onViewModeChange,
+  layoutMode,
+  onLayoutModeChange,
 }: PlannerFiltersProps) {
   const handlePrevious = () => {
     if (viewMode === 'day') {
@@ -87,26 +91,49 @@ export function PlannerFilters({
         </Button>
       </div>
 
-      {/* View Mode Toggle */}
+      {/* Layout Mode Toggle */}
       <div className="flex items-center gap-2 ml-auto">
-        <span className="text-sm font-medium text-foreground">Visning:</span>
+        <span className="text-sm font-medium text-foreground">Layout:</span>
         <div className="flex gap-1 bg-muted p-1 rounded-lg">
           <Button
-            variant={viewMode === 'day' ? 'secondary' : 'ghost'}
+            variant={layoutMode === 'board' ? 'secondary' : 'ghost'}
             size="sm"
-            onClick={() => onViewModeChange('day')}
+            onClick={() => onLayoutModeChange('board')}
           >
-            Dag
+            📋 Board
           </Button>
           <Button
-            variant={viewMode === 'week' ? 'secondary' : 'ghost'}
+            variant={layoutMode === 'timeline' ? 'secondary' : 'ghost'}
             size="sm"
-            onClick={() => onViewModeChange('week')}
+            onClick={() => onLayoutModeChange('timeline')}
           >
-            Uke
+            📅 Timeline
           </Button>
         </div>
       </div>
+
+      {/* View Mode Toggle (only for Timeline) */}
+      {layoutMode === 'timeline' && (
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-foreground">Visning:</span>
+          <div className="flex gap-1 bg-muted p-1 rounded-lg">
+            <Button
+              variant={viewMode === 'day' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => onViewModeChange('day')}
+            >
+              Dag
+            </Button>
+            <Button
+              variant={viewMode === 'week' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => onViewModeChange('week')}
+            >
+              Uke
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,7 +6,9 @@ import { useScheduleWorkOrder } from '@/hooks/useScheduleWorkOrder';
 import { useUnscheduleWorkOrder } from '@/hooks/useUnscheduleWorkOrder';
 import { PlannerFilters } from '@/components/planner/PlannerFilters';
 import { UnassignedOrdersList } from '@/components/planner/UnassignedOrdersList';
+import { UnallocatedOrdersPanel } from '@/components/planner/UnallocatedOrdersPanel';
 import { PlannerTimeline } from '@/components/planner/PlannerTimeline';
+import { ResourceBoard } from '@/components/planner/ResourceBoard';
 import { TopBar } from '@/components/TopBar';
 import { LoadingState } from '@/components/common/LoadingState';
 import { WorkOrder } from '@/types';
@@ -27,6 +29,7 @@ export default function Planner() {
   const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
+  const [layoutMode, setLayoutMode] = useState<'board' | 'timeline'>('board');
   const [activeOrder, setActiveOrder] = useState<WorkOrder | null>(null);
   const [multiResourceDialog, setMultiResourceDialog] = useState<{
     open: boolean;
@@ -70,6 +73,52 @@ export default function Planner() {
 
     if (!order || !dropData) return;
 
+    // Board view: dropping on ResourceCard
+    if (layoutMode === 'board' && dropData.type === 'resource-card') {
+      const personnelId = dropData.personnelId;
+      
+      // Calculate scheduled times (default to 8 AM - 4 PM)
+      const scheduledStart = new Date(selectedDate);
+      scheduledStart.setHours(8, 0, 0, 0);
+      
+      const scheduledEnd = new Date(scheduledStart);
+      scheduledEnd.setHours(8 + (order.estimated_hours || 8));
+      
+      // Check if this order already has personnel assigned
+      const existingPersonnel = order.personnel || [];
+      const isAlreadyAssigned = existingPersonnel.some(p => p.personnel_id === personnelId);
+      
+      if (isAlreadyAssigned) {
+        toast.info('Denne ressursen er allerede tildelt oppdraget');
+        return;
+      }
+      
+      if (existingPersonnel.length > 0) {
+        // Show multi-resource dialog
+        setMultiResourceDialog({
+          open: true,
+          order: order,
+          personnelId: personnelId,
+          scheduledStart: scheduledStart.toISOString(),
+          scheduledEnd: scheduledEnd.toISOString(),
+        });
+      } else {
+        // First personnel assignment
+        scheduleOrderMutation.mutate({
+          orderId: order.id,
+          personnelId: personnelId,
+          scheduledStart: scheduledStart.toISOString(),
+          scheduledEnd: scheduledEnd.toISOString(),
+        }, {
+          onSuccess: () => {
+            refetchOrders();
+          },
+        });
+      }
+      return;
+    }
+
+    // Timeline view: existing logic
     const { resourceId, slotIndex, startHour } = dropData;
 
     if (!resourceId) return;
@@ -176,6 +225,10 @@ export default function Planner() {
     navigate(`/work-orders?id=${orderId}`);
   };
 
+  const handleResourceClick = (personnelId: string) => {
+    toast.info('Detaljvisning for ressurs kommer snart');
+  };
+
   if (isLoading) {
     return <LoadingState />;
   }
@@ -191,21 +244,41 @@ export default function Planner() {
         onDateChange={setSelectedDate}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
+        layoutMode={layoutMode}
+        onLayoutModeChange={setLayoutMode}
       />
 
       <div className="flex flex-1 overflow-hidden">
         <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <UnassignedOrdersList orders={unassignedOrders} />
-          
-          <PlannerTimeline
-            personnel={personnel}
-            scheduledOrders={scheduledOrders}
-            viewMode={viewMode}
-            selectedDate={selectedDate}
-            onUnschedule={handleUnschedule}
-            onEditDuration={handleEditDuration}
-            onViewDetails={handleViewDetails}
-          />
+          {layoutMode === 'board' ? (
+            <>
+              <UnallocatedOrdersPanel 
+                orders={unassignedOrders}
+                onOrderClick={handleViewDetails}
+              />
+              
+              <ResourceBoard
+                personnel={personnel}
+                scheduledOrders={scheduledOrders}
+                selectedDate={selectedDate}
+                onResourceClick={handleResourceClick}
+              />
+            </>
+          ) : (
+            <>
+              <UnassignedOrdersList orders={unassignedOrders} />
+              
+              <PlannerTimeline
+                personnel={personnel}
+                scheduledOrders={scheduledOrders}
+                viewMode={viewMode}
+                selectedDate={selectedDate}
+                onUnschedule={handleUnschedule}
+                onEditDuration={handleEditDuration}
+                onViewDetails={handleViewDetails}
+              />
+            </>
+          )}
 
           <DragOverlay>
             {activeOrder && (
