@@ -2,7 +2,6 @@ import { WorkOrder } from '@/types';
 import { TimeSlot } from './TimeSlot';
 import { Package } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 
 interface OrderRowProps {
@@ -24,30 +23,6 @@ export function OrderRow({
 }: OrderRowProps) {
   const slots = viewMode === 'day' ? 15 : 7; // 15 hours or 7 days
   const startHour = 6; // Start at 6 AM for day view
-
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'default';
-      case 'in_progress':
-        return 'secondary';
-      default:
-        return 'outline';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'Venter';
-      case 'in_progress':
-        return 'Pågår';
-      case 'completed':
-        return 'Fullført';
-      default:
-        return status;
-    }
-  };
 
   const personnelCount = order.personnel?.length || 0;
   const personnelToShow = order.personnel?.slice(0, 3) || [];
@@ -89,9 +64,9 @@ export function OrderRow({
               )}
             </div>
           ) : (
-            <Badge variant="outline" className="text-xs">
+            <p className="text-xs text-muted-foreground">
               ⚠️ Ingen ressurs
-            </Badge>
+            </p>
           )}
         </div>
 
@@ -107,11 +82,6 @@ export function OrderRow({
             ⚠️ Tidspunkt ikke satt
           </p>
         )}
-
-        {/* Status badge */}
-        <Badge variant={getStatusVariant(order.status)} className="text-xs">
-          {getStatusLabel(order.status)}
-        </Badge>
       </div>
 
       {/* Timeline Slots */}
