@@ -1,6 +1,5 @@
 import { Personnel, WorkOrder } from '@/types';
-import { useDroppable } from '@dnd-kit/core';
-import { OrderBlock } from './OrderBlock';
+import { TimeSlot } from './TimeSlot';
 import { User } from 'lucide-react';
 
 interface ResourceRowProps {
@@ -40,48 +39,18 @@ export function ResourceRow({ resource, scheduledOrders, viewMode }: ResourceRow
       <div className="flex-1 flex relative">
         {Array.from({ length: slots }).map((_, index) => {
           const slotId = `${resource.id}-${index}`;
-          
-          const { setNodeRef, isOver } = useDroppable({
-            id: slotId,
-            data: {
-              resourceId: resource.id,
-              slotIndex: index,
-              startHour: viewMode === 'day' ? startHour + index : undefined,
-            },
-          });
+          const slotStartHour = viewMode === 'day' ? startHour + index : undefined;
 
           return (
-            <div
+            <TimeSlot
               key={slotId}
-              ref={setNodeRef}
-              className={`flex-1 min-w-[80px] min-h-[60px] border-r border-border last:border-r-0 relative transition-colors ${
-                isOver ? 'bg-primary/10' : ''
-              }`}
-            >
-              {/* Render scheduled orders in this slot */}
-              {viewMode === 'day' && resourceOrders.map(order => {
-                if (!order.scheduled_start) return null;
-                
-                const orderStart = new Date(order.scheduled_start);
-                const orderHour = orderStart.getHours();
-                const orderMinutes = orderStart.getMinutes();
-                
-                // Check if this order belongs in this slot
-                if (orderHour === startHour + index) {
-                  const duration = order.estimated_hours || 1;
-                  
-                  return (
-                    <OrderBlock
-                      key={order.id}
-                      order={order}
-                      startHour={orderHour}
-                      duration={duration}
-                    />
-                  );
-                }
-                return null;
-              })}
-            </div>
+              slotId={slotId}
+              resourceId={resource.id}
+              slotIndex={index}
+              startHour={slotStartHour}
+              viewMode={viewMode}
+              resourceOrders={resourceOrders}
+            />
           );
         })}
       </div>
