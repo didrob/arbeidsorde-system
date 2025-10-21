@@ -300,17 +300,15 @@ const Dashboard = () => {
             <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'organization' | 'personal')} className="flex-1">
               <TabsList>
                 <TabsTrigger value="organization">Organisasjonsoversikt</TabsTrigger>
-                <TabsTrigger value="personal">Min Dashboard</TabsTrigger>
+                <TabsTrigger value="personal">Mitt Dashboard</TabsTrigger>
               </TabsList>
             </Tabs>
             
-            {activeTab === 'organization' && (
-              <SiteSelector 
-                selectedSiteId={selectedSiteId} 
-                onSiteChange={setSelectedSiteId}
-                className="w-[200px]"
-              />
-            )}
+            <SiteSelector 
+              selectedSiteId={selectedSiteId} 
+              onSiteChange={setSelectedSiteId}
+              className="w-[200px]"
+            />
           </div>
         </div>
 
@@ -319,12 +317,188 @@ const Dashboard = () => {
             <OrganizationDashboard />
           ) : (
             <div className="p-4 md:p-8 bg-background">
-              <div className="max-w-7xl mx-auto space-y-8">
-                {/* Normal dashboard content for system admin */}
-                <div className="text-center py-8">
-                  <h2 className="text-2xl font-bold mb-4">System Admin Dashboard</h2>
-                  <p className="text-muted-foreground">Du har tilgang til alle funksjoner i systemet</p>
+              <div className="max-w-7xl mx-auto space-y-6">
+                
+                {/* Key Performance Indicators */}
+                <MobileStatsGrid 
+                  stats={[
+                    {
+                      title: "Totale ordrer",
+                      value: stats.totalWorkOrders,
+                      icon: <FileText className="h-full w-full text-primary" />,
+                    },
+                    {
+                      title: "Fullført i dag", 
+                      value: stats.completedToday,
+                      icon: <CheckCircle className="h-full w-full text-green-600" />,
+                      color: "success"
+                    },
+                    {
+                      title: "Ventende ordrer",
+                      value: stats.pendingOrders, 
+                      icon: <AlertCircle className="h-full w-full text-orange-600" />,
+                      color: "warning"
+                    },
+                    {
+                      title: "Aktive arbeidere",
+                      value: stats.activeWorkers,
+                      icon: <Users className="h-full w-full text-primary" />,
+                    }
+                  ]}
+                />
+
+                {/* Performance Overview */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Site Performance Chart */}
+                  <MobileOptimizedChart
+                    title="Arbeidsordrer per site"
+                    description={selectedSiteId ? "Filtrert visning" : "Alle tilgjengelige sites"}
+                    icon={<BarChart3 className="h-5 w-5" />}
+                    config={{
+                      total_orders: {
+                        label: "Antall ordrer",
+                        color: "hsl(var(--chart-1))",
+                      },
+                    }}
+                    mobileHeight="h-[180px]"
+                    desktopHeight="h-[220px]"
+                  >
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={siteStats}>
+                        <XAxis 
+                          dataKey="site_name" 
+                          fontSize={11}
+                          tickLine={false}
+                          axisLine={false}
+                          angle={-45}
+                          textAnchor="end"
+                          height={60}
+                        />
+                        <YAxis 
+                          fontSize={11}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(value) => `${value}`}
+                        />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Bar 
+                          dataKey="total_orders" 
+                          fill="var(--color-total_orders)" 
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </MobileOptimizedChart>
+
+                  {/* Status Distribution Chart */}
+                  <MobileOptimizedChart
+                    title="Statusoversikt"
+                    description={selectedSiteId ? "Filtrert på valgt site" : "Alle arbeidsordrer"}
+                    icon={<TrendingUp className="h-5 w-5" />}
+                    config={{
+                      pending: {
+                        label: "Venter",
+                        color: "hsl(var(--chart-1))",
+                      },
+                      in_progress: {
+                        label: "Pågår", 
+                        color: "hsl(var(--chart-2))",
+                      },
+                      completed: {
+                        label: "Ferdig",
+                        color: "hsl(var(--chart-3))",
+                      },
+                      cancelled: {
+                        label: "Avbrutt",
+                        color: "hsl(var(--chart-4))",
+                      },
+                    }}
+                    mobileHeight="h-[180px]"
+                    desktopHeight="h-[220px]"
+                  >
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={statusChartData}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius="75%"
+                          innerRadius="45%"
+                          fill="#8884d8"
+                          paddingAngle={1}
+                        >
+                          {statusChartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                          ))}
+                        </Pie>
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </MobileOptimizedChart>
                 </div>
+
+                {/* Recent Work Orders */}
+                <Card>
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="h-5 w-5" />
+                      Nylige arbeidsordrer
+                    </CardTitle>
+                    <CardDescription>
+                      {selectedSiteId ? "Arbeidsordrer for valgt site" : "Alle tilgjengelige arbeidsordrer"}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingOrders ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      </div>
+                    ) : workOrders.length > 0 ? (
+                      <div className="space-y-4">
+                        {workOrders.map((order, index) => (
+                          <div
+                            key={order.id}
+                            className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <span className="text-primary font-bold text-sm">#{index + 1}</span>
+                              </div>
+                              <div>
+                                <h3 className="font-semibold">{order.title}</h3>
+                                <p className="text-sm text-muted-foreground">{order.customer_name}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="text-right">
+                                <div className="text-sm font-medium">
+                                  {new Date(order.created_at).toLocaleDateString('nb-NO')}
+                                </div>
+                              </div>
+                              {getStatusBadge(order.status)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-medium mb-2">Ingen arbeidsordrer</h3>
+                        <p className="text-muted-foreground mb-4">
+                          {selectedSiteId ? "Ingen ordrer funnet for valgt site" : "Ingen arbeidsordrer tilgjengelig"}
+                        </p>
+                        <Button 
+                          onClick={() => navigate('/work-orders')} 
+                          className="mt-2"
+                        >
+                          Opprett arbeidsordre
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             </div>
           )}
