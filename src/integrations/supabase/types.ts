@@ -475,6 +475,7 @@ export type Database = {
       personnel: {
         Row: {
           created_at: string
+          daily_capacity_hours: number | null
           email: string | null
           id: string
           is_active: boolean | null
@@ -487,6 +488,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          daily_capacity_hours?: number | null
           email?: string | null
           id?: string
           is_active?: boolean | null
@@ -499,6 +501,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          daily_capacity_hours?: number | null
           email?: string | null
           id?: string
           is_active?: boolean | null

@@ -3,12 +3,15 @@ import { DndContext, DragEndEvent, DragOverlay } from '@dnd-kit/core';
 import { useSiteFilter } from '@/hooks/useSiteFilter';
 import { usePlannerData } from '@/hooks/usePlannerData';
 import { useScheduleWorkOrder } from '@/hooks/useScheduleWorkOrder';
+import { useUnscheduleWorkOrder } from '@/hooks/useUnscheduleWorkOrder';
 import { PlannerFilters } from '@/components/planner/PlannerFilters';
 import { UnassignedOrdersList } from '@/components/planner/UnassignedOrdersList';
 import { PlannerTimeline } from '@/components/planner/PlannerTimeline';
 import { TopBar } from '@/components/TopBar';
 import { LoadingState } from '@/components/common/LoadingState';
 import { WorkOrder } from '@/types';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export default function Planner() {
   const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
@@ -22,6 +25,8 @@ export default function Planner() {
   );
 
   const scheduleOrderMutation = useScheduleWorkOrder();
+  const unscheduleOrderMutation = useUnscheduleWorkOrder();
+  const navigate = useNavigate();
 
   const handleDragStart = (event: any) => {
     const order = event.active.data.current?.order;
@@ -54,8 +59,16 @@ export default function Planner() {
       scheduledStart = new Date(selectedDate);
       scheduledStart.setHours(startHour, 0, 0, 0);
       
+      // Calculate duration from existing schedule or estimated hours
+      let durationHours = order.estimated_hours || 1;
+      if (order.scheduled_start && order.scheduled_end) {
+        const existingStart = new Date(order.scheduled_start);
+        const existingEnd = new Date(order.scheduled_end);
+        durationHours = (existingEnd.getTime() - existingStart.getTime()) / (1000 * 60 * 60);
+      }
+      
       scheduledEnd = new Date(scheduledStart);
-      scheduledEnd.setHours(startHour + (order.estimated_hours || 1));
+      scheduledEnd.setHours(startHour + durationHours);
     } else {
       // Week view - use slot index as day offset
       scheduledStart = new Date(selectedDate);
@@ -77,6 +90,22 @@ export default function Planner() {
         refetchOrders();
       },
     });
+  };
+
+  const handleUnschedule = (orderId: string) => {
+    unscheduleOrderMutation.mutate(orderId, {
+      onSuccess: () => {
+        refetchOrders();
+      },
+    });
+  };
+
+  const handleEditDuration = (orderId: string) => {
+    toast.info('Dra ordren til ny tid, eller bruk høyreklikk for flere alternativer');
+  };
+
+  const handleViewDetails = (orderId: string) => {
+    navigate(`/work-orders?id=${orderId}`);
   };
 
   if (isLoading) {
@@ -105,6 +134,9 @@ export default function Planner() {
             scheduledOrders={scheduledOrders}
             viewMode={viewMode}
             selectedDate={selectedDate}
+            onUnschedule={handleUnschedule}
+            onEditDuration={handleEditDuration}
+            onViewDetails={handleViewDetails}
           />
 
           <DragOverlay>

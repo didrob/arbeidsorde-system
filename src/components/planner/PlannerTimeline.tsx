@@ -8,6 +8,9 @@ interface PlannerTimelineProps {
   scheduledOrders: WorkOrder[];
   viewMode: 'day' | 'week';
   selectedDate: Date;
+  onUnschedule: (orderId: string) => void;
+  onEditDuration: (orderId: string) => void;
+  onViewDetails: (orderId: string) => void;
 }
 
 export function PlannerTimeline({
@@ -15,6 +18,9 @@ export function PlannerTimeline({
   scheduledOrders,
   viewMode,
   selectedDate,
+  onUnschedule,
+  onEditDuration,
+  onViewDetails,
 }: PlannerTimelineProps) {
   return (
     <div className="flex-1 flex flex-col bg-background overflow-hidden">
@@ -34,6 +40,9 @@ export function PlannerTimeline({
                 scheduledOrders={scheduledOrders}
                 viewMode={viewMode}
                 selectedDate={selectedDate}
+                onUnschedule={onUnschedule}
+                onEditDuration={onEditDuration}
+                onViewDetails={onViewDetails}
               />
             ))
           )}

@@ -9,6 +9,9 @@ interface TimeSlotProps {
   startHour?: number;
   viewMode: 'day' | 'week';
   resourceOrders: WorkOrder[];
+  onUnschedule: (orderId: string) => void;
+  onEditDuration: (orderId: string) => void;
+  onViewDetails: (orderId: string) => void;
 }
 
 export function TimeSlot({
@@ -18,6 +21,9 @@ export function TimeSlot({
   startHour,
   viewMode,
   resourceOrders,
+  onUnschedule,
+  onEditDuration,
+  onViewDetails,
 }: TimeSlotProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: slotId,
@@ -35,23 +41,28 @@ export function TimeSlot({
         isOver ? 'bg-primary/10' : ''
       }`}
     >
-      {/* Render scheduled orders in this slot */}
+      {/* Render scheduled orders - only in first slot they occupy */}
       {viewMode === 'day' && startHour !== undefined && resourceOrders.map(order => {
-        if (!order.scheduled_start) return null;
+        if (!order.scheduled_start || !order.scheduled_end) return null;
         
         const orderStart = new Date(order.scheduled_start);
+        const orderEnd = new Date(order.scheduled_end);
         const orderHour = orderStart.getHours();
         
-        // Check if this order belongs in this slot
+        // Only render in the first slot (where the order starts)
         if (orderHour === startHour) {
-          const duration = order.estimated_hours || 1;
+          const durationMs = orderEnd.getTime() - orderStart.getTime();
+          const durationHours = durationMs / (1000 * 60 * 60);
           
           return (
             <OrderBlock
               key={order.id}
               order={order}
               startHour={orderHour}
-              duration={duration}
+              duration={durationHours}
+              onUnschedule={() => onUnschedule(order.id)}
+              onEditDuration={() => onEditDuration(order.id)}
+              onViewDetails={() => onViewDetails(order.id)}
             />
           );
         }
