@@ -160,12 +160,21 @@ export const useUserAccessibleSites = () => {
   return useQuery({
     queryKey: [...QUERY_KEYS.sites, 'accessible'],
     queryFn: async () => {
+      console.log('Fetching user accessible sites...');
       const { data, error } = await supabase
         .rpc('get_user_accessible_sites');
 
-      if (error) throw error;
+      console.log('RPC result:', { data, error });
+      
+      if (error) {
+        console.error('Error from get_user_accessible_sites RPC:', error);
+        throw error;
+      }
       return data;
     },
+    retry: 1,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 };
 

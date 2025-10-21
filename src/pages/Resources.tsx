@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Users, Wrench, Edit, Trash } from 'lucide-react';
+import { useSiteFilter } from '@/hooks/useSiteFilter';
+import { SiteSelector } from '@/components/site/SiteSelector';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -36,6 +38,7 @@ export default function Resources() {
   const [equipmentDialogOpen, setEquipmentDialogOpen] = useState(false);
   const [editingPersonnel, setEditingPersonnel] = useState<Personnel | null>(null);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
+  const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
 
   const { data: personnel = [], isLoading: personnelLoading } = usePersonnel();
   const { data: equipment = [], isLoading: equipmentLoading } = useEquipment();
@@ -161,13 +164,25 @@ export default function Resources() {
     }
   };
 
+  // Filter data by selected site
+  const filteredPersonnel = personnel.filter(person => !selectedSiteId || person.site_id === selectedSiteId);
+  const filteredEquipment = equipment.filter(item => !selectedSiteId || item.site_id === selectedSiteId);
+
   if (personnelLoading || equipmentLoading) {
     return <LoadingState />;
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <TopBar title="Ressurser" />
+      <TopBar 
+        title="Ressurser" 
+        actions={
+          <SiteSelector
+            selectedSiteId={selectedSiteId}
+            onSiteChange={setSelectedSiteId}
+          />
+        }
+      />
 
       <div className="container mx-auto p-6">
         <Tabs defaultValue="personnel" className="w-full">
@@ -188,106 +203,14 @@ export default function Resources() {
                 <h2 className="text-2xl font-bold text-foreground">Personell</h2>
                 <p className="text-muted-foreground">Administrer arbeidstakere og timepriser</p>
               </div>
-              <Dialog open={personnelDialogOpen} onOpenChange={setPersonnelDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button 
-                    onClick={() => {
-                      setEditingPersonnel(null);
-                      personnelForm.reset();
-                    }}
-                    className="flex items-center gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Legg til Personell
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>
-                      {editingPersonnel ? 'Rediger Personell' : 'Legg til Personell'}
-                    </DialogTitle>
-                    <DialogDescription>
-                      {editingPersonnel ? 'Oppdater personellopplysninger' : 'Legg til ny arbeidstaker med standard timepris'}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={personnelForm.handleSubmit(handlePersonnelSubmit)} className="space-y-4">
-                    <div>
-                      <Label htmlFor="name">Navn *</Label>
-                      <Input
-                        id="name"
-                        {...personnelForm.register('name', { required: true })}
-                        placeholder="Fullt navn"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="email">E-post</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        {...personnelForm.register('email')}
-                        placeholder="email@example.com"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone">Telefon</Label>
-                      <Input
-                        id="phone"
-                        {...personnelForm.register('phone')}
-                        placeholder="12345678"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="role">Rolle</Label>
-                      <Select
-                        value={personnelForm.watch('role')}
-                        onValueChange={(value) => personnelForm.setValue('role', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="worker">Arbeider</SelectItem>
-                          <SelectItem value="supervisor">Arbeidsleder</SelectItem>
-                          <SelectItem value="specialist">Spesialist</SelectItem>
-                          <SelectItem value="manager">Leder</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="standard_hourly_rate">Standard Timepris (kr)</Label>
-                      <Input
-                        id="standard_hourly_rate"
-                        type="number"
-                        step="0.01"
-                        {...personnelForm.register('standard_hourly_rate', { valueAsNumber: true })}
-                        placeholder="500.00"
-                      />
-                    </div>
-                    <div className="flex justify-end space-x-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          setPersonnelDialogOpen(false);
-                          setEditingPersonnel(null);
-                        }}
-                      >
-                        Avbryt
-                      </Button>
-                      <Button 
-                        type="submit"
-                        disabled={createPersonnelMutation.isPending || updatePersonnelMutation.isPending}
-                      >
-                        {editingPersonnel ? 'Oppdater' : 'Legg til'}
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
+              <Button onClick={() => setPersonnelDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Legg til personell
+              </Button>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {personnel.map((person) => (
+              {filteredPersonnel.map((person) => (
                 <Card key={person.id} className="relative">
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
@@ -341,116 +264,14 @@ export default function Resources() {
                 <h2 className="text-2xl font-bold text-foreground">Utstyr</h2>
                 <p className="text-muted-foreground">Administrer utstyr og priser</p>
               </div>
-              <Dialog open={equipmentDialogOpen} onOpenChange={setEquipmentDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button 
-                    onClick={() => {
-                      setEditingEquipment(null);
-                      equipmentForm.reset();
-                    }}
-                    className="flex items-center gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Legg til Utstyr
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>
-                      {editingEquipment ? 'Rediger Utstyr' : 'Legg til Utstyr'}
-                    </DialogTitle>
-                    <DialogDescription>
-                      {editingEquipment ? 'Oppdater utstyrsopplysninger' : 'Legg til nytt utstyr med priser'}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={equipmentForm.handleSubmit(handleEquipmentSubmit)} className="space-y-4">
-                    <div>
-                      <Label htmlFor="name">Navn *</Label>
-                      <Input
-                        id="name"
-                        {...equipmentForm.register('name', { required: true })}
-                        placeholder="Navn på utstyr"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="category">Kategori *</Label>
-                      <Select
-                        value={equipmentForm.watch('category')}
-                        onValueChange={(value) => equipmentForm.setValue('category', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="vehicle">Kjøretøy</SelectItem>
-                          <SelectItem value="tool">Verktøy</SelectItem>
-                          <SelectItem value="machinery">Maskineri</SelectItem>
-                          <SelectItem value="lifting">Løfteutstyr</SelectItem>
-                          <SelectItem value="safety">Sikkerhetsutstyr</SelectItem>
-                          <SelectItem value="other">Annet</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="pricing_type">Pristype *</Label>
-                      <Select
-                        value={equipmentForm.watch('pricing_type')}
-                        onValueChange={(value: EquipmentPricingType) => equipmentForm.setValue('pricing_type', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="hourly">Per time</SelectItem>
-                          <SelectItem value="daily">Per dag</SelectItem>
-                          <SelectItem value="fixed">Fastpris</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="standard_rate">Standard Pris (kr)</Label>
-                      <Input
-                        id="standard_rate"
-                        type="number"
-                        step="0.01"
-                        {...equipmentForm.register('standard_rate', { valueAsNumber: true })}
-                        placeholder="1000.00"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="description">Beskrivelse</Label>
-                      <Textarea
-                        id="description"
-                        {...equipmentForm.register('description')}
-                        placeholder="Beskrivelse av utstyret..."
-                        rows={3}
-                      />
-                    </div>
-                    <div className="flex justify-end space-x-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          setEquipmentDialogOpen(false);
-                          setEditingEquipment(null);
-                        }}
-                      >
-                        Avbryt
-                      </Button>
-                      <Button 
-                        type="submit"
-                        disabled={createEquipmentMutation.isPending || updateEquipmentMutation.isPending}
-                      >
-                        {editingEquipment ? 'Oppdater' : 'Legg til'}
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
+              <Button onClick={() => setEquipmentDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Legg til utstyr
+              </Button>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {equipment.map((item) => (
+              {filteredEquipment.map((item) => (
                 <Card key={item.id} className="relative">
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
@@ -495,6 +316,188 @@ export default function Resources() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Personnel Dialog */}
+        <Dialog open={personnelDialogOpen} onOpenChange={setPersonnelDialogOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>
+                {editingPersonnel ? 'Rediger Personell' : 'Legg til Personell'}
+              </DialogTitle>
+              <DialogDescription>
+                {editingPersonnel ? 'Oppdater personellopplysninger' : 'Legg til ny arbeidstaker med standard timepris'}
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={personnelForm.handleSubmit(handlePersonnelSubmit)} className="space-y-4">
+              <div>
+                <Label htmlFor="name">Navn *</Label>
+                <Input
+                  id="name"
+                  {...personnelForm.register('name', { required: true })}
+                  placeholder="Fullt navn"
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">E-post</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...personnelForm.register('email')}
+                  placeholder="email@example.com"
+                />
+              </div>
+              <div>
+                <Label htmlFor="phone">Telefon</Label>
+                <Input
+                  id="phone"
+                  {...personnelForm.register('phone')}
+                  placeholder="12345678"
+                />
+              </div>
+              <div>
+                <Label htmlFor="role">Rolle</Label>
+                <Select
+                  value={personnelForm.watch('role')}
+                  onValueChange={(value) => personnelForm.setValue('role', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="worker">Arbeider</SelectItem>
+                    <SelectItem value="supervisor">Arbeidsleder</SelectItem>
+                    <SelectItem value="specialist">Spesialist</SelectItem>
+                    <SelectItem value="manager">Leder</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="standard_hourly_rate">Standard Timepris (kr)</Label>
+                <Input
+                  id="standard_hourly_rate"
+                  type="number"
+                  step="0.01"
+                  {...personnelForm.register('standard_hourly_rate', { valueAsNumber: true })}
+                  placeholder="500.00"
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setPersonnelDialogOpen(false);
+                    setEditingPersonnel(null);
+                  }}
+                >
+                  Avbryt
+                </Button>
+                <Button 
+                  type="submit"
+                  disabled={createPersonnelMutation.isPending || updatePersonnelMutation.isPending}
+                >
+                  {editingPersonnel ? 'Oppdater' : 'Legg til'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Equipment Dialog */}
+        <Dialog open={equipmentDialogOpen} onOpenChange={setEquipmentDialogOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>
+                {editingEquipment ? 'Rediger Utstyr' : 'Legg til Utstyr'}
+              </DialogTitle>
+              <DialogDescription>
+                {editingEquipment ? 'Oppdater utstyrsopplysninger' : 'Legg til nytt utstyr med priser'}
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={equipmentForm.handleSubmit(handleEquipmentSubmit)} className="space-y-4">
+              <div>
+                <Label htmlFor="name">Navn *</Label>
+                <Input
+                  id="name"
+                  {...equipmentForm.register('name', { required: true })}
+                  placeholder="Navn på utstyr"
+                />
+              </div>
+              <div>
+                <Label htmlFor="category">Kategori *</Label>
+                <Select
+                  value={equipmentForm.watch('category')}
+                  onValueChange={(value) => equipmentForm.setValue('category', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="vehicle">Kjøretøy</SelectItem>
+                    <SelectItem value="tool">Verktøy</SelectItem>
+                    <SelectItem value="machinery">Maskineri</SelectItem>
+                    <SelectItem value="lifting">Løfteutstyr</SelectItem>
+                    <SelectItem value="safety">Sikkerhetsutstyr</SelectItem>
+                    <SelectItem value="other">Annet</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="pricing_type">Pristype *</Label>
+                <Select
+                  value={equipmentForm.watch('pricing_type')}
+                  onValueChange={(value: EquipmentPricingType) => equipmentForm.setValue('pricing_type', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hourly">Per time</SelectItem>
+                    <SelectItem value="daily">Per dag</SelectItem>
+                    <SelectItem value="fixed">Fastpris</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="standard_rate">Standard Pris (kr)</Label>
+                <Input
+                  id="standard_rate"
+                  type="number"
+                  step="0.01"
+                  {...equipmentForm.register('standard_rate', { valueAsNumber: true })}
+                  placeholder="1000.00"
+                />
+              </div>
+              <div>
+                <Label htmlFor="description">Beskrivelse</Label>
+                <Textarea
+                  id="description"
+                  {...equipmentForm.register('description')}
+                  placeholder="Beskrivelse av utstyret..."
+                  rows={3}
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setEquipmentDialogOpen(false);
+                    setEditingEquipment(null);
+                  }}
+                >
+                  Avbryt
+                </Button>
+                <Button 
+                  type="submit"
+                  disabled={createEquipmentMutation.isPending || updateEquipmentMutation.isPending}
+                >
+                  {editingEquipment ? 'Oppdater' : 'Legg til'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

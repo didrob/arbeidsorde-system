@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useWorkOrders, useCreateWorkOrder, useUpdateWorkOrder, useDeleteWorkOrder, useCustomers, useFieldWorkers } from '@/hooks/useApi';
+import { useSiteFilter } from '@/hooks/useSiteFilter';
+import { SiteSelector } from '@/components/site/SiteSelector';
 import { TopBar } from '@/components/TopBar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { BulkWorkOrderEditor } from '@/components/backoffice/BulkWorkOrderEditor';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -16,7 +19,6 @@ import { useToast } from '@/hooks/use-toast';
 import { WorkOrderDetails } from '@/components/WorkOrderDetails';
 import { WorkOrderWizard } from '@/components/workorder-wizard/WorkOrderWizard';
 import { WorkOrderAssignment } from '@/components/WorkOrderAssignment';
-import { NotificationCenter } from '@/components/NotificationCenter';
 
 interface WorkOrderForm {
   title: string;
@@ -38,11 +40,14 @@ export default function WorkOrders() {
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<any>(null);
   const [selectedOrders, setSelectedOrders] = useState<any[]>([]);
   const [bulkAssignMode, setBulkAssignMode] = useState(false);
+  const [isBulkEditorOpen, setIsBulkEditorOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteReason, setDeleteReason] = useState('');
+  const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
   
-  const { data: workOrders, isLoading } = useWorkOrders();
+  // RLS handles security, but we can still filter by site for focused viewing
+  const { data: workOrders, isLoading } = useWorkOrders(undefined, selectedSiteId);
   const createWorkOrder = useCreateWorkOrder();
   const updateWorkOrder = useUpdateWorkOrder();
   const deleteWorkOrder = useDeleteWorkOrder();
@@ -52,7 +57,8 @@ export default function WorkOrders() {
     const matchesSearch = order.title.toLowerCase().includes(search.toLowerCase()) ||
                          order.description?.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesSite = !selectedSiteId || order.site_id === selectedSiteId;
+    return matchesSearch && matchesStatus && matchesSite;
   });
 
   const onSubmit = async (data: any) => {
@@ -144,6 +150,12 @@ export default function WorkOrders() {
       <TopBar 
         title="Arbeidsordrer" 
         onCreateClick={() => setIsCreateDialogOpen(true)}
+        actions={
+          <SiteSelector
+            selectedSiteId={selectedSiteId}
+            onSiteChange={setSelectedSiteId}
+          />
+        }
       />
       
       <div className="flex-1 p-4 md:p-8">
@@ -374,6 +386,17 @@ export default function WorkOrders() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Bulk Work Order Editor */}
+        <BulkWorkOrderEditor
+          selectedOrders={selectedOrders}
+          isOpen={isBulkEditorOpen}
+          onClose={() => setIsBulkEditorOpen(false)}
+          onUpdate={() => {
+            // Clear selection after update
+            setSelectedOrders([]);
+          }}
+        />
       </div>
     </div>
   );

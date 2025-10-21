@@ -475,6 +475,7 @@ export type Database = {
       personnel: {
         Row: {
           created_at: string
+          daily_capacity_hours: number | null
           email: string | null
           id: string
           is_active: boolean | null
@@ -487,6 +488,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          daily_capacity_hours?: number | null
           email?: string | null
           id?: string
           is_active?: boolean | null
@@ -499,6 +501,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          daily_capacity_hours?: number | null
           email?: string | null
           id?: string
           is_active?: boolean | null
@@ -739,6 +742,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_site_access: {
         Row: {
@@ -1154,6 +1181,8 @@ export type Database = {
           pricing_model: string | null
           pricing_type: string
           requires_time_tracking: boolean | null
+          scheduled_end: string | null
+          scheduled_start: string | null
           site_id: string | null
           started_at: string | null
           status: string
@@ -1179,6 +1208,8 @@ export type Database = {
           pricing_model?: string | null
           pricing_type?: string
           requires_time_tracking?: boolean | null
+          scheduled_end?: string | null
+          scheduled_start?: string | null
           site_id?: string | null
           started_at?: string | null
           status?: string
@@ -1204,6 +1235,8 @@ export type Database = {
           pricing_model?: string | null
           pricing_type?: string
           requires_time_tracking?: boolean | null
+          scheduled_end?: string | null
+          scheduled_start?: string | null
           site_id?: string | null
           started_at?: string | null
           status?: string
@@ -1326,6 +1359,8 @@ export type Database = {
           pricing_model: string | null
           pricing_type: string
           requires_time_tracking: boolean | null
+          scheduled_end: string | null
+          scheduled_start: string | null
           site_id: string | null
           started_at: string | null
           status: string
@@ -1342,6 +1377,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_accessible_site_ids: {
+        Args: { user_uuid?: string }
+        Returns: string[]
+      }
       get_user_accessible_sites: {
         Args: { user_uuid?: string }
         Returns: {
@@ -1349,6 +1388,13 @@ export type Database = {
           site_id: string
           site_name: string
         }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
       }
       is_admin: {
         Args: Record<PropertyKey, never>
@@ -1386,6 +1432,8 @@ export type Database = {
           pricing_model: string | null
           pricing_type: string
           requires_time_tracking: boolean | null
+          scheduled_end: string | null
+          scheduled_start: string | null
           site_id: string | null
           started_at: string | null
           status: string
@@ -1393,6 +1441,10 @@ export type Database = {
           updated_at: string
           user_id: string
         }
+      }
+      user_has_site_access: {
+        Args: { target_site_id: string; user_uuid: string }
+        Returns: boolean
       }
     }
     Enums: {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { MapPin } from 'lucide-react';
@@ -12,8 +12,23 @@ interface SiteSelectorProps {
 }
 
 export function SiteSelector({ selectedSiteId, onSiteChange, className }: SiteSelectorProps) {
-  const { data: accessibleSites, isLoading } = useUserAccessibleSites();
+  const { data: accessibleSites, isLoading, error } = useUserAccessibleSites();
   const isMobile = useIsMobile();
+
+  // Auto-select site if user has only one accessible site
+  useEffect(() => {
+    if (accessibleSites && accessibleSites.length === 1 && !selectedSiteId) {
+      onSiteChange(accessibleSites[0].site_id);
+    }
+  }, [accessibleSites, selectedSiteId, onSiteChange]);
+
+  // Debug logging
+  console.log('SiteSelector debug:', {
+    accessibleSites,
+    isLoading,
+    error,
+    selectedSiteId
+  });
 
   if (isLoading) {
     return (
@@ -24,15 +39,34 @@ export function SiteSelector({ selectedSiteId, onSiteChange, className }: SiteSe
     );
   }
 
-  if (!accessibleSites || accessibleSites.length <= 1) {
+  if (error) {
+    console.error('Error loading accessible sites:', error);
+    return (
+      <div className={`flex items-center gap-2 ${className}`}>
+        <MapPin className="w-4 h-4" />
+        <span className="text-sm text-destructive">Feil ved lasting av sites</span>
+      </div>
+    );
+  }
+
+  if (!accessibleSites || accessibleSites.length === 0) {
+    return (
+      <div className={`flex items-center gap-2 ${className}`}>
+        <MapPin className="w-4 h-4" />
+        <span className="text-sm text-muted-foreground">Ingen sites tilgjengelig</span>
+      </div>
+    );
+  }
+
+  if (accessibleSites.length === 1) {
     // Only show selector if user has access to multiple sites
-    const currentSite = accessibleSites?.[0];
-    return currentSite ? (
+    const currentSite = accessibleSites[0];
+    return (
       <div className={`flex items-center gap-2 ${className}`}>
         <MapPin className="w-4 h-4" />
         <Badge variant="outline">{currentSite.site_name}</Badge>
       </div>
-    ) : null;
+    );
   }
 
   return (

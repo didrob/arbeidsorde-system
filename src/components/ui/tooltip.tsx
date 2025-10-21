@@ -1,44 +1,39 @@
 import * as React from "react";
+import {
+  TooltipProvider as PrimitiveTooltipProvider,
+  Tooltip as PrimitiveTooltip,
+  TooltipTrigger as PrimitiveTooltipTrigger,
+  TooltipContent as PrimitiveTooltipContent,
+} from "@/shims/radix-tooltip";
 import { cn } from "@/lib/utils";
 
-// Lightweight no-op Tooltip implementation to avoid invalid hook calls
-// while keeping the component API stable.
+const TooltipProvider = PrimitiveTooltipProvider;
 
-type TooltipCommonProps = React.HTMLAttributes<HTMLDivElement> & {
-  asChild?: boolean;
-  side?: "top" | "right" | "bottom" | "left";
-  align?: "start" | "center" | "end";
-  hidden?: boolean;
+const Tooltip = PrimitiveTooltip;
+
+const TooltipTrigger = PrimitiveTooltipTrigger;
+
+type UITooltipContentProps = React.ComponentPropsWithoutRef<typeof PrimitiveTooltipContent> & {
+  sideOffset?: number;
 };
 
-export function TooltipProvider({ children }: { children?: React.ReactNode }) {
-  return <>{children}</>;
-}
-
-export function Tooltip({ children }: { children?: React.ReactNode }) {
-  return <>{children}</>;
-}
-
-export const TooltipTrigger = React.forwardRef<HTMLDivElement, TooltipCommonProps>(
-  ({ children, className, asChild, ...props }, ref) => (
-    <div ref={ref} className={cn(className)} {...props}>
-      {children}
-    </div>
-  )
-);
-TooltipTrigger.displayName = "TooltipTrigger";
-
-export const TooltipContent = React.forwardRef<HTMLDivElement, TooltipCommonProps>(
-  ({ children, className, side, align, hidden, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(hidden ? "sr-only" : "", className)}
-      aria-hidden={hidden}
-      {...props}
-    >
-      {children}
-    </div>
-  )
-);
+const TooltipContent = React.forwardRef<
+  React.ElementRef<typeof PrimitiveTooltipContent>,
+  UITooltipContentProps
+>(({ className, sideOffset = 4, ...props }, ref) => (
+  <PrimitiveTooltipContent
+    ref={ref}
+    // sideOffset is accepted by Radix, harmless on the shim
+    // @ts-ignore - passthrough for Radix prop when available
+    sideOffset={sideOffset}
+    className={cn(
+      "z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      className
+    )}
+    {...props}
+  />
+));
 TooltipContent.displayName = "TooltipContent";
+
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };
 

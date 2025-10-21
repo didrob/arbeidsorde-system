@@ -1,72 +1,76 @@
-const CACHE_NAME = 'arbeidsordre-v1';
+const CACHE_NAME = 'arbeidsordre-v4.0'; // Major version bump to force complete cache clear
 const urlsToCache = [
   '/',
   '/field',
-  '/work-orders',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
   '/manifest.json'
 ];
 
-// Install event - cache resources
+// Enhanced cache busting
 self.addEventListener('install', (event) => {
+  console.log('SW: Installing version', CACHE_NAME);
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
+        console.log('SW: Opened cache');
         return cache.addAll(urlsToCache);
+      })
+      .then(() => {
+        // Force immediate activation
+        return self.skipWaiting();
       })
   );
 });
 
-// Fetch event - serve from cache when offline
+self.addEventListener('activate', (event) => {
+  console.log('SW: Activating version', CACHE_NAME);
+  event.waitUntil(
+    Promise.all([
+      // Clear old caches
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName !== CACHE_NAME) {
+              console.log('SW: Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      }),
+      // Take control immediately
+      self.clients.claim()
+    ])
+  );
+});
+
 self.addEventListener('fetch', (event) => {
+  // Only cache GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // Skip caching for API calls and hot reload
+  const url = new URL(event.request.url);
+  if (url.pathname.includes('/api/') || 
+      url.pathname.includes('/@vite/') ||
+      url.pathname.includes('/node_modules/') ||
+      url.searchParams.has('v') || // Skip Vite versioned assets
+      url.hostname.includes('supabase.co')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Return cached response if found
-        if (response) {
-          return response;
-        }
-        
-        // Clone the request
-        const fetchRequest = event.request.clone();
-        
-        return fetch(fetchRequest).then((response) => {
-          // Check if response is valid
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-          
-          // Clone the response
-          const responseToCache = response.clone();
-          
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-            
-          return response;
-        }).catch(() => {
-          // Return offline page for navigation requests
-          if (event.request.destination === 'document') {
-            return caches.match('/');
-          }
-        });
+        // Return cached version or fetch from network
+        return response || fetch(event.request);
       })
   );
 });
 
-// Activate event - clean up old caches
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+// Listen for skip waiting message
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('SW: Received skip waiting message');
+    self.skipWaiting();
+  }
 });

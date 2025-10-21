@@ -8,26 +8,57 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { PendingUsersView } from '@/components/admin/PendingUsersView';
 import { OrganizationManagement } from '@/components/admin/OrganizationManagement';
 import { SiteManagement } from '@/components/admin/SiteManagement';
 import { RoleGuard } from '@/components/access/RoleGuard';
+import { AvatarUpload } from '@/components/profile/AvatarUpload';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
-import { User, Bell, Shield, Palette, Database, Save, Users, Clock, Building2, MapPin, Download, Smartphone } from 'lucide-react';
+import { User, Bell, Shield, Palette, Database, Save, Users, Clock, Building2, MapPin, Download, Smartphone, Calendar, CheckCircle } from 'lucide-react';
 
 export default function Settings() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { profile, loading, updating, updateProfile } = useUserProfile();
   const { installPWA, canInstall, isInstalled, isInstalling, isIOS } = usePWAInstall();
   const [notifications, setNotifications] = useState(true);
   const [emailReports, setEmailReports] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    full_name: '',
+    phone: ''
+  });
 
-  const handleSaveProfile = () => {
-    toast({ title: 'Profil oppdatert', description: 'Dine innstillinger er lagret' });
+  // Update form when profile loads
+  useState(() => {
+    if (profile) {
+      setProfileForm({
+        full_name: profile.full_name || '',
+        phone: profile.phone || ''
+      });
+    }
+  });
+
+  const handleSaveProfile = async () => {
+    if (!profile) return;
+    
+    const result = await updateProfile({
+      full_name: profileForm.full_name.trim() || null,
+      phone: profileForm.phone.trim() || null
+    });
+
+    if (result?.success) {
+      // Update local form state with saved data
+      setProfileForm({
+        full_name: profile.full_name || '',
+        phone: profile.phone || ''
+      });
+    }
   };
 
   const handleSaveNotifications = () => {
@@ -128,35 +159,145 @@ export default function Settings() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Fullt navn</Label>
-                  <Input id="fullName" placeholder="Ditt fulle navn" />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email">E-post</Label>
-                  <Input id="email" type="email" value={user?.email || ''} disabled />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Telefon</Label>
-                  <Input id="phone" placeholder="+47 xxx xx xxx" />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="role">Rolle</Label>
-                  <div className="flex items-center gap-2">
-                    <Input id="role" value="Administrator" disabled />
-                    <Badge variant="secondary">Admin</Badge>
+              {loading ? (
+                <div className="space-y-4">
+                  <div className="flex flex-col items-center space-y-4">
+                    <Skeleton className="w-24 h-24 rounded-full" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Skeleton className="h-10" />
+                    <Skeleton className="h-10" />
+                    <Skeleton className="h-10" />
+                    <Skeleton className="h-10" />
                   </div>
                 </div>
-              </div>
-              
-              <Button onClick={handleSaveProfile}>
-                <Save className="h-4 w-4 mr-2" />
-                Lagre profil
-              </Button>
+              ) : profile ? (
+                <>
+                  {/* Avatar Upload */}
+                  <div className="flex justify-center">
+                    <AvatarUpload profile={profile} />
+                  </div>
+
+                  <Separator />
+
+                  {/* Personal Information */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium">Personlig informasjon</h4>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="fullName">Fullt navn</Label>
+                        <Input 
+                          id="fullName" 
+                          placeholder="Ditt fulle navn"
+                          value={profileForm.full_name}
+                          onChange={(e) => setProfileForm(prev => ({ ...prev, full_name: e.target.value }))}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="email">E-post</Label>
+                        <Input id="email" type="email" value={user?.email || ''} disabled />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Telefon</Label>
+                        <Input 
+                          id="phone" 
+                          placeholder="+47 xxx xx xxx"
+                          value={profileForm.phone}
+                          onChange={(e) => setProfileForm(prev => ({ ...prev, phone: e.target.value }))}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="role">Rolle</Label>
+                        <div className="flex items-center gap-2">
+                          <Input 
+                            id="role" 
+                            value={profile.role === 'system_admin' ? 'Systemadministrator' : 
+                                   profile.role === 'site_manager' ? 'Site Manager' :
+                                   profile.role === 'field_worker' ? 'Feltarbeider' : 
+                                   profile.role} 
+                            disabled 
+                          />
+                          <Badge variant={profile.role === 'system_admin' ? 'default' : 'secondary'}>
+                            {profile.role === 'system_admin' ? 'SysAdmin' : 
+                             profile.role === 'site_manager' ? 'Manager' :
+                             profile.role === 'field_worker' ? 'Worker' : 
+                             profile.role}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Work Information */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium">Arbeidsinformasjon</h4>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>Organisasjon</Label>
+                        <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                          <Building2 className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm">
+                            {profile.organization?.name || 'Ikke tilordnet'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label>Site</Label>
+                        <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                          <MapPin className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm">
+                            {profile.site?.name || 'Ikke tilordnet'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Account Status */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium">Kontostatus</h4>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>Konto opprettet</Label>
+                        <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                          <Calendar className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm">
+                            {new Date(profile.created_at).toLocaleDateString('nb-NO')}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label>Status</Label>
+                        <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                          <CheckCircle className={`w-4 h-4 ${profile.is_active ? 'text-green-500' : 'text-red-500'}`} />
+                          <span className="text-sm">
+                            {profile.is_active ? 'Aktiv' : 'Inaktiv'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Button onClick={handleSaveProfile} disabled={updating}>
+                    <Save className="h-4 w-4 mr-2" />
+                    {updating ? 'Lagrer...' : 'Lagre profil'}
+                  </Button>
+                </>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-muted-foreground">Kunne ikke laste profildata</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

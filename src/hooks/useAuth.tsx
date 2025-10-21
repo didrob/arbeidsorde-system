@@ -33,39 +33,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserRole = async (userId: string) => {
     try {
       console.log('Fetching user role for:', userId);
-      const { data, error } = await supabase
+      
+      // SECURITY: Fetch role from user_roles table (not profiles)
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // Also fetch profile for organization/site onboarding check
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('role, organization_id, site_id')
+        .select('organization_id, site_id')
         .eq('user_id', userId)
         .single();
       
-      if (error) {
-        console.error('Error fetching user role:', error);
-        
-        // Only set fallback if it's a "not found" error (profile doesn't exist)
-        if (error.code === 'PGRST116') {
-          console.log('Profile not found, setting default role');
-          setUserRole('field_worker');
-          setNeedsOnboarding(true); // New users need onboarding
-        } else {
-          // For other errors, keep role as null and let user try again
-          console.log('Keeping role as null due to error:', error.message);
-          setUserRole(null);
-          setNeedsOnboarding(false);
-        }
+      if (roleError && roleError.code !== 'PGRST116') {
+        console.error('Error fetching user role:', roleError);
+        setUserRole(null);
+        setNeedsOnboarding(false);
         return;
       }
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('Error fetching profile:', profileError);
+      }
       
-      console.log('User role fetched successfully:', data?.role);
-      setUserRole(data?.role || 'field_worker');
+      // Set role from user_roles table
+      const role = roleData?.role || 'field_worker';
+      console.log('User role fetched successfully:', role);
+      setUserRole(role);
       
       // Check if user needs onboarding (missing organization or site)
-      const needsOnboarding = !data?.organization_id || !data?.site_id;
+      const needsOnboarding = !profileData?.organization_id || !profileData?.site_id;
       setNeedsOnboarding(needsOnboarding);
       console.log('User needs onboarding:', needsOnboarding);
     } catch (error) {
       console.error('Unexpected error fetching user role:', error);
-      // Don't set fallback on unexpected errors - keep as null
       setUserRole(null);
       setNeedsOnboarding(false);
     }

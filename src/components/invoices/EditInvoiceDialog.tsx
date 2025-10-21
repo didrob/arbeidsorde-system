@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useUpdateInvoice } from "@/hooks/useInvoices";
+import { useUpdateInvoiceMutation } from "@/hooks/useInvoices";
 import { formatCurrency } from "@/lib/utils";
 
 interface EditInvoiceDialogProps {
@@ -20,7 +20,7 @@ export function EditInvoiceDialog({ invoice, open, onOpenChange }: EditInvoiceDi
   const [notes, setNotes] = useState("");
   const [internalNotes, setInternalNotes] = useState("");
 
-  const updateInvoiceMutation = useUpdateInvoice();
+  const updateInvoiceMutation = useUpdateInvoiceMutation();
 
   // Populate form when invoice changes
   useEffect(() => {

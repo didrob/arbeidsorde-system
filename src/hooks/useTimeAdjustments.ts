@@ -187,3 +187,35 @@ export const useUploadAdjustmentAttachment = () => {
     },
   });
 };
+
+// Delete a time adjustment (avvik)
+export const useDeleteTimeAdjustment = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, work_order_id }: { id: string; work_order_id: string }) => {
+      const { error } = await supabase
+        .from('work_order_time_adjustments')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['time-adjustments', variables.work_order_id] });
+      toast({
+        title: 'Avvik slettet',
+        description: 'Saken er fjernet',
+      });
+    },
+    onError: (error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Kunne ikke slette avvik',
+        description: (error as any)?.message || 'Du har ikke tilgang, eller saken finnes ikke.',
+      });
+      console.error('Error deleting time adjustment:', error);
+    },
+  });
+};

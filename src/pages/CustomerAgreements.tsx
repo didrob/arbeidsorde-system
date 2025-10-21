@@ -128,7 +128,6 @@ export default function CustomerAgreements() {
     <div className="flex flex-col min-h-screen bg-background">
       <TopBar 
         title="Kundeavtaler" 
-        onCreateClick={() => setShowCreateDialog(true)}
       />
 
       <div className="flex-1 p-6 space-y-6">

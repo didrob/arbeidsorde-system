@@ -157,7 +157,7 @@ export const usePoolNotifications = () => {
     enabled: !!user?.id,
     staleTime: 30 * 1000, // 30 seconds
     gcTime: 5 * 60 * 1000,
-    refetchInterval: 60 * 1000, // Check every minute
+    refetchInterval: 60 * 1000, // Check every minute for new notifications
   });
 };
 

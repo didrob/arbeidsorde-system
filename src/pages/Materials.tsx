@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useMaterials } from '@/hooks/useApi';
+import { useSiteFilter } from '@/hooks/useSiteFilter';
+import { SiteSelector } from '@/components/site/SiteSelector';
 import { TopBar } from '@/components/TopBar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,16 +21,19 @@ interface MaterialForm {
 export default function Materials() {
   const [search, setSearch] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
   
-  const { data: materials, isLoading } = useMaterials();
+  const { data: materials, isLoading } = useMaterials(selectedSiteId);
   const { toast } = useToast();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<MaterialForm>();
 
-  const filteredMaterials = materials?.filter((material: any) => 
-    material.name.toLowerCase().includes(search.toLowerCase()) ||
-    material.unit.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredMaterials = materials?.filter((material: any) => {
+    const matchesSearch = material.name.toLowerCase().includes(search.toLowerCase()) ||
+                         material.unit.toLowerCase().includes(search.toLowerCase());
+    const matchesSite = !selectedSiteId || material.site_id === selectedSiteId;
+    return matchesSearch && matchesSite;
+  });
 
   const onSubmit = async (data: MaterialForm) => {
     // This would need to be implemented in the API layer
@@ -48,8 +53,14 @@ export default function Materials() {
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-background">
       <TopBar 
-        title="Materialer" 
+        title="Materialer"
         onCreateClick={() => setIsCreateDialogOpen(true)}
+        actions={
+          <SiteSelector
+            selectedSiteId={selectedSiteId}
+            onSiteChange={setSelectedSiteId}
+          />
+        }
       />
       
       <div className="flex-1 p-8">
