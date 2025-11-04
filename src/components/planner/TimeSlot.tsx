@@ -4,11 +4,11 @@ import { OrderBlock } from './OrderBlock';
 
 interface TimeSlotProps {
   slotId: string;
-  resourceId: string;
+  orderId: string;
   slotIndex: number;
   startHour?: number;
   viewMode: 'day' | 'week';
-  resourceOrders: WorkOrder[];
+  order: WorkOrder;
   onUnschedule: (orderId: string) => void;
   onEditDuration: (orderId: string) => void;
   onViewDetails: (orderId: string) => void;
@@ -16,11 +16,11 @@ interface TimeSlotProps {
 
 export function TimeSlot({
   slotId,
-  resourceId,
+  orderId,
   slotIndex,
   startHour,
   viewMode,
-  resourceOrders,
+  order,
   onUnschedule,
   onEditDuration,
   onViewDetails,
@@ -28,11 +28,34 @@ export function TimeSlot({
   const { setNodeRef, isOver } = useDroppable({
     id: slotId,
     data: {
-      resourceId,
+      orderId,
       slotIndex,
       startHour,
     },
   });
+
+  // Only render the order block if this order has a scheduled time
+  const shouldRenderOrderBlock = 
+    viewMode === 'day' && 
+    startHour !== undefined && 
+    order.scheduled_start && 
+    order.scheduled_end;
+
+  let renderOrderBlock = false;
+  let durationHours = 0;
+
+  if (shouldRenderOrderBlock) {
+    const orderStart = new Date(order.scheduled_start!);
+    const orderHour = orderStart.getHours();
+    
+    // Only render in the first slot (where the order starts)
+    if (orderHour === startHour) {
+      renderOrderBlock = true;
+      const orderEnd = new Date(order.scheduled_end!);
+      const durationMs = orderEnd.getTime() - orderStart.getTime();
+      durationHours = durationMs / (1000 * 60 * 60);
+    }
+  }
 
   return (
     <div
@@ -41,33 +64,16 @@ export function TimeSlot({
         isOver ? 'bg-primary/10' : ''
       }`}
     >
-      {/* Render scheduled orders - only in first slot they occupy */}
-      {viewMode === 'day' && startHour !== undefined && resourceOrders.map(order => {
-        if (!order.scheduled_start || !order.scheduled_end) return null;
-        
-        const orderStart = new Date(order.scheduled_start);
-        const orderEnd = new Date(order.scheduled_end);
-        const orderHour = orderStart.getHours();
-        
-        // Only render in the first slot (where the order starts)
-        if (orderHour === startHour) {
-          const durationMs = orderEnd.getTime() - orderStart.getTime();
-          const durationHours = durationMs / (1000 * 60 * 60);
-          
-          return (
-            <OrderBlock
-              key={order.id}
-              order={order}
-              startHour={orderHour}
-              duration={durationHours}
-              onUnschedule={() => onUnschedule(order.id)}
-              onEditDuration={() => onEditDuration(order.id)}
-              onViewDetails={() => onViewDetails(order.id)}
-            />
-          );
-        }
-        return null;
-      })}
+      {renderOrderBlock && (
+        <OrderBlock
+          order={order}
+          startHour={startHour!}
+          duration={durationHours}
+          onUnschedule={() => onUnschedule(orderId)}
+          onEditDuration={() => onEditDuration(orderId)}
+          onViewDetails={() => onViewDetails(orderId)}
+        />
+      )}
     </div>
   );
 }

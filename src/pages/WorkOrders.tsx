@@ -10,15 +10,20 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Search, Edit, Trash2, Eye, MoreHorizontal, User, Clock, Calendar } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, MoreHorizontal, User, Clock, Calendar, LayoutGrid, List, Table, AlignLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { WorkOrderDetails } from '@/components/WorkOrderDetails';
 import { WorkOrderWizard } from '@/components/workorder-wizard/WorkOrderWizard';
 import { WorkOrderAssignment } from '@/components/WorkOrderAssignment';
+import { WorkOrderGridView } from '@/components/workorders/WorkOrderGridView';
+import { WorkOrderListView } from '@/components/workorders/WorkOrderListView';
+import { WorkOrderTableView } from '@/components/workorders/WorkOrderTableView';
+import { WorkOrderCompactView } from '@/components/workorders/WorkOrderCompactView';
 
 interface WorkOrderForm {
   title: string;
@@ -35,6 +40,9 @@ interface WorkOrderForm {
 export default function WorkOrders() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table' | 'compact'>(() => {
+    return (localStorage.getItem('workOrderViewMode') as any) || 'grid';
+  });
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<any>(null);
@@ -45,6 +53,14 @@ export default function WorkOrders() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteReason, setDeleteReason] = useState('');
   const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
+
+  // Save view mode preference
+  const handleViewModeChange = (value: string) => {
+    if (value) {
+      setViewMode(value as any);
+      localStorage.setItem('workOrderViewMode', value);
+    }
+  };
   
   // RLS handles security, but we can still filter by site for focused viewing
   const { data: workOrders, isLoading } = useWorkOrders(undefined, selectedSiteId);
@@ -183,6 +199,22 @@ export default function WorkOrders() {
                 <SelectItem value="cancelled">Avbrutt</SelectItem>
               </SelectContent>
             </Select>
+            
+            {/* View Mode Toggle */}
+            <ToggleGroup type="single" value={viewMode} onValueChange={handleViewModeChange}>
+              <ToggleGroupItem value="grid" aria-label="Grid visning">
+                <LayoutGrid className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="list" aria-label="Liste visning">
+                <List className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="table" aria-label="Tabell visning">
+                <Table className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="compact" aria-label="Kompakt visning">
+                <AlignLeft className="h-4 w-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
 
           {/* Quick Status Tabs */}
@@ -207,7 +239,7 @@ export default function WorkOrders() {
           </Tabs>
         </div>
 
-        {/* Work Orders Grid */}
+        {/* Work Orders Views */}
         {isLoading ? (
           <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -217,105 +249,66 @@ export default function WorkOrders() {
         ) : filteredWorkOrders?.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-            {filteredWorkOrders?.map((order: any) => (
-              <Card 
-                key={order.id} 
-                className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer"
-                onClick={() => handleViewDetails(order)}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-                        {order.title}
-                      </CardTitle>
-                      <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                        <Calendar className="w-4 h-4" />
-                        <span>ID: #{order.id?.slice(-6)}</span>
-                      </div>
-                    </div>
-                    <Badge 
-                      variant="outline" 
-                      className={`${getStatusColor(order.status)} shrink-0 text-xs font-medium`}
-                    >
-                      {getStatusText(order.status)}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {order.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                      {order.description}
-                    </p>
-                  )}
-                  
-                  <div className="grid grid-cols-1 gap-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-muted-foreground shrink-0" />
-                      <span className="text-muted-foreground">Kunde:</span>
-                      <span className="font-medium truncate">{order.customer?.name || 'Ikke tildelt'}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-muted-foreground shrink-0" />
-                      <span className="text-muted-foreground">Tildelt:</span>
-                      <span className="font-medium truncate">{order.assigned_user?.full_name || 'Ikke tildelt'}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
-                      <span className="text-muted-foreground">Estimert:</span>
-                      <span className="font-medium">{order.estimated_hours || 0} timer</span>
-                    </div>
-                  </div>
+          <>
+            {viewMode === 'grid' && (
+              <WorkOrderGridView 
+                orders={filteredWorkOrders}
+                onViewDetails={handleViewDetails}
+                onAssign={(order) => {
+                  setSelectedWorkOrder(order);
+                  setIsAssignDialogOpen(true);
+                }}
+                onDelete={(order) => {
+                  setSelectedWorkOrder(order);
+                  setIsDeleteDialogOpen(true);
+                }}
+                getStatusColor={getStatusColor}
+                getStatusText={getStatusText}
+              />
+            )}
 
-                  <div className="flex items-center justify-between pt-2 border-t">
-                    <Button 
-                      variant="default" 
-                      size="sm" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleViewDetails(order);
-                      }}
-                      className="flex-1 mr-2"
-                    >
-                      <Eye className="w-4 h-4 mr-2" />
-                      Vis detaljer
-                    </Button>
-                    
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="outline" size="sm" className="px-2">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem 
-                          className="flex items-center gap-2"
-                          onClick={() => {
-                            setSelectedWorkOrder(order);
-                            setIsAssignDialogOpen(true);
-                          }}
-                        >
-                          <User className="w-4 h-4" />
-                          Tildel til feltarbeider
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-2">
-                          <Edit className="w-4 h-4" />
-                          Rediger arbeidsordre
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-2 text-destructive focus:text-destructive" onClick={() => setIsDeleteDialogOpen(true)}>
-                          <Trash2 className="w-4 h-4" />
-                          Slett arbeidsordre
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+            {viewMode === 'list' && (
+              <WorkOrderListView 
+                orders={filteredWorkOrders}
+                onViewDetails={handleViewDetails}
+                onAssign={(order) => {
+                  setSelectedWorkOrder(order);
+                  setIsAssignDialogOpen(true);
+                }}
+                onDelete={(order) => {
+                  setSelectedWorkOrder(order);
+                  setIsDeleteDialogOpen(true);
+                }}
+                getStatusColor={getStatusColor}
+                getStatusText={getStatusText}
+              />
+            )}
+
+            {viewMode === 'table' && (
+              <WorkOrderTableView 
+                orders={filteredWorkOrders}
+                onViewDetails={handleViewDetails}
+                onAssign={(order) => {
+                  setSelectedWorkOrder(order);
+                  setIsAssignDialogOpen(true);
+                }}
+                onDelete={(order) => {
+                  setSelectedWorkOrder(order);
+                  setIsDeleteDialogOpen(true);
+                }}
+                getStatusColor={getStatusColor}
+                getStatusText={getStatusText}
+              />
+            )}
+
+            {viewMode === 'compact' && (
+              <WorkOrderCompactView 
+                orders={filteredWorkOrders}
+                onViewDetails={handleViewDetails}
+                getStatusColor={getStatusColor}
+              />
+            )}
+          </>
         )}
 
         {/* Work Order Wizard */}
