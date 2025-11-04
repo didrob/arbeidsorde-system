@@ -248,22 +248,6 @@ export function OrganizationDashboard() {
                 onClick: () => window.location.href = '/resources'
               }}
             />
-
-            <DashboardKPICard
-              title="Kundebase"
-              value={filteredData.customers.length}
-              icon={<Building2 className="h-5 w-5 text-primary" />}
-              trend={{
-                value: 8,
-                direction: 'up',
-                label: 'nye denne måneden'
-              }}
-              status="success"
-              action={{
-                label: 'Se kunder',
-                onClick: () => window.location.href = '/customers'
-              }}
-            />
           </div>
 
           {/* Quick Actions */}
