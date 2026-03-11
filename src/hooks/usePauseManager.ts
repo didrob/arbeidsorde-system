@@ -78,7 +78,7 @@ export function usePauseManager(timeEntryId: string | null) {
 
   // Update elapsed time during pause
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     
     if (pauseState.isOnPause && pauseState.pauseStartTime) {
       interval = setInterval(() => {
