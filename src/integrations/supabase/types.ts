@@ -14,16 +14,1804 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      adjustment_attachments: {
+        Row: {
+          adjustment_id: string
+          created_at: string
+          description: string | null
+          file_name: string
+          file_size: number | null
+          file_type: string
+          file_url: string
+          id: string
+        }
+        Insert: {
+          adjustment_id: string
+          created_at?: string
+          description?: string | null
+          file_name: string
+          file_size?: number | null
+          file_type: string
+          file_url: string
+          id?: string
+        }
+        Update: {
+          adjustment_id?: string
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "adjustment_attachments_adjustment_id_fkey"
+            columns: ["adjustment_id"]
+            isOneToOne: false
+            referencedRelation: "work_order_time_adjustments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string | null
+          table_name: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      customer_pricing_agreements: {
+        Row: {
+          agreement_type: string
+          created_at: string
+          custom_rate: number
+          customer_id: string
+          id: string
+          notes: string | null
+          pricing_type: string
+          resource_id: string | null
+          resource_type: string | null
+          updated_at: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          agreement_type: string
+          created_at?: string
+          custom_rate: number
+          customer_id: string
+          id?: string
+          notes?: string | null
+          pricing_type?: string
+          resource_id?: string | null
+          resource_type?: string | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          agreement_type?: string
+          created_at?: string
+          custom_rate?: number
+          customer_id?: string
+          id?: string
+          notes?: string | null
+          pricing_type?: string
+          resource_id?: string | null
+          resource_type?: string | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_pricing_agreements_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_pricing_agreements_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "org_customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          address: string | null
+          contact_person: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          site_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          site_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          site_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "customers_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "customers_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "customers_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          pricing_type: string
+          site_id: string | null
+          standard_rate: number | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          pricing_type?: string
+          site_id?: string | null
+          standard_rate?: number | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          pricing_type?: string
+          site_id?: string | null
+          standard_rate?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "equipment_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "equipment_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "equipment_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_line_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string
+          item_type: string
+          line_total: number
+          quantity: number
+          reference_id: string | null
+          unit_price: number
+          work_order_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id: string
+          item_type?: string
+          line_total: number
+          quantity?: number
+          reference_id?: string | null
+          unit_price: number
+          work_order_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string
+          item_type?: string
+          line_total?: number
+          quantity?: number
+          reference_id?: string | null
+          unit_price?: number
+          work_order_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_line_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_line_items_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "org_work_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_line_items_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          created_at: string
+          created_by: string
+          customer_id: string
+          due_date: string
+          id: string
+          internal_notes: string | null
+          invoice_number: string
+          issue_date: string
+          notes: string | null
+          status: string
+          subtotal: number
+          tax_amount: number
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          customer_id: string
+          due_date: string
+          id?: string
+          internal_notes?: string | null
+          invoice_number: string
+          issue_date?: string
+          notes?: string | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          customer_id?: string
+          due_date?: string
+          id?: string
+          internal_notes?: string | null
+          invoice_number?: string
+          issue_date?: string
+          notes?: string | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "org_customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      materials: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          price: number | null
+          site_id: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          price?: number | null
+          site_id?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          price?: number | null
+          site_id?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materials_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "materials_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "materials_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "materials_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      personnel: {
+        Row: {
+          created_at: string
+          daily_capacity_hours: number | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          phone: string | null
+          role: string | null
+          site_id: string | null
+          standard_hourly_rate: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          daily_capacity_hours?: number | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          phone?: string | null
+          role?: string | null
+          site_id?: string | null
+          standard_hourly_rate?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          daily_capacity_hours?: number | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone?: string | null
+          role?: string | null
+          site_id?: string | null
+          standard_hourly_rate?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personnel_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "personnel_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "personnel_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "personnel_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          is_active: boolean | null
+          organization_id: string | null
+          phone: string | null
+          role: string
+          site_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string | null
+          phone?: string | null
+          role?: string
+          site_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string | null
+          phone?: string | null
+          role?: string
+          site_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "profiles_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "profiles_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "profiles_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sites: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          location: string | null
+          name: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          name: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          name?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invitation_token: string
+          invited_by: string
+          notes: string | null
+          organization_id: string | null
+          role: string
+          site_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          invited_by: string
+          notes?: string | null
+          organization_id?: string | null
+          role: string
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          invited_by?: string
+          notes?: string | null
+          organization_id?: string | null
+          role?: string
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_invitations_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "user_invitations_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "user_invitations_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "user_invitations_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_site_access: {
+        Row: {
+          granted_at: string
+          granted_by: string
+          id: string
+          site_id: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by: string
+          id?: string
+          site_id: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string
+          id?: string
+          site_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_site_access_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "user_site_access_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "user_site_access_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "user_site_access_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_order_attachments: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_name: string
+          file_size: number | null
+          file_type: string
+          file_url: string
+          id: string
+          work_order_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_name: string
+          file_size?: number | null
+          file_type: string
+          file_url: string
+          id?: string
+          work_order_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          work_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_order_attachments_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "org_work_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_attachments_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_order_audit_log: {
+        Row: {
+          action: string
+          details: Json | null
+          id: string
+          performed_at: string
+          performed_by: string
+          work_order_id: string
+        }
+        Insert: {
+          action: string
+          details?: Json | null
+          id?: string
+          performed_at?: string
+          performed_by: string
+          work_order_id: string
+        }
+        Update: {
+          action?: string
+          details?: Json | null
+          id?: string
+          performed_at?: string
+          performed_by?: string
+          work_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_order_audit_log_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "org_work_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_audit_log_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_order_breaks: {
+        Row: {
+          created_at: string
+          end_time: string | null
+          id: string
+          notes: string | null
+          reason: string
+          start_time: string
+          time_entry_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          reason?: string
+          start_time?: string
+          time_entry_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          reason?: string
+          start_time?: string
+          time_entry_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      work_order_equipment: {
+        Row: {
+          actual_quantity: number | null
+          created_at: string
+          equipment_id: string
+          estimated_quantity: number | null
+          id: string
+          notes: string | null
+          pricing_type: string
+          rate: number
+          work_order_id: string
+        }
+        Insert: {
+          actual_quantity?: number | null
+          created_at?: string
+          equipment_id: string
+          estimated_quantity?: number | null
+          id?: string
+          notes?: string | null
+          pricing_type?: string
+          rate: number
+          work_order_id: string
+        }
+        Update: {
+          actual_quantity?: number | null
+          created_at?: string
+          equipment_id?: string
+          estimated_quantity?: number | null
+          id?: string
+          notes?: string | null
+          pricing_type?: string
+          rate?: number
+          work_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_order_equipment_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_equipment_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "org_equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_equipment_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "org_work_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_equipment_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_order_materials: {
+        Row: {
+          added_by: string
+          created_at: string
+          id: string
+          material_id: string
+          notes: string | null
+          quantity: number
+          unit_price: number | null
+          work_order_id: string
+        }
+        Insert: {
+          added_by: string
+          created_at?: string
+          id?: string
+          material_id: string
+          notes?: string | null
+          quantity: number
+          unit_price?: number | null
+          work_order_id: string
+        }
+        Update: {
+          added_by?: string
+          created_at?: string
+          id?: string
+          material_id?: string
+          notes?: string | null
+          quantity?: number
+          unit_price?: number | null
+          work_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_order_materials_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_materials_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "org_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_materials_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "org_work_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_materials_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_order_personnel: {
+        Row: {
+          actual_hours: number | null
+          created_at: string
+          estimated_hours: number | null
+          hourly_rate: number
+          id: string
+          notes: string | null
+          personnel_id: string
+          work_order_id: string
+        }
+        Insert: {
+          actual_hours?: number | null
+          created_at?: string
+          estimated_hours?: number | null
+          hourly_rate: number
+          id?: string
+          notes?: string | null
+          personnel_id: string
+          work_order_id: string
+        }
+        Update: {
+          actual_hours?: number | null
+          created_at?: string
+          estimated_hours?: number | null
+          hourly_rate?: number
+          id?: string
+          notes?: string | null
+          personnel_id?: string
+          work_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_order_personnel_personnel_id_fkey"
+            columns: ["personnel_id"]
+            isOneToOne: false
+            referencedRelation: "org_personnel"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_personnel_personnel_id_fkey"
+            columns: ["personnel_id"]
+            isOneToOne: false
+            referencedRelation: "personnel"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_personnel_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "org_work_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_personnel_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_order_time_adjustments: {
+        Row: {
+          adjustment_type: string
+          created_at: string
+          extra_cost: number | null
+          extra_minutes: number | null
+          hourly_rate: number | null
+          id: string
+          notes: string | null
+          reason: string
+          updated_at: string
+          user_id: string
+          work_order_id: string
+        }
+        Insert: {
+          adjustment_type: string
+          created_at?: string
+          extra_cost?: number | null
+          extra_minutes?: number | null
+          hourly_rate?: number | null
+          id?: string
+          notes?: string | null
+          reason: string
+          updated_at?: string
+          user_id: string
+          work_order_id: string
+        }
+        Update: {
+          adjustment_type?: string
+          created_at?: string
+          extra_cost?: number | null
+          extra_minutes?: number | null
+          hourly_rate?: number | null
+          id?: string
+          notes?: string | null
+          reason?: string
+          updated_at?: string
+          user_id?: string
+          work_order_id?: string
+        }
+        Relationships: []
+      }
+      work_order_time_entries: {
+        Row: {
+          break_duration: number | null
+          created_at: string
+          end_time: string | null
+          id: string
+          notes: string | null
+          start_time: string
+          updated_at: string
+          user_id: string
+          work_order_id: string
+        }
+        Insert: {
+          break_duration?: number | null
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          start_time?: string
+          updated_at?: string
+          user_id: string
+          work_order_id: string
+        }
+        Update: {
+          break_duration?: number | null
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          start_time?: string
+          updated_at?: string
+          user_id?: string
+          work_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_order_time_entries_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "org_work_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_time_entries_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_orders: {
+        Row: {
+          actual_hours: number | null
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          customer_id: string
+          deleted_at: string | null
+          deleted_by: string | null
+          description: string | null
+          estimated_hours: number | null
+          gps_location: unknown
+          id: string
+          is_deleted: boolean
+          notes: string | null
+          price_value: number | null
+          pricing_model: string | null
+          pricing_type: string
+          requires_time_tracking: boolean | null
+          scheduled_end: string | null
+          scheduled_start: string | null
+          site_id: string | null
+          started_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_hours?: number | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          customer_id: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          estimated_hours?: number | null
+          gps_location?: unknown
+          id?: string
+          is_deleted?: boolean
+          notes?: string | null
+          price_value?: number | null
+          pricing_model?: string | null
+          pricing_type?: string
+          requires_time_tracking?: boolean | null
+          scheduled_end?: string | null
+          scheduled_start?: string | null
+          site_id?: string | null
+          started_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_hours?: number | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          customer_id?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          estimated_hours?: number | null
+          gps_location?: unknown
+          id?: string
+          is_deleted?: boolean
+          notes?: string | null
+          price_value?: number | null
+          pricing_model?: string | null
+          pricing_type?: string
+          requires_time_tracking?: boolean | null
+          scheduled_end?: string | null
+          scheduled_start?: string | null
+          site_id?: string | null
+          started_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_orders_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "work_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "org_customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "work_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "work_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "work_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "work_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      org_customers: {
+        Row: {
+          address: string | null
+          contact_person: string | null
+          created_at: string | null
+          email: string | null
+          id: string | null
+          name: string | null
+          organization_name: string | null
+          phone: string | null
+          site_id: string | null
+          site_name: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "customers_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "customers_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "customers_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_equipment: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          is_active: boolean | null
+          name: string | null
+          organization_name: string | null
+          pricing_type: string | null
+          site_id: string | null
+          site_name: string | null
+          standard_rate: number | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "equipment_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "equipment_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "equipment_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_materials: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          name: string | null
+          organization_name: string | null
+          price: number | null
+          site_id: string | null
+          site_name: string | null
+          unit: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materials_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "materials_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "materials_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "materials_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_personnel: {
+        Row: {
+          created_at: string | null
+          daily_capacity_hours: number | null
+          email: string | null
+          id: string | null
+          is_active: boolean | null
+          name: string | null
+          organization_name: string | null
+          phone: string | null
+          role: string | null
+          site_id: string | null
+          site_name: string | null
+          standard_hourly_rate: number | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personnel_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "personnel_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "personnel_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "personnel_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_work_orders: {
+        Row: {
+          actual_hours: number | null
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string | null
+          customer_id: string | null
+          customer_name: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          description: string | null
+          estimated_hours: number | null
+          gps_location: unknown
+          id: string | null
+          is_deleted: boolean | null
+          notes: string | null
+          organization_name: string | null
+          price_value: number | null
+          pricing_model: string | null
+          pricing_type: string | null
+          requires_time_tracking: boolean | null
+          scheduled_end: string | null
+          scheduled_start: string | null
+          site_id: string | null
+          site_name: string | null
+          started_at: string | null
+          status: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_orders_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "work_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "org_customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "work_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "work_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "work_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "work_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_productivity_stats: {
+        Row: {
+          active_workers: number | null
+          avg_efficiency_percentage: number | null
+          organization_name: string | null
+          site_id: string | null
+          site_name: string | null
+          total_hours_worked: number | null
+        }
+        Relationships: []
+      }
+      site_revenue_stats: {
+        Row: {
+          avg_project_value: number | null
+          completed_revenue: number | null
+          organization_name: string | null
+          site_id: string | null
+          site_name: string | null
+          total_projects: number | null
+          total_revenue: number | null
+        }
+        Relationships: []
+      }
+      site_work_order_stats: {
+        Row: {
+          avg_actual_hours: number | null
+          avg_estimated_hours: number | null
+          cancelled_orders: number | null
+          completed_orders: number | null
+          completed_today: number | null
+          in_progress_orders: number | null
+          organization_name: string | null
+          pending_orders: number | null
+          site_id: string | null
+          site_name: string | null
+          total_orders: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      claim_work_order: {
+        Args: { order_id: string }
+        Returns: {
+          actual_hours: number | null
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          customer_id: string
+          deleted_at: string | null
+          deleted_by: string | null
+          description: string | null
+          estimated_hours: number | null
+          gps_location: unknown
+          id: string
+          is_deleted: boolean
+          notes: string | null
+          price_value: number | null
+          pricing_model: string | null
+          pricing_type: string
+          requires_time_tracking: boolean | null
+          scheduled_end: string | null
+          scheduled_start: string | null
+          site_id: string | null
+          started_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "work_orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      generate_invoice_number: { Args: never; Returns: string }
+      get_current_user_role: { Args: never; Returns: string }
+      get_user_accessible_site_ids: {
+        Args: { user_uuid?: string }
+        Returns: string[]
+      }
+      get_user_accessible_sites: {
+        Args: { user_uuid?: string }
+        Returns: {
+          organization_name: string
+          site_id: string
+          site_name: string
+        }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: never; Returns: boolean }
+      is_field_worker: { Args: never; Returns: boolean }
+      is_site_manager: { Args: never; Returns: boolean }
+      is_system_admin: { Args: never; Returns: boolean }
+      soft_delete_work_order: {
+        Args: { order_id: string; reason?: string }
+        Returns: {
+          actual_hours: number | null
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          customer_id: string
+          deleted_at: string | null
+          deleted_by: string | null
+          description: string | null
+          estimated_hours: number | null
+          gps_location: unknown
+          id: string
+          is_deleted: boolean
+          notes: string | null
+          price_value: number | null
+          pricing_model: string | null
+          pricing_type: string
+          requires_time_tracking: boolean | null
+          scheduled_end: string | null
+          scheduled_start: string | null
+          site_id: string | null
+          started_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "work_orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      user_has_org_access: { Args: { target_org_id: string }; Returns: boolean }
+      user_has_site_access:
+        | { Args: { target_site_id: string }; Returns: boolean }
+        | {
+            Args: { target_site_id: string; user_uuid: string }
+            Returns: boolean
+          }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "system_admin" | "site_manager" | "field_worker"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +1938,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["system_admin", "site_manager", "field_worker"],
+    },
   },
 } as const
