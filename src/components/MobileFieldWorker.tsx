@@ -111,7 +111,7 @@ export const MobileFieldWorker = () => {
 
   // Timer effect with proper formatting
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (activeTimer && !activeTimer.end_time) {
       interval = setInterval(() => {
         const startTime = new Date(activeTimer.start_time).getTime();
