@@ -86,30 +86,33 @@ const App = () => (
   <TooltipProvider>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <SiteFilterProvider>
-          <BrowserRouter>
-            <Toaster />
-            <Sonner />
-            <PWAWrapper />
-            <Routes>
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/field" element={<FieldWorker />} />
-              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-              <Route path="/work-orders" element={<ProtectedRoute><WorkOrders /></ProtectedRoute>} />
-              <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
-              <Route path="/customer-agreements" element={<ProtectedRoute><CustomerAgreements /></ProtectedRoute>} />
-              <Route path="/materials" element={<ProtectedRoute><Materials /></ProtectedRoute>} />
-              <Route path="/resources" element={<ProtectedRoute><Resources /></ProtectedRoute>} />
-              <Route path="/planner" element={<ProtectedRoute><Planner /></ProtectedRoute>} />
-              <Route path="/time-tracking" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
-              <Route path="/map" element={<ProtectedRoute><Map /></ProtectedRoute>} />
-              <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
-              <Route path="/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </SiteFilterProvider>
+        <WorkOrderWizardProvider>
+          <SiteFilterProvider>
+            <BrowserRouter>
+              <Toaster />
+              <Sonner />
+              <PWAWrapper />
+              <GlobalWorkOrderWizardPortal />
+              <Routes>
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/field" element={<FieldWorker />} />
+                <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                <Route path="/work-orders" element={<ProtectedRoute><WorkOrders /></ProtectedRoute>} />
+                <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
+                <Route path="/customer-agreements" element={<ProtectedRoute><CustomerAgreements /></ProtectedRoute>} />
+                <Route path="/materials" element={<ProtectedRoute><Materials /></ProtectedRoute>} />
+                <Route path="/resources" element={<ProtectedRoute><Resources /></ProtectedRoute>} />
+                <Route path="/planner" element={<ProtectedRoute><Planner /></ProtectedRoute>} />
+                <Route path="/time-tracking" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
+                <Route path="/map" element={<ProtectedRoute><Map /></ProtectedRoute>} />
+                <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+                <Route path="/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </SiteFilterProvider>
+        </WorkOrderWizardProvider>
       </AuthProvider>
     </QueryClientProvider>
   </TooltipProvider>

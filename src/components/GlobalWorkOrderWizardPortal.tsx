@@ -15,7 +15,7 @@ const LazyWorkOrderWizard = React.lazy(
 export function GlobalWorkOrderWizardPortal() {
   const { isOpen, closeWizard } = useWorkOrderWizard();
   const isMobile = useIsMobile();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const handleSubmit = useCallback(async (data: any) => {
@@ -24,7 +24,6 @@ export function GlobalWorkOrderWizardPortal() {
     const { error } = await supabase.from('work_orders').insert({
       ...data,
       user_id: user.id,
-      site_id: profile?.site_id || null,
       status: 'pending',
     });
 
@@ -36,7 +35,7 @@ export function GlobalWorkOrderWizardPortal() {
     toast.success('Arbeidsordre opprettet!');
     queryClient.invalidateQueries({ queryKey: ['workOrders'] });
     closeWizard();
-  }, [user, profile, closeWizard, queryClient]);
+  }, [user, closeWizard, queryClient]);
 
   const handleSaveDraft = useCallback(async (data: any) => {
     if (!user) return;
@@ -44,7 +43,6 @@ export function GlobalWorkOrderWizardPortal() {
     const { error } = await supabase.from('work_orders').insert({
       ...data,
       user_id: user.id,
-      site_id: profile?.site_id || null,
       status: 'draft',
     });
 
@@ -56,7 +54,7 @@ export function GlobalWorkOrderWizardPortal() {
     toast.success('Kladd lagret!');
     queryClient.invalidateQueries({ queryKey: ['workOrders'] });
     closeWizard();
-  }, [user, profile, closeWizard, queryClient]);
+  }, [user, closeWizard, queryClient]);
 
   if (!isOpen) return null;
 

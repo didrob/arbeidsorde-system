@@ -2,7 +2,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Save } from 'lucide-react';
 import { WizardProvider, useWizard } from './WizardContext';
 import { BasicInfoStep } from './steps/BasicInfoStep';
 import { PricingModelStep } from './steps/PricingModelStep';
@@ -10,21 +10,28 @@ import { ResourcesStep } from './steps/ResourcesStep';
 import { DocumentationStep } from './steps/DocumentationStep';
 import { PlanningStep } from './steps/PlanningStep';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface WorkOrderWizardProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: any) => Promise<void>;
+  onSaveDraft?: (data: any) => Promise<void>;
+  embedded?: boolean;
 }
 
-function WizardContent({ onClose, onSubmit }: { onClose: () => void; onSubmit: (data: any) => Promise<void> }) {
+function WizardContent({ onClose, onSubmit, onSaveDraft, embedded }: { 
+  onClose: () => void; 
+  onSubmit: (data: any) => Promise<void>;
+  onSaveDraft?: (data: any) => Promise<void>;
+  embedded?: boolean;
+}) {
   const { currentStep, steps, dispatch, formData, canProceedToStep, getTotalEstimatedCost } = useWizard();
 
   const currentStepData = steps.find(step => step.id === currentStep);
   const progress = (currentStep / steps.length) * 100;
   const isLastStep = currentStep === steps.length;
   
-  // Calculate the intended next step (accounting for skipped steps)
   const getIntendedNextStep = () => {
     let nextStep = currentStep + 1;
     if (nextStep === 3 && formData.pricing_model === 'fixed') {
@@ -40,7 +47,6 @@ function WizardContent({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
     if (isLastStep) {
       handleSubmit();
     } else {
-      // Skip step 3 if pricing model is fixed
       let nextStep = currentStep + 1;
       if (nextStep === 3 && formData.pricing_model === 'fixed') {
         nextStep = 4;
@@ -51,35 +57,27 @@ function WizardContent({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
 
   const handlePrevious = () => {
     let prevStep = currentStep - 1;
-    // Skip step 3 if pricing model is fixed when going backwards
     if (prevStep === 3 && formData.pricing_model === 'fixed') {
       prevStep = 2;
     }
     dispatch({ type: 'SET_STEP', payload: prevStep });
   };
 
+  const getWorkOrderData = () => ({
+    title: formData.title,
+    description: formData.description,
+    customer_id: formData.customer_id,
+    assigned_to: formData.assigned_to || null,
+    notes: formData.notes,
+    pricing_model: formData.pricing_model,
+    pricing_type: formData.pricing_model === 'fixed' ? 'fixed' : 'hourly',
+    price_value: formData.pricing_model === 'fixed' ? formData.price_value : undefined,
+    estimated_hours: formData.personnel.reduce((sum, p) => sum + p.estimated_hours, 0),
+  });
+
   const handleSubmit = async () => {
     try {
-      // Transform wizard data to API format
-      const workOrderData = {
-        title: formData.title,
-        description: formData.description,
-        customer_id: formData.customer_id,
-        assigned_to: formData.assigned_to || null,
-        notes: formData.notes,
-        pricing_model: formData.pricing_model,
-        // Set pricing_type explicitly based on selected model
-        // - fixed model => fixed pricing
-        // - resource_based model => hourly pricing
-        pricing_type: formData.pricing_model === 'fixed' ? 'fixed' : 'hourly',
-        // Only persist price_value for fixed price. For hourly/resource-based,
-        // leave price_value undefined to avoid overriding hourly calculation later.
-        price_value: formData.pricing_model === 'fixed' ? formData.price_value : undefined,
-        estimated_hours: formData.personnel.reduce((sum, p) => sum + p.estimated_hours, 0),
-        // Add other fields as needed
-      };
-
-      await onSubmit(workOrderData);
+      await onSubmit(getWorkOrderData());
       dispatch({ type: 'RESET_WIZARD' });
       onClose();
     } catch (error) {
@@ -87,29 +85,34 @@ function WizardContent({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
     }
   };
 
-  const renderCurrentStep = () => {
-    switch (currentStep) {
-      case 1:
-        return <BasicInfoStep />;
-      case 2:
-        return <PricingModelStep />;
-      case 3:
-        return <ResourcesStep />;
-      case 4:
-        return <DocumentationStep />;
-      case 5:
-        return <PlanningStep />;
-      default:
-        return <BasicInfoStep />;
+  const handleDraft = async () => {
+    if (!onSaveDraft) return;
+    try {
+      await onSaveDraft(getWorkOrderData());
+      dispatch({ type: 'RESET_WIZARD' });
+      onClose();
+    } catch (error) {
+      console.error('Error saving draft:', error);
     }
   };
 
-  return (
-    <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 p-0 flex flex-col">
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case 1: return <BasicInfoStep />;
+      case 2: return <PricingModelStep />;
+      case 3: return <ResourcesStep />;
+      case 4: return <DocumentationStep />;
+      case 5: return <PlanningStep />;
+      default: return <BasicInfoStep />;
+    }
+  };
+
+  const content = (
+    <>
       {/* Fixed header */}
       <div className="flex-shrink-0 border-b bg-background p-6">
         <div className="flex items-center justify-between mb-4">
-          <DialogTitle className="text-2xl font-semibold">Opprett arbeidsordre</DialogTitle>
+          <h2 className="text-2xl font-semibold text-foreground">Opprett arbeidsordre</h2>
           <div className="flex items-center space-x-4">
             {formData.pricing_model === 'resource_based' && (
               <Badge variant="outline" className="text-base px-3 py-1">
@@ -137,12 +140,13 @@ function WizardContent({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
           </div>
         </div>
 
-        {/* Compact step indicators */}
+        {/* Step indicators */}
         <div className="flex justify-center space-x-1 mt-4">
           {steps.map((step) => (
             <div
               key={step.id}
-              className={`flex items-center space-x-2 px-2 py-1 rounded-md text-xs transition-colors ${
+              className={cn(
+                "flex items-center space-x-2 px-2 py-1 rounded-md text-xs transition-colors",
                 step.id === currentStep
                   ? 'bg-primary text-primary-foreground'
                   : step.isCompleted
@@ -150,11 +154,12 @@ function WizardContent({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
                   : step.id === 3 && formData.pricing_model === 'fixed'
                   ? 'bg-muted/50 text-muted-foreground/50'
                   : 'bg-background text-foreground border'
-              }`}
+              )}
             >
-              <div className={`w-4 h-4 rounded-full flex items-center justify-center text-xs font-medium ${
-                step.id === currentStep ? 'bg-primary-foreground text-primary' : ''
-              }`}>
+              <div className={cn(
+                "w-4 h-4 rounded-full flex items-center justify-center text-xs font-medium",
+                step.id === currentStep && 'bg-primary-foreground text-primary'
+              )}>
                 {step.id}
               </div>
               <span className="font-medium hidden lg:inline">{step.title}</span>
@@ -168,14 +173,14 @@ function WizardContent({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="container mx-auto max-w-4xl p-6">
+        <div className={cn("mx-auto p-6", !embedded && "container max-w-4xl")}>
           {renderCurrentStep()}
         </div>
       </div>
 
       {/* Fixed footer */}
       <div className="flex-shrink-0 border-t bg-background p-6">
-        <div className="flex justify-between max-w-4xl mx-auto">
+        <div className={cn("flex justify-between", !embedded && "max-w-4xl mx-auto")}>
           <Button
             type="button"
             variant="outline"
@@ -188,6 +193,18 @@ function WizardContent({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
           </Button>
 
           <div className="flex space-x-3">
+            {onSaveDraft && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleDraft}
+                disabled={!formData.title || !formData.customer_id}
+                className="flex items-center space-x-2"
+              >
+                <Save className="w-4 h-4" />
+                <span>Lagre som kladd</span>
+              </Button>
+            )}
             <Button
               type="button"
               variant="ghost"
@@ -195,7 +212,6 @@ function WizardContent({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
             >
               Avbryt
             </Button>
-            
             <Button
               type="button"
               onClick={handleNext}
@@ -209,16 +225,37 @@ function WizardContent({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
           </div>
         </div>
       </div>
+    </>
+  );
+
+  // When embedded in the slide-in panel, don't wrap in Dialog
+  if (embedded) {
+    return <div className="flex flex-col h-full">{content}</div>;
+  }
+
+  return (
+    <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 p-0 flex flex-col">
+      {content}
     </DialogContent>
   );
 }
 
-export function WorkOrderWizard({ open, onClose, onSubmit }: WorkOrderWizardProps) {
+export function WorkOrderWizard({ open, onClose, onSubmit, onSaveDraft, embedded }: WorkOrderWizardProps) {
+  if (embedded) {
+    return (
+      <WizardProvider>
+        <WizardContent onClose={onClose} onSubmit={onSubmit} onSaveDraft={onSaveDraft} embedded />
+      </WizardProvider>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <WizardProvider>
-        <WizardContent onClose={onClose} onSubmit={onSubmit} />
+        <WizardContent onClose={onClose} onSubmit={onSubmit} onSaveDraft={onSaveDraft} />
       </WizardProvider>
     </Dialog>
   );
 }
+
+export default WorkOrderWizard;
