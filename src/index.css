@@ -53,6 +53,12 @@ All colors MUST be HSL.
     /* Design tokens */
     --radius: 0.75rem;
 
+    /* Brand colors - ASCO */
+    --asco-teal: 156 99% 49%;
+    --asco-teal-foreground: 228 17% 21%;
+    --cobalt: 228 17% 21%;
+    --cobalt-foreground: 156 99% 49%;
+
     /* Professional gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
     --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(215 84% 25%));
