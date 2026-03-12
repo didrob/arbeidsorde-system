@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { MobileNav } from '@/components/mobile/MobileNav';
 import { SimpleSidebar } from '@/components/SimpleSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
+import { GlobalWorkOrderButton } from '@/components/GlobalWorkOrderButton';
 import { cn } from '@/lib/utils';
 
 interface ResponsiveLayoutProps {
