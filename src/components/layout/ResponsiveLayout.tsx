@@ -27,11 +27,11 @@ export function ResponsiveLayout({
       <div className="min-h-screen bg-background">
         <main className={cn(
           "flex-1",
-          showMobileNav && "pb-20" // Space for bottom nav
+          showMobileNav && "pb-20"
         )}>
           {children}
         </main>
-        
+        <GlobalWorkOrderButton />
         {showMobileNav && (
           <MobileNav notificationCount={notificationCount} />
         )}
@@ -45,11 +45,11 @@ export function ResponsiveLayout({
       <div className="min-h-screen bg-background">
         <main className={cn(
           "flex-1",
-          showMobileNav && "pb-20" // Space for bottom nav
+          showMobileNav && "pb-20"
         )}>
           {children}
         </main>
-        
+        <GlobalWorkOrderButton />
         {showMobileNav && (
           <MobileNav notificationCount={notificationCount} />
         )}
