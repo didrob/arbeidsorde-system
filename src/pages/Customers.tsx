@@ -72,7 +72,8 @@ export default function Customers() {
 
   const filterByStatus = (list: any[], status?: string) => {
     if (!list) return [];
-    let filtered = list;
+    // Always hide ASCO Intern system customers
+    let filtered = list.filter((c: any) => !isInternalCustomer(c));
     if (status && status !== 'all') {
       filtered = filtered.filter((c: any) => c.registration_status === status);
     }

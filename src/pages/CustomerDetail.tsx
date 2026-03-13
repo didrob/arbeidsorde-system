@@ -119,8 +119,8 @@ export default function CustomerDetail() {
   const totalRevenue = economy?.totalRevenue || 0;
 
   const filteredOrders = orderStatusFilter === 'all'
-    ? orders || []
-    : (orders || []).filter(o => o.status === orderStatusFilter);
+    ? externalOrders || []
+    : (externalOrders || []).filter(o => o.status === orderStatusFilter);
 
   const handleEditOpen = () => {
     setValue('name', customer.name);
