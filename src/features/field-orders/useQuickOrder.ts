@@ -12,6 +12,8 @@ export interface QuickOrderData {
   title: string;
   customer_id: string;
   is_urgent: boolean;
+  is_internal?: boolean;
+  cost_center?: string;
   image_file?: File | null;
   gps_lat?: number | null;
   gps_lng?: number | null;
