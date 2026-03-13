@@ -16,6 +16,8 @@ import {
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { useSiteFilter } from "@/hooks/useSiteFilter";
+import { useUserAccessibleSites } from "@/hooks/useOrganizations";
 
 const navigationItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -34,11 +36,15 @@ const navigationItems = [
 export function SimpleSidebar() {
   const location = useLocation();
   const { signOut } = useAuth();
+  const { selectedSiteId } = useSiteFilter();
+  const { data: accessibleSites } = useUserAccessibleSites();
+
+  const currentSiteName = selectedSiteId
+    ? accessibleSites?.find(s => s.site_id === selectedSiteId)?.site_name
+    : 'Alle lokasjoner';
 
   const isActive = (path: string) => {
-    if (path === "/") {
-      return location.pathname === "/";
-    }
+    if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
 
@@ -47,6 +53,12 @@ export function SimpleSidebar() {
       {/* Logo/Header */}
       <div className="p-6 border-b border-border">
         <ASCOLogo variant="light" />
+        {currentSiteName && (
+          <div className="flex items-center gap-1.5 mt-3 text-xs text-muted-foreground">
+            <MapPin className="h-3 w-3" />
+            <span className={!selectedSiteId ? 'text-primary' : ''}>{currentSiteName}</span>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
@@ -55,7 +67,7 @@ export function SimpleSidebar() {
           <NavLink
             key={item.title}
             to={item.url}
-            className={({ isActive: linkActive }) =>
+            className={() =>
               `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                 isActive(item.url)
                   ? "bg-primary text-primary-foreground font-medium"
