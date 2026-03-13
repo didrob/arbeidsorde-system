@@ -6,6 +6,7 @@ import { SimpleSidebar } from '@/components/SimpleSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { GlobalWorkOrderButton } from '@/components/GlobalWorkOrderButton';
 import { ASCOLogo } from '@/components/ASCOLogo';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { cn } from '@/lib/utils';
 
 interface ResponsiveLayoutProps {
