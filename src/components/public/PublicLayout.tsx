@@ -44,7 +44,7 @@ export function PublicLayout({ children, showBack = false, showFooter = false, v
       {/* Cobalt overlay */}
       <div
         className={`absolute inset-0 ${
-          isLanding ? 'bg-[rgba(41,44,63,0.85)]' : 'bg-asco-cobalt/85'
+          isLanding ? 'bg-[rgba(41,44,63,0.85)]' : 'bg-[rgba(41,44,63,0.90)]'
         }`}
       />
 
