@@ -29,7 +29,7 @@ export function PublicLayout({ children, showBack = false, showFooter = false, v
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
       {/* Cobalt base fallback */}
-      <div className="absolute inset-0 bg-asco-cobalt" />
+      <div className="absolute inset-0 bg-cobalt" />
 
       {/* Industrial background image */}
       <img
