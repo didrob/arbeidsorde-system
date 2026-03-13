@@ -15,6 +15,8 @@ interface AuthContextType {
   isSiteManager: boolean;
   isBillingManager: boolean;
   isFieldSupervisor: boolean;
+  isCustomer: boolean;
+  customerId: string | null;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
