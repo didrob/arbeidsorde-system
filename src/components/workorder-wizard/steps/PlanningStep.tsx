@@ -78,9 +78,9 @@ export function PlanningStep() {
               </Popover>
             </div>
 
-            <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
-              <AlertCircle className="w-4 h-4 text-blue-600" />
-              <span className="text-sm text-blue-700">
+            <div className="flex items-center space-x-2 p-3 bg-info rounded-lg">
+              <AlertCircle className="w-4 h-4 text-info" />
+              <span className="text-sm text-info">
                 Hvis du ikke setter dato, kan feltarbeideren starte når som helst
               </span>
             </div>
