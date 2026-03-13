@@ -9,7 +9,6 @@ import { MapPin, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PublicLayout } from '@/components/public/PublicLayout';
 import { GlassCard } from '@/components/public/GlassCard';
-import { AscoLogoMark } from '@/components/AscoLogoMark';
 
 const STORAGE_KEY = 'asco-portal-site';
 
