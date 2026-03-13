@@ -255,30 +255,27 @@ export const MobileFieldWorker = () => {
 
   return (
     <div className="min-h-screen bg-background safe-area-padding-top">
-      {/* Header */}
-      <div className="bg-card border-b sticky top-0 z-10 safe-area-padding-top">
+      {/* Sub-header with stats and actions */}
+      <div className="bg-card border-b sticky top-0 z-10">
         <div className="p-4">
           <div className="flex items-center justify-between mb-2">
-            <h1 className="text-xl font-bold">Dagens Arbeid</h1>
-            <div className="flex items-center gap-2">
-              {/* Clock/Timer Button */}
+            <h1 className="text-lg font-bold text-foreground">Dagens Arbeid</h1>
+            <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => setShowTimeDialog(true)}
-                className="focus-ring"
+                className="h-9 w-9"
               >
-                <Timer className="h-4 w-4" />
+                <Timer className="h-5 w-5" />
               </Button>
-              
-              {/* Notification Center */}
               <Button
                 variant="ghost"
-                size="sm"
-                className="relative focus-ring"
+                size="icon"
+                className="relative h-9 w-9"
                 onClick={() => setShowNotifications(true)}
               >
-                <Bell className="h-4 w-4" />
+                <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
                   <Badge 
                     variant="destructive" 
@@ -288,12 +285,10 @@ export const MobileFieldWorker = () => {
                   </Badge>
                 )}
               </Button>
-              
-              {/* Menu Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="focus-ring">
-                    <Menu className="h-4 w-4" />
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
+                    <Menu className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -301,10 +296,7 @@ export const MobileFieldWorker = () => {
                     <Search className="h-4 w-4 mr-2" />
                     <span>{showPool ? 'Mine ordrer' : 'Ledig pool'}</span>
                     {!showPool && poolNotificationCount > 0 && (
-                      <Badge 
-                        variant="destructive" 
-                        className="ml-2 h-4 text-xs"
-                      >
+                      <Badge variant="destructive" className="ml-2 h-4 text-xs">
                         {poolNotificationCount} nye
                       </Badge>
                     )}
@@ -322,9 +314,9 @@ export const MobileFieldWorker = () => {
             <span>{workOrders.length} ordrer tildelt</span>
             <span>
               {new Intl.DateTimeFormat('nb-NO', { 
-                weekday: 'short', 
+                weekday: 'long', 
                 day: 'numeric', 
-                month: 'short'
+                month: 'long'
               }).format(new Date())}
             </span>
           </div>
