@@ -128,7 +128,7 @@ export function DocumentationStep() {
 
         <Card className="p-4">
           <div className="flex items-center space-x-3">
-            <Camera className="w-8 h-8 text-purple-500" />
+            <Camera className="w-8 h-8 text-muted-foreground" />
             <div>
               <h4 className="font-medium">Fra kamera</h4>
               <p className="text-sm text-muted-foreground">Ta bilder direkte</p>
