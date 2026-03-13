@@ -248,19 +248,19 @@ export default function WorkOrders() {
           <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">
             <TabsList className="grid w-full grid-cols-5 h-auto">
               <TabsTrigger value="all" className="text-xs sm:text-sm">
-                Alle ({workOrders?.length || 0})
+                Alle ({visibleOrders?.length || 0})
               </TabsTrigger>
               <TabsTrigger value="pending" className="text-xs sm:text-sm">
-                Venter ({workOrders?.filter((o: any) => o.status === 'pending').length || 0})
+                Venter ({visibleOrders?.filter((o: any) => o.status === 'pending').length || 0})
               </TabsTrigger>
               <TabsTrigger value="in_progress" className="text-xs sm:text-sm">
-                Pågår ({workOrders?.filter((o: any) => o.status === 'in_progress').length || 0})
+                Pågår ({visibleOrders?.filter((o: any) => o.status === 'in_progress').length || 0})
               </TabsTrigger>
               <TabsTrigger value="completed" className="text-xs sm:text-sm">
-                Fullført ({workOrders?.filter((o: any) => o.status === 'completed').length || 0})
+                Fullført ({visibleOrders?.filter((o: any) => o.status === 'completed').length || 0})
               </TabsTrigger>
               <TabsTrigger value="cancelled" className="text-xs sm:text-sm">
-                Avbrutt ({workOrders?.filter((o: any) => o.status === 'cancelled').length || 0})
+                Avbrutt ({visibleOrders?.filter((o: any) => o.status === 'cancelled').length || 0})
               </TabsTrigger>
             </TabsList>
           </Tabs>
