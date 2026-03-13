@@ -47,7 +47,7 @@ export function PublicLayout({ children, showBack = false, showFooter = false, v
       <header className="relative z-10 flex items-center justify-between px-4 md:px-8 py-4">
         <div className="flex items-center gap-4">
           <Link to="/" aria-label="ASCO — Gå til forsiden">
-            <img src="/logo-light.png" alt="ASCO" className="h-7 w-auto object-contain" />
+            <img src="/logo-light.png" alt="ASCO" className="h-10 w-auto object-contain" />
           </Link>
           {showBack && (
             <button

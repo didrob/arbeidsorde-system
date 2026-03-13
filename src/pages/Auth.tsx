@@ -28,13 +28,7 @@ const Auth = () => {
     <PublicLayout showBack>
       <GlassCard className="w-full max-w-md p-8">
         <div className="flex flex-col items-center mb-6">
-          <span className="font-heading text-2xl font-bold tracking-[0.15em] text-white select-none mb-2">
-            <span className="relative inline-block">
-              A
-              <span className="absolute -bottom-0.5 left-0 h-2 w-2 rounded-full bg-asco-teal" />
-            </span>
-            SCO
-          </span>
+          <img src="/logo-light.png" alt="ASCO" className="h-12 w-auto object-contain mb-2" />
           <p className="text-sm text-pale-blue">Ansattportal</p>
         </div>
 
