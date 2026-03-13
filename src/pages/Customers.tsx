@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCustomers, useCreateCustomer, useUpdateCustomer } from '@/hooks/useApi';
 import { useSiteFilter } from '@/hooks/useSiteFilter';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useForm } from 'react-hook-form';
-import { Search, Mail, Phone, MapPin, Edit, CheckCircle, XCircle, Building2, Loader2 } from 'lucide-react';
+import { Search, Mail, Phone, MapPin, Edit, CheckCircle, XCircle, Building2, Loader2, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useBrregLookup } from '@/features/customers/useBrregLookup';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,6 +30,7 @@ interface CustomerForm {
 }
 
 export default function Customers() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -193,7 +195,11 @@ export default function Customers() {
   };
 
   const renderCustomerCard = (customer: any, showActions = false) => (
-    <Card key={customer.id} className="hover:shadow-lg transition-shadow">
+    <Card
+      key={customer.id}
+      className="hover:shadow-lg transition-shadow cursor-pointer group"
+      onClick={() => !showActions && navigate(`/customers/${customer.id}`)}
+    >
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div>
@@ -202,11 +208,16 @@ export default function Customers() {
               <p className="text-xs text-muted-foreground mt-1">Org.nr: {customer.org_number}</p>
             )}
           </div>
-          {!showActions && (
-            <Button variant="ghost" size="sm" onClick={() => handleEditClick(customer)}>
-              <Edit className="h-4 w-4" />
-            </Button>
-          )}
+          <div className="flex items-center gap-1">
+            {!showActions && (
+              <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleEditClick(customer); }}>
+                <Edit className="h-4 w-4" />
+              </Button>
+            )}
+            {!showActions && (
+              <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
