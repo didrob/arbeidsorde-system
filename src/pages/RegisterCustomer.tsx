@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useBrregLookup } from '@/features/customers/useBrregLookup';
+import { BrregSearchInput } from '@/features/customers/BrregSearchInput';
+import type { BrregResult } from '@/features/customers/useBrregLookup';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Building2, CheckCircle2, Search, ArrowLeft, ArrowRight, Send, Loader2, AlertCircle } from 'lucide-react';
+import { CheckCircle2, ArrowLeft, ArrowRight, Send, Loader2, AlertCircle } from 'lucide-react';
 import { PublicLayout } from '@/components/public/PublicLayout';
 import { GlassCard } from '@/components/public/GlassCard';
 
