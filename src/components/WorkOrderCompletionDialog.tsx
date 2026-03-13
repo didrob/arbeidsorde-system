@@ -636,8 +636,8 @@ export const WorkOrderCompletionDialog = ({
               </CardContent>
             </Card>
 
-            <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
-              <p className="text-sm text-green-800 dark:text-green-200">
+            <div className="bg-status-complete-subtle p-4 rounded-lg">
+              <p className="text-sm text-foreground">
                 Arbeidsordren er klar for fakturering og vil vises som fullført i systemet.
               </p>
             </div>
