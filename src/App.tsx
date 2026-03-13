@@ -33,7 +33,7 @@ const Reports = lazy(() => import("./pages/Reports"));
 const Resources = lazy(() => import("./pages/Resources"));
 const Settings = lazy(() => import("./pages/Settings"));
 const CustomerAgreements = lazy(() => import("./pages/CustomerAgreements"));
-const Invoices = lazy(() => import("./pages/Invoices"));
+const SalesOrders = lazy(() => import("./pages/SalesOrders"));
 const Planner = lazy(() => import("./pages/Planner"));
 const RegisterCustomer = lazy(() => import("./pages/RegisterCustomer"));
 const CustomerDetail = lazy(() => import("./pages/CustomerDetail"));
@@ -150,7 +150,8 @@ const App = () => (
                   <Route path="/time-tracking" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
                   <Route path="/map" element={<ProtectedRoute><Map /></ProtectedRoute>} />
                   <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
-                  <Route path="/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
+                  <Route path="/sales-orders" element={<ProtectedRoute><SalesOrders /></ProtectedRoute>} />
+                  <Route path="/invoices" element={<Navigate to="/sales-orders" replace />} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>

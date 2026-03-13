@@ -30,7 +30,7 @@ const Landing = () => {
         {/* Ansatt */}
         <button
           onClick={() => navigate('/auth')}
-          className="w-[280px] h-[220px] bg-white/[0.06] border border-white/[0.12] rounded-[16px] px-12 py-14 flex flex-col items-center justify-center gap-4 transition-all duration-300 hover:border-white/30 hover:-translate-y-0.5 cursor-pointer"
+          className="w-[280px] h-[220px] bg-black/40 border border-white/20 rounded-[16px] px-12 py-14 flex flex-col items-center justify-center gap-4 transition-all duration-300 hover:border-white/30 hover:-translate-y-0.5 cursor-pointer"
         >
           <Users className="h-10 w-10 text-white/80" />
           <div className="text-center">
@@ -46,7 +46,7 @@ const Landing = () => {
         {/* Kundeportal */}
         <button
           onClick={() => navigate('/portal/login')}
-          className="w-[280px] h-[220px] bg-white/[0.06] border border-[rgba(0,253,199,0.3)] rounded-[16px] px-12 py-14 flex flex-col items-center justify-center gap-4 transition-all duration-300 hover:border-asco-teal hover:-translate-y-0.5 cursor-pointer"
+          className="w-[280px] h-[220px] bg-black/40 border border-[rgba(0,253,199,0.3)] rounded-[16px] px-12 py-14 flex flex-col items-center justify-center gap-4 transition-all duration-300 hover:border-asco-teal hover:-translate-y-0.5 cursor-pointer"
         >
           <Building2 className="h-10 w-10 text-asco-teal" />
           <div className="text-center">

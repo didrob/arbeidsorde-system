@@ -31,7 +31,7 @@ const navigationItems = [
   { title: "Tidssporing", url: "/time-tracking", icon: Clock },
   { title: "Kart", url: "/map", icon: MapPin },
   { title: "Rapporter", url: "/reports", icon: BarChart3 },
-  { title: "Fakturaer", url: "/invoices", icon: Receipt },
+  { title: "Salgsordrer", url: "/sales-orders", icon: Receipt },
   { title: "Innstillinger", url: "/settings", icon: Settings },
 ];
 
