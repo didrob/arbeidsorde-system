@@ -137,61 +137,14 @@ export default function RegisterCustomer() {
           </h2>
 
           <div className="space-y-6">
-            {/* Step 0: Org number */}
+            {/* Step 0: Organization search */}
             {step === 0 && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="org_number" className="text-white/80">Organisasjonsnummer</Label>
-                  <div className="relative">
-                    <Input
-                      id="org_number"
-                      placeholder="123 456 789"
-                      value={orgInput}
-                      onChange={(e) => handleOrgInputChange(e.target.value)}
-                      className={`text-lg h-12 pr-10 ${inputClass}`}
-                      maxLength={11}
-                    />
-                    {brregLoading && <Loader2 className="absolute right-3 top-3 h-5 w-5 animate-spin text-white/50" />}
-                    {!brregLoading && !brregResult && <Search className="absolute right-3 top-3 h-5 w-5 text-white/50" />}
-                  </div>
-                  <p className="text-xs text-white/50">Skriv inn 9-sifret organisasjonsnummer for automatisk oppslag</p>
-                </div>
-
-                {brregError && (
-                  <div className="flex items-start gap-2 p-3 rounded-md bg-destructive/10 text-destructive text-sm">
-                    <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                    <span>{brregError}</span>
-                  </div>
-                )}
-
-                {brregResult && !confirmed && (
-                  <div className="rounded-lg border-2 border-asco-teal/30 bg-asco-teal/5 p-4 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-5 w-5 text-asco-teal" />
-                      <span className="font-semibold text-white">{brregResult.name}</span>
-                    </div>
-                    <div className="text-sm space-y-1 text-white/50">
-                      <p>{brregResult.address}</p>
-                      <p>Organisasjonsform: {brregResult.org_form}</p>
-                      {brregResult.industry_code && <p>Næring: {brregResult.industry_code}</p>}
-                    </div>
-                    <Button onClick={() => setConfirmed(true)} className="w-full bg-asco-teal text-asco-teal-foreground hover:bg-asco-teal/90">
-                      <CheckCircle2 className="h-4 w-4 mr-2" />
-                      Ja, dette er riktig bedrift
-                    </Button>
-                  </div>
-                )}
-
-                {confirmed && (
-                  <div className="flex items-center gap-2 p-3 rounded-md bg-asco-teal/10 text-sm">
-                    <CheckCircle2 className="h-4 w-4 text-asco-teal" />
-                    <span className="font-medium text-white">{data.name}</span>
-                    <Button variant="ghost" size="sm" className="ml-auto text-xs text-white/60 hover:text-white hover:bg-white/10" onClick={() => { setConfirmed(false); resetBrreg(); }}>
-                      Endre
-                    </Button>
-                  </div>
-                )}
-              </>
+              <BrregSearchInput
+                glass
+                label="Finn din organisasjon"
+                onSelect={handleBrregSelect}
+                onReset={handleBrregReset}
+              />
             )}
 
             {/* Step 1: Contact info */}
