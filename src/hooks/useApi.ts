@@ -253,7 +253,7 @@ export const useCreateCustomer = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (data: Omit<Customer, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (data: Record<string, any>) => {
       const response = await api.createCustomer(data);
       if (!response.success) {
         throw new Error(response.error?.message || 'Failed to create customer');
@@ -274,7 +274,7 @@ export const useUpdateCustomer = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<Omit<Customer, 'id' | 'created_at' | 'updated_at'>> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Record<string, any> }) => {
       const response = await api.updateCustomer(id, data);
       if (!response.success) {
         throw new Error(response.error?.message || 'Failed to update customer');

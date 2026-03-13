@@ -249,7 +249,7 @@ class ApiClient {
   async createCustomer(customerData: Record<string, any>): Promise<ApiResponse<any>> {
     const { data, error } = await supabase
       .from('customers')
-      .insert(customerData)
+      .insert(customerData as any)
       .select()
       .single();
 
