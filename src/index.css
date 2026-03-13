@@ -67,6 +67,7 @@
     /* Primary = Teal (CTA) */
     --primary: 167 100% 50%;
     --primary-foreground: 232 21% 20%;
+    --primary-text: 168 80% 30%; /* #0D9488 — WCAG AA safe on white */
 
     /* Secondary = Cobalt */
     --secondary: 232 21% 20%;
