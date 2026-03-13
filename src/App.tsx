@@ -33,7 +33,7 @@ const Reports = lazy(() => import("./pages/Reports"));
 const Resources = lazy(() => import("./pages/Resources"));
 const Settings = lazy(() => import("./pages/Settings"));
 const CustomerAgreements = lazy(() => import("./pages/CustomerAgreements"));
-const Invoices = lazy(() => import("./pages/Invoices"));
+const SalesOrders = lazy(() => import("./pages/SalesOrders"));
 const Planner = lazy(() => import("./pages/Planner"));
 const RegisterCustomer = lazy(() => import("./pages/RegisterCustomer"));
 const CustomerDetail = lazy(() => import("./pages/CustomerDetail"));
