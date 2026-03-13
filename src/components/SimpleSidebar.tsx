@@ -57,7 +57,7 @@ export function SimpleSidebar() {
     <div className="w-64 bg-card border-r border-border flex flex-col h-full">
       {/* Logo/Header */}
       <div className="p-6 border-b border-border">
-        <ASCOLogo variant="light" />
+        <ASCOLogo variant="auto" />
         {currentSiteName && (
           <div className="flex items-center gap-1.5 mt-3 text-xs text-muted-foreground">
             <MapPin className="h-3 w-3" />
