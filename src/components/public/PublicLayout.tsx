@@ -37,7 +37,7 @@ export function PublicLayout({ children, showBack = false, showFooter = false, v
         alt=""
         aria-hidden="true"
         className={`absolute inset-0 w-full h-full object-cover object-center ${
-          isLanding ? 'opacity-[0.35]' : 'opacity-[0.15]'
+          isLanding ? 'opacity-[0.35]' : 'opacity-[0.20]'
         }`}
       />
 
