@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Phone, AlertTriangle } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
+
 
 interface PublicLayoutProps {
   children: ReactNode;
@@ -64,7 +64,7 @@ export function PublicLayout({ children, showBack = false, showFooter = false, v
             </button>
           )}
         </div>
-        <ThemeToggle />
+        
       </header>
 
       {/* Content */}
