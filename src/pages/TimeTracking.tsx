@@ -185,7 +185,7 @@ export default function TimeTracking() {
                     </div>
                     
                     <div className="text-right">
-                      <div className="text-lg font-semibold text-primary">
+                      <div className="text-lg font-semibold text-foreground">
                         {calculateHours(entry.start_time, entry.end_time, entry.break_duration)} t
                       </div>
                       <div className="text-xs text-muted-foreground">

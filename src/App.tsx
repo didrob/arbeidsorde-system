@@ -11,6 +11,7 @@ import { useSmartRouting } from "@/hooks/useSmartRouting";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { UserOnboarding } from "@/components/onboarding/UserOnboarding";
+import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import FieldWorker from "./pages/FieldWorker";
@@ -83,12 +84,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 const App = () => (
-  <TooltipProvider>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <WorkOrderWizardProvider>
-          <SiteFilterProvider>
-            <BrowserRouter>
+  <ThemeProvider attribute="class" defaultTheme="system" storageKey="asco-theme">
+    <TooltipProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <WorkOrderWizardProvider>
+            <SiteFilterProvider>
+              <BrowserRouter>
               <Toaster />
               <Sonner />
               <PWAWrapper />
@@ -110,12 +112,13 @@ const App = () => (
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </BrowserRouter>
-          </SiteFilterProvider>
-        </WorkOrderWizardProvider>
-      </AuthProvider>
-    </QueryClientProvider>
-  </TooltipProvider>
+              </BrowserRouter>
+            </SiteFilterProvider>
+          </WorkOrderWizardProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </TooltipProvider>
+  </ThemeProvider>
 );
 
 
