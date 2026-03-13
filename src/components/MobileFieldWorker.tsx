@@ -367,7 +367,7 @@ export const MobileFieldWorker = () => {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base flex items-center justify-between">
                       <span>Aktiv Ordre</span>
-                      <div className="flex items-center space-x-2 text-primary">
+                      <div className="flex items-center space-x-2 text-foreground">
                         <Clock className="h-4 w-4" />
                         <span className="font-mono text-lg animate-pulse-subtle">
                           {Math.floor(elapsedTime / 3600)}:{String(Math.floor((elapsedTime % 3600) / 60)).padStart(2, '0')}:{String(elapsedTime % 60).padStart(2, '0')}
