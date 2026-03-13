@@ -105,10 +105,10 @@ const PortalLogin = () => {
       ) : (
         <GlassCard className="w-full max-w-md p-8">
           <div className="flex flex-col items-center mb-6">
-            <span className="font-heading text-2xl font-bold tracking-[0.2em] text-white select-none mb-2">
+            <span className="font-heading text-2xl font-bold tracking-[0.15em] text-white select-none mb-2">
               <span className="relative inline-block">
                 A
-                <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-2 w-2 rounded-full bg-asco-teal" />
+                <span className="absolute -bottom-0.5 left-0 h-2 w-2 rounded-full bg-asco-teal" />
               </span>
               SCO
             </span>
