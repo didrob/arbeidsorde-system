@@ -64,7 +64,7 @@ export function PublicLayout({ children, showBack = false, showFooter = false, v
             </button>
           )}
         </div>
-        <ThemeToggle />
+        
       </header>
 
       {/* Content */}
