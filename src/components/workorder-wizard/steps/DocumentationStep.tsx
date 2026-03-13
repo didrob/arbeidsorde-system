@@ -108,7 +108,7 @@ export function DocumentationStep() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-4">
           <div className="flex items-center space-x-3">
-            <Image className="w-8 h-8 text-blue-500" />
+            <Image className="w-8 h-8 text-primary-text" />
             <div>
               <h4 className="font-medium">Bilder</h4>
               <p className="text-sm text-muted-foreground">JPG, PNG, WEBP</p>
