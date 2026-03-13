@@ -24,6 +24,9 @@ import { QuickStartModal } from './QuickStartModal';
 import { WorkOrderCompletionDialog } from './WorkOrderCompletionDialog';
 import { WorkOrderConfirmationDialog } from './WorkOrderConfirmationDialog';
 import { TimeTracker } from './TimeTracker';
+import { QuickOrderFAB } from '@/features/field-orders/QuickOrderFAB';
+import { QuickOrderSheet } from '@/features/field-orders/QuickOrderSheet';
+import { useQuickOrder } from '@/features/field-orders/useQuickOrder';
 import { 
   useAssignedWorkOrders, 
   useActiveTimer, 
@@ -96,6 +99,8 @@ export const MobileFieldWorker = () => {
   const [showQuickStart, setShowQuickStart] = useState(false);
   const [showTimeTracker, setShowTimeTracker] = useState(false);
   const [activeWorkOrderId, setActiveWorkOrderId] = useState<string | null>(null);
+  const [quickOrderOpen, setQuickOrderOpen] = useState(false);
+  const { queueLength } = useQuickOrder();
 
   const { data: customers } = useCustomers();
   const createWorkOrder = useCreateWorkOrder();
@@ -111,7 +116,7 @@ export const MobileFieldWorker = () => {
 
   // Timer effect with proper formatting
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (activeTimer && !activeTimer.end_time) {
       interval = setInterval(() => {
         const startTime = new Date(activeTimer.start_time).getTime();
@@ -362,7 +367,7 @@ export const MobileFieldWorker = () => {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base flex items-center justify-between">
                       <span>Aktiv Ordre</span>
-                      <div className="flex items-center space-x-2 text-primary">
+                      <div className="flex items-center space-x-2 text-foreground">
                         <Clock className="h-4 w-4" />
                         <span className="font-mono text-lg animate-pulse-subtle">
                           {Math.floor(elapsedTime / 3600)}:{String(Math.floor((elapsedTime % 3600) / 60)).padStart(2, '0')}:{String(elapsedTime % 60).padStart(2, '0')}
@@ -512,7 +517,7 @@ export const MobileFieldWorker = () => {
           <div className="space-y-4">
             {activeTimer && activeOrder ? (
               <div className="text-center">
-                <div className="text-3xl font-mono text-primary mb-2">
+                <div className="text-3xl font-mono text-foreground mb-2">
                   {Math.floor(elapsedTime / 3600)}:{String(Math.floor((elapsedTime % 3600) / 60)).padStart(2, '0')}:{String(elapsedTime % 60).padStart(2, '0')}
                 </div>
                 <p className="text-sm text-muted-foreground">{activeOrder.title}</p>
@@ -654,6 +659,10 @@ export const MobileFieldWorker = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Quick Order FAB + Sheet */}
+      <QuickOrderFAB onClick={() => setQuickOrderOpen(true)} queueCount={queueLength} />
+      <QuickOrderSheet open={quickOrderOpen} onOpenChange={setQuickOrderOpen} />
     </div>
   );
 };

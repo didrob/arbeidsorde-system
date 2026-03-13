@@ -49,7 +49,7 @@ export function TimeTracker({ workOrderId, onComplete }: TimeTrackerProps) {
   }, [workOrderId, user]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     
     if (isTracking && currentEntry && !pauseState.isOnPause) {
       interval = setInterval(() => {

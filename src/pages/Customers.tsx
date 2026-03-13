@@ -80,6 +80,7 @@ export default function Customers() {
       <TopBar 
         title="Kunder"
         onCreateClick={() => setIsCreateDialogOpen(true)}
+        createLabel="Ny kunde"
         actions={
           <SiteSelector
             selectedSiteId={selectedSiteId}
