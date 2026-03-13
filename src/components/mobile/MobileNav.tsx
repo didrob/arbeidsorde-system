@@ -39,7 +39,7 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
   }, [lastScrollY]);
 
   const leftItems: NavItem[] = [
-    { to: '/', icon: LayoutDashboard, label: 'Hjem' },
+    { to: '/dashboard', icon: LayoutDashboard, label: 'Hjem' },
     { to: '/work-orders', icon: ClipboardList, label: 'Oppdrag' },
   ];
 
