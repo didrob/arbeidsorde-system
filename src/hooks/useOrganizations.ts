@@ -24,6 +24,10 @@ export interface Site {
   name: string;
   location?: string;
   address?: string;
+  latitude?: number;
+  longitude?: number;
+  contact_email?: string;
+  contact_phone?: string;
   created_at: string;
   updated_at: string;
   is_active: boolean;

@@ -3,8 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Plus, Search, Edit, ToggleLeft, ToggleRight, MapPin, Building } from 'lucide-react';
+import { Plus, Search, Edit, ToggleLeft, ToggleRight, MapPin, Building, Mail, Phone } from 'lucide-react';
 import { useSites, useToggleSiteStatus } from '@/hooks/useOrganizations';
 import { CreateSiteDialog } from './CreateSiteDialog';
 import { EditSiteDialog } from './EditSiteDialog';
@@ -25,9 +24,7 @@ export function SiteManagement() {
     ) || [];
   }, [sites, searchTerm]);
 
-  if (isLoading) {
-    return <LoadingState />;
-  }
+  if (isLoading) return <LoadingState />;
 
   return (
     <div className="space-y-6">
@@ -44,12 +41,7 @@ export function SiteManagement() {
 
       <div className="flex items-center gap-2">
         <Search className="w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder="Søk sites..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
+        <Input placeholder="Søk sites..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm" />
       </div>
 
       <div className="grid gap-4">
@@ -77,15 +69,28 @@ export function SiteManagement() {
                             <span>{site.organizations.name}</span>
                           </div>
                         )}
-                        {site.location && (
-                          <span>{site.location}</span>
-                        )}
+                        {site.location && <span>{site.location}</span>}
                       </div>
                       {site.address && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {site.address}
-                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">{site.address}</p>
                       )}
+                      <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-muted-foreground">
+                        {site.contact_email && (
+                          <div className="flex items-center gap-1">
+                            <Mail className="w-3 h-3" />
+                            <span>{site.contact_email}</span>
+                          </div>
+                        )}
+                        {site.contact_phone && (
+                          <div className="flex items-center gap-1">
+                            <Phone className="w-3 h-3" />
+                            <span>{site.contact_phone}</span>
+                          </div>
+                        )}
+                        {(site.latitude && site.longitude) && (
+                          <span className="text-xs">📍 {site.latitude}, {site.longitude}</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <Badge variant={site.is_active ? 'default' : 'secondary'}>
@@ -99,11 +104,7 @@ export function SiteManagement() {
                     Opprettet: {new Date(site.created_at).toLocaleDateString('nb-NO')}
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setEditingSite(site)}
-                    >
+                    <Button size="sm" variant="outline" onClick={() => setEditingSite(site)}>
                       <Edit className="h-4 w-4 mr-1" />
                       Rediger
                     </Button>
@@ -114,15 +115,9 @@ export function SiteManagement() {
                       disabled={toggleStatus.isPending}
                     >
                       {site.is_active ? (
-                        <>
-                          <ToggleLeft className="h-4 w-4 mr-1" />
-                          Deaktiver
-                        </>
+                        <><ToggleLeft className="h-4 w-4 mr-1" />Deaktiver</>
                       ) : (
-                        <>
-                          <ToggleRight className="h-4 w-4 mr-1" />
-                          Aktiver
-                        </>
+                        <><ToggleRight className="h-4 w-4 mr-1" />Aktiver</>
                       )}
                     </Button>
                   </div>
@@ -133,15 +128,8 @@ export function SiteManagement() {
         )}
       </div>
 
-      <CreateSiteDialog 
-        open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
-      />
-      <EditSiteDialog
-        open={!!editingSite}
-        onOpenChange={(open) => !open && setEditingSite(null)}
-        site={editingSite}
-      />
+      <CreateSiteDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
+      <EditSiteDialog open={!!editingSite} onOpenChange={(open) => !open && setEditingSite(null)} site={editingSite} />
     </div>
   );
 }
