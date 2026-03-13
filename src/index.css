@@ -70,13 +70,13 @@
     --radius: 0.5rem;
 
     /* — Sidebar: Light — */
-    --sidebar-background: 232 21% 20%;
-    --sidebar-foreground: 0 0% 100%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 232 21% 20%;
     --sidebar-primary: 167 100% 50%;
     --sidebar-primary-foreground: 232 21% 20%;
-    --sidebar-accent: 232 23% 25%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 232 23% 25%;
+    --sidebar-accent: 246 10% 90%;
+    --sidebar-accent-foreground: 232 21% 20%;
+    --sidebar-border: 220 13% 91%;
     --sidebar-ring: 167 100% 50%;
 
     /* — Chart Palette — */

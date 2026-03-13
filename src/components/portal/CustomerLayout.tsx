@@ -68,9 +68,9 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top bar */}
-      <header className="bg-secondary text-secondary-foreground px-4 py-3 flex items-center justify-between shadow-brand-sm">
+      <header className="bg-card dark:bg-secondary text-foreground dark:text-secondary-foreground border-b border-border px-4 py-3 flex items-center justify-between shadow-brand-sm">
         <div className="flex items-center gap-3">
-          <img src="/logo-dark.png" alt="ASCO" className="h-8" />
+          <img src={document.documentElement.classList.contains('dark') ? '/logo-light.png' : '/logo-dark.png'} alt="ASCO" className="h-8" />
           {!isMobile && customerName && (
             <span className="text-sm font-medium opacity-80">{customerName}</span>
           )}

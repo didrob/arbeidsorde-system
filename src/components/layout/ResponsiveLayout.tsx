@@ -50,11 +50,11 @@ export function ResponsiveLayout({
       <div className="min-h-screen flex w-full bg-background">
         <SimpleSidebar />
         <div className="flex-1 flex flex-col">
-          <header className="flex-shrink-0 flex items-center justify-between gap-2 bg-cobalt px-6 py-2">
+          <header className="flex-shrink-0 flex items-center justify-between gap-2 bg-card dark:bg-cobalt border-b border-border px-6 py-2">
             <SiteSelector
               selectedSiteId={selectedSiteId}
               onSiteChange={setSelectedSiteId}
-              className="text-primary-foreground"
+              className="text-foreground dark:text-primary-foreground"
             />
             <div className="flex items-center gap-2">
               <ThemeToggle />
