@@ -27,10 +27,6 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { isDark } = useTheme();
-  const { signOut } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const isMobile = useIsMobile();
   const [customerName, setCustomerName] = useState<string>('');
   const [siteName, setSiteName] = useState<string>('');
 
