@@ -142,6 +142,7 @@ const App = () => (
                   <Route path="/field" element={<FieldWorker />} />
                   <Route path="/work-orders" element={<ProtectedRoute><WorkOrders /></ProtectedRoute>} />
                   <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
+                  <Route path="/customers/:id" element={<ProtectedRoute><CustomerDetail /></ProtectedRoute>} />
                   <Route path="/customer-agreements" element={<ProtectedRoute><CustomerAgreements /></ProtectedRoute>} />
                   <Route path="/materials" element={<ProtectedRoute><Materials /></ProtectedRoute>} />
                   <Route path="/resources" element={<ProtectedRoute><Resources /></ProtectedRoute>} />
