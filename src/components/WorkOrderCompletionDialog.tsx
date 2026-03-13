@@ -669,7 +669,7 @@ export const WorkOrderCompletionDialog = ({
                   <div className={`
                     flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 transition-colors
                     ${isActive ? 'border-primary bg-primary text-primary-foreground' : 
-                      isCompleted ? 'border-green-500 bg-green-500 text-white' : 
+                      isCompleted ? 'border-status-complete bg-status-complete text-foreground' : 
                       'border-muted-foreground bg-background'}
                   `}>
                     <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
