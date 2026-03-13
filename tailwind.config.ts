@@ -13,7 +13,12 @@ export default {
       },
     },
     extend: {
+      /* ──────────────────────────────────────────────
+       * ASCO Brand Colors — Single Source of Truth
+       * All values reference CSS custom properties (HSL)
+       * ────────────────────────────────────────────── */
       colors: {
+        /* — Shadcn semantic tokens (mapped to ASCO in index.css) — */
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -47,14 +52,6 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        "asco-teal": {
-          DEFAULT: "hsl(var(--asco-teal))",
-          foreground: "hsl(var(--asco-teal-foreground))",
-        },
-        cobalt: {
-          DEFAULT: "hsl(var(--cobalt))",
-          foreground: "hsl(var(--cobalt-foreground))",
-        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -65,78 +62,99 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+
+        /* — ASCO Brand: Cobalt (primary dark) — */
+        cobalt: {
+          deep: "hsl(var(--cobalt-deep))",
+          DEFAULT: "hsl(var(--cobalt))",
+          light: "hsl(var(--cobalt-light))",
+          lighter: "hsl(var(--cobalt-lighter))",
+          foreground: "hsl(var(--cobalt-foreground))",
+        },
+
+        /* — ASCO Brand: Pale Blue (secondary light) — */
+        "pale-blue": "hsl(var(--pale-blue))",
+
+        /* — ASCO Brand: Teal (accent/CTA) — */
+        "asco-teal": {
+          DEFAULT: "hsl(var(--asco-teal))",
+          foreground: "hsl(var(--asco-teal-foreground))",
+        },
+
+        /* — ASCO Brand: Muted Grey — */
+        "muted-grey": "hsl(var(--muted-grey))",
+
+        /* — Status colors — */
+        status: {
+          new: "hsl(var(--status-new))",
+          active: "hsl(var(--status-active))",
+          complete: "hsl(var(--status-complete))",
+          urgent: "hsl(var(--status-urgent))",
+          waiting: "hsl(var(--status-waiting))",
+        },
       },
+
+      /* — ASCO Fonts — */
+      fontFamily: {
+        heading: ["'PP Neue Machina'", "Arial", "sans-serif"],
+        body: ["'TT Commons Pro'", "Arial", "sans-serif"],
+      },
+
+      /* — ASCO Spacing — */
       spacing: {
-        'safe-top': 'env(safe-area-inset-top)',
-        'safe-bottom': 'env(safe-area-inset-bottom)',
-        'safe-left': 'env(safe-area-inset-left)',
-        'safe-right': 'env(safe-area-inset-right)',
+        touch: "3.5rem", /* 56px — mobile touch target */
+        "safe-top": "env(safe-area-inset-top)",
+        "safe-bottom": "env(safe-area-inset-bottom)",
+        "safe-left": "env(safe-area-inset-left)",
+        "safe-right": "env(safe-area-inset-right)",
       },
+
       screens: {
-        'xs': '475px',
-        'tablet': '768px',
-        'laptop': '1024px',
-        'desktop': '1280px',
+        xs: "475px",
+        tablet: "768px",
+        laptop: "1024px",
+        desktop: "1280px",
       },
+
+      /* — ASCO Border Radius — */
       borderRadius: {
+        brand: "8px",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+
+      /* — ASCO Shadows — */
+      boxShadow: {
+        "brand-sm": "0 2px 8px -2px hsl(var(--cobalt) / 0.08)",
+        "brand-lg": "0 8px 24px -4px hsl(var(--cobalt) / 0.12)",
+      },
+
+      /* — Animations (preserved) — */
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
         "slide-up": {
-          from: {
-            transform: "translateY(100%)",
-            opacity: "0",
-          },
-          to: {
-            transform: "translateY(0)",
-            opacity: "1",
-          },
+          from: { transform: "translateY(100%)", opacity: "0" },
+          to: { transform: "translateY(0)", opacity: "1" },
         },
         "slide-down": {
-          from: {
-            transform: "translateY(0)",
-            opacity: "1",
-          },
-          to: {
-            transform: "translateY(100%)",
-            opacity: "0",
-          },
+          from: { transform: "translateY(0)", opacity: "1" },
+          to: { transform: "translateY(100%)", opacity: "0" },
         },
         "fade-in": {
-          from: {
-            opacity: "0",
-            transform: "translateY(10px)",
-          },
-          to: {
-            opacity: "1",
-            transform: "translateY(0)",
-          },
+          from: { opacity: "0", transform: "translateY(10px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
         },
         "pulse-subtle": {
-          "0%, 100%": {
-            opacity: "1",
-          },
-          "50%": {
-            opacity: "0.8",
-          },
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.8" },
         },
       },
       animation: {
