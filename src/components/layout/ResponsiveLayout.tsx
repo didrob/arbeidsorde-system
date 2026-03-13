@@ -28,12 +28,12 @@ export function ResponsiveLayout({
   if (isMobile && showMobileNav) {
     return (
       <div className="min-h-screen bg-background">
-        <header className="flex items-center justify-between bg-cobalt px-4 py-3">
-          <ASCOLogo variant="light" />
+        <header className="flex items-center justify-between bg-card dark:bg-cobalt border-b border-border px-4 py-3">
+          <ASCOLogo variant="auto" />
           <SiteSelector
             selectedSiteId={selectedSiteId}
             onSiteChange={setSelectedSiteId}
-            className="text-primary-foreground"
+            className="text-foreground dark:text-primary-foreground"
           />
         </header>
         <main className={cn("flex-1", showMobileNav && "pb-24")}>
