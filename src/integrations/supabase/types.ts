@@ -242,6 +242,8 @@ export type Database = {
           approved_by: string | null
           contact_person: string | null
           created_at: string
+          dynamics_account: string | null
+          dynamics_customer_number: string | null
           email: string | null
           id: string
           industry_code: string | null
@@ -262,6 +264,8 @@ export type Database = {
           approved_by?: string | null
           contact_person?: string | null
           created_at?: string
+          dynamics_account?: string | null
+          dynamics_customer_number?: string | null
           email?: string | null
           id?: string
           industry_code?: string | null
@@ -282,6 +286,8 @@ export type Database = {
           approved_by?: string | null
           contact_person?: string | null
           created_at?: string
+          dynamics_account?: string | null
+          dynamics_customer_number?: string | null
           email?: string | null
           id?: string
           industry_code?: string | null
@@ -824,6 +830,179 @@ export type Database = {
           },
           {
             foreignKeyName: "profiles_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_order_lines: {
+        Row: {
+          description: string
+          id: string
+          item_type: string | null
+          line_total: number
+          quantity: number
+          sales_order_id: string
+          sort_order: number
+          unit_price: number
+          vat_amount: number
+          vat_rate: number
+          work_order_id: string
+        }
+        Insert: {
+          description: string
+          id?: string
+          item_type?: string | null
+          line_total?: number
+          quantity?: number
+          sales_order_id: string
+          sort_order?: number
+          unit_price?: number
+          vat_amount?: number
+          vat_rate?: number
+          work_order_id: string
+        }
+        Update: {
+          description?: string
+          id?: string
+          item_type?: string | null
+          line_total?: number
+          quantity?: number
+          sales_order_id?: string
+          sort_order?: number
+          unit_price?: number
+          vat_amount?: number
+          vat_rate?: number
+          work_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_order_lines_sales_order_id_fkey"
+            columns: ["sales_order_id"]
+            isOneToOne: false
+            referencedRelation: "sales_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_order_lines_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "org_work_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_order_lines_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_orders: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string
+          customer_id: string
+          exported_at: string | null
+          exported_by: string | null
+          id: string
+          notes: string | null
+          paid_at: string | null
+          period_from: string | null
+          period_to: string | null
+          sales_order_number: string
+          site_id: string
+          status: string
+          subtotal: number
+          tax_amount: number
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by: string
+          customer_id: string
+          exported_at?: string | null
+          exported_by?: string | null
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          period_from?: string | null
+          period_to?: string | null
+          sales_order_number?: string
+          site_id: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string
+          customer_id?: string
+          exported_at?: string | null
+          exported_by?: string | null
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          period_from?: string | null
+          period_to?: string | null
+          sales_order_number?: string
+          site_id?: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "org_customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_productivity_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "sales_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_revenue_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "sales_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site_work_order_stats"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "sales_orders_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
             referencedRelation: "sites"
@@ -1472,6 +1651,7 @@ export type Database = {
           pricing_model: string | null
           pricing_type: string
           requires_time_tracking: boolean | null
+          sales_order_id: string | null
           scheduled_end: string | null
           scheduled_start: string | null
           site_id: string | null
@@ -1502,6 +1682,7 @@ export type Database = {
           pricing_model?: string | null
           pricing_type?: string
           requires_time_tracking?: boolean | null
+          sales_order_id?: string | null
           scheduled_end?: string | null
           scheduled_start?: string | null
           site_id?: string | null
@@ -1532,6 +1713,7 @@ export type Database = {
           pricing_model?: string | null
           pricing_type?: string
           requires_time_tracking?: boolean | null
+          sales_order_id?: string | null
           scheduled_end?: string | null
           scheduled_start?: string | null
           site_id?: string | null
@@ -1582,6 +1764,13 @@ export type Database = {
             columns: ["linked_order_id"]
             isOneToOne: false
             referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_sales_order_id_fkey"
+            columns: ["sales_order_id"]
+            isOneToOne: false
+            referencedRelation: "sales_orders"
             referencedColumns: ["id"]
           },
           {
@@ -1951,6 +2140,7 @@ export type Database = {
           pricing_model: string | null
           pricing_type: string
           requires_time_tracking: boolean | null
+          sales_order_id: string | null
           scheduled_end: string | null
           scheduled_start: string | null
           site_id: string | null
@@ -1968,6 +2158,7 @@ export type Database = {
         }
       }
       generate_invoice_number: { Args: never; Returns: string }
+      generate_sales_order_number: { Args: never; Returns: string }
       get_current_user_role: { Args: never; Returns: string }
       get_customer_id_for_user: {
         Args: { user_uuid?: string }
@@ -2020,6 +2211,7 @@ export type Database = {
           pricing_model: string | null
           pricing_type: string
           requires_time_tracking: boolean | null
+          sales_order_id: string | null
           scheduled_end: string | null
           scheduled_start: string | null
           site_id: string | null
