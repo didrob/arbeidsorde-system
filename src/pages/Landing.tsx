@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Users, Building2 } from 'lucide-react';
 import { PublicLayout } from '@/components/public/PublicLayout';
+import { AscoLogoMark } from '@/components/AscoLogoMark';
 
 const Landing = () => {
   const navigate = useNavigate();
