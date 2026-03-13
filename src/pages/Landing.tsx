@@ -9,7 +9,7 @@ const Landing = () => {
     <PublicLayout showFooter variant="landing">
       {/* Hero logo */}
       <div className="flex flex-col items-center">
-        <AscoLogoMark size={56} color="white" className="mb-8" />
+        <img src="/logo-light.png" alt="ASCO" className="h-14 w-auto object-contain mb-8" />
 
         <h1 className="font-heading text-2xl md:text-[32px] text-white text-center mb-2">
           Velkommen til ASCO

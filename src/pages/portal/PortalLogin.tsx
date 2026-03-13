@@ -105,7 +105,7 @@ const PortalLogin = () => {
       ) : (
         <GlassCard className="w-full max-w-md p-8">
           <div className="flex flex-col items-center mb-6">
-            <AscoLogoMark size={32} color="white" className="mb-2" />
+            <img src="/logo-light.png" alt="ASCO" className="h-8 w-auto object-contain mb-2" />
             <p className="text-sm mb-1 text-pale-blue">Kundeportal</p>
             <button
               onClick={() => setStep('location')}

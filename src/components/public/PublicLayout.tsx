@@ -1,7 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Phone, AlertTriangle } from 'lucide-react';
-import { AscoLogoMark } from '@/components/AscoLogoMark';
 
 
 interface PublicLayoutProps {
