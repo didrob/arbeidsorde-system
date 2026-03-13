@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCustomers } from "@/hooks/useApi";
 import { useWorkOrders } from "@/hooks/useApi";
+import { isInternalCustomer } from "@/lib/internalOrders";
 import { useCreateInvoice } from "@/hooks/useInvoices";
 import { formatCurrency } from "@/lib/utils";
 
