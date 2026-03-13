@@ -5,6 +5,7 @@ import { MobileNav } from '@/components/mobile/MobileNav';
 import { SimpleSidebar } from '@/components/SimpleSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { GlobalWorkOrderButton } from '@/components/GlobalWorkOrderButton';
+import { ASCOLogo } from '@/components/ASCOLogo';
 import { cn } from '@/lib/utils';
 
 interface ResponsiveLayoutProps {
@@ -25,6 +26,9 @@ export function ResponsiveLayout({
   if (isFieldWorker) {
     return (
       <div className="min-h-screen bg-background">
+        <header className="flex items-center justify-between bg-cobalt px-4 py-3">
+          <ASCOLogo variant="light" />
+        </header>
         <main className={cn(
           "flex-1",
           showMobileNav && "pb-20"
@@ -43,6 +47,9 @@ export function ResponsiveLayout({
   if (isMobile && showMobileNav) {
     return (
       <div className="min-h-screen bg-background">
+        <header className="flex items-center justify-between bg-cobalt px-4 py-3">
+          <ASCOLogo variant="light" />
+        </header>
         <main className={cn(
           "flex-1",
           showMobileNav && "pb-20"
