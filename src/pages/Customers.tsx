@@ -52,24 +52,11 @@ export default function Customers() {
   const { register, handleSubmit, reset, setValue: setFormValue, formState: { errors } } = useForm<CustomerForm>();
   const { register: registerEdit, handleSubmit: handleSubmitEdit, reset: resetEdit, setValue, formState: { errors: editErrors } } = useForm<CustomerForm>();
 
-  // BRREG lookup for create dialog
-  const { lookup: brregLookup, isLoading: brregLoading, result: brregResult, reset: resetBrreg } = useBrregLookup();
-  const [createOrgInput, setCreateOrgInput] = useState('');
+  // BRREG state for create dialog
+  const [createBrregResult, setCreateBrregResult] = useState<BrregResult | null>(null);
 
-  useEffect(() => {
-    const clean = createOrgInput.replace(/\s/g, '');
-    if (clean.length !== 9 || !/^\d{9}$/.test(clean)) return;
-    const timer = setTimeout(() => brregLookup(clean), 500);
-    return () => clearTimeout(timer);
-  }, [createOrgInput, brregLookup]);
-
-  useEffect(() => {
-    if (brregResult) {
-      setFormValue('name', brregResult.name);
-      setFormValue('address', brregResult.address);
-      setFormValue('org_number', brregResult.org_number);
-    }
-  }, [brregResult, setFormValue]);
+  // BRREG state for edit dialog
+  const [editBrregResult, setEditBrregResult] = useState<BrregResult | null>(null);
 
   const filterByStatus = (list: any[], status?: string) => {
     if (!list) return [];
