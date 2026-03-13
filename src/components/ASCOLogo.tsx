@@ -22,7 +22,7 @@ export function ASCOLogo({ variant = 'light', className = '' }: ASCOLogoProps) {
         }}
       />
       {/* Text fallback */}
-      <span className="hidden font-heading text-2xl font-normal tracking-wider uppercase relative">
+      <span className={`hidden font-heading text-2xl font-normal tracking-wider uppercase relative ${variant === 'light' ? 'text-white' : 'text-cobalt'}`}>
         <span className="relative">
           A
           <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-2 w-2 rounded-full bg-asco-teal" />

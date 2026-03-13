@@ -55,6 +55,7 @@ export default function Materials() {
       <TopBar 
         title="Materialer"
         onCreateClick={() => setIsCreateDialogOpen(true)}
+        createLabel="Nytt material"
         actions={
           <SiteSelector
             selectedSiteId={selectedSiteId}

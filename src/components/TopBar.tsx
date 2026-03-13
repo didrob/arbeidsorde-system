@@ -7,10 +7,11 @@ import { cn } from "@/lib/utils";
 interface TopBarProps {
   title: string;
   onCreateClick?: () => void;
+  createLabel?: string;
   actions?: ReactNode;
 }
 
-export function TopBar({ title, onCreateClick, actions }: TopBarProps) {
+export function TopBar({ title, onCreateClick, createLabel = "Opprett ny", actions }: TopBarProps) {
   const isMobile = useIsMobile();
   
   return (
@@ -36,10 +37,11 @@ export function TopBar({ title, onCreateClick, actions }: TopBarProps) {
             <Button 
               onClick={onCreateClick} 
               size="sm"
+              variant="outline"
               className="flex items-center gap-2"
             >
               <Plus className="h-4 w-4" />
-              <span className="hidden xs:inline">Opprett ny</span>
+              <span className="hidden xs:inline">{createLabel}</span>
             </Button>
           )}
         </div>
@@ -51,9 +53,9 @@ export function TopBar({ title, onCreateClick, actions }: TopBarProps) {
         )}
         
         {!isMobile && onCreateClick && (
-          <Button onClick={onCreateClick} className="flex items-center gap-2">
+          <Button onClick={onCreateClick} variant="outline" className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            Opprett ny
+            {createLabel}
           </Button>
         )}
       </div>
