@@ -1,7 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Phone, AlertTriangle } from 'lucide-react';
-import { AscoLogoMark } from '@/components/AscoLogoMark';
 
 
 interface PublicLayoutProps {
@@ -48,7 +47,7 @@ export function PublicLayout({ children, showBack = false, showFooter = false, v
       <header className="relative z-10 flex items-center justify-between px-4 md:px-8 py-4">
         <div className="flex items-center gap-4">
           <Link to="/" aria-label="ASCO — Gå til forsiden">
-            <AscoLogoMark size={28} color="white" />
+            <img src="/logo-light.png" alt="ASCO" className="h-7 w-auto object-contain" />
           </Link>
           {showBack && (
             <button

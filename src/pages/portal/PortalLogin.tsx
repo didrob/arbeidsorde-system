@@ -9,7 +9,6 @@ import { MapPin, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PublicLayout } from '@/components/public/PublicLayout';
 import { GlassCard } from '@/components/public/GlassCard';
-import { AscoLogoMark } from '@/components/AscoLogoMark';
 
 const STORAGE_KEY = 'asco-portal-site';
 
@@ -106,7 +105,7 @@ const PortalLogin = () => {
       ) : (
         <GlassCard className="w-full max-w-md p-8">
           <div className="flex flex-col items-center mb-6">
-            <AscoLogoMark size={32} color="white" className="mb-2" />
+            <img src="/logo-light.png" alt="ASCO" className="h-8 w-auto object-contain mb-2" />
             <p className="text-sm mb-1 text-pale-blue">Kundeportal</p>
             <button
               onClick={() => setStep('location')}
