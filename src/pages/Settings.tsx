@@ -279,7 +279,7 @@ export default function Settings() {
                       <div className="space-y-2">
                         <Label>Status</Label>
                         <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                          <CheckCircle className={`w-4 h-4 ${profile.is_active ? 'text-green-500' : 'text-red-500'}`} />
+                          <CheckCircle className={`w-4 h-4 ${profile.is_active ? 'text-status-complete' : 'text-destructive'}`} />
                           <span className="text-sm">
                             {profile.is_active ? 'Aktiv' : 'Inaktiv'}
                           </span>
