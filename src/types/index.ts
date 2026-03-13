@@ -10,7 +10,7 @@ export interface User {
   updated_at: string;
 }
 
-export type UserRole = 'admin' | 'field_worker';
+export type UserRole = 'admin' | 'field_worker' | 'system_admin' | 'site_manager' | 'customer';
 
 export type RegistrationStatus = 'pending_approval' | 'approved' | 'rejected';
 
