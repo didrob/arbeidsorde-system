@@ -15,6 +15,8 @@ interface AuthContextType {
   isSiteManager: boolean;
   isBillingManager: boolean;
   isFieldSupervisor: boolean;
+  isCustomer: boolean;
+  customerId: string | null;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -26,6 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [customerId, setCustomerId] = useState<string | null>(null);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -43,10 +46,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .limit(1)
         .maybeSingle();
 
-      // Also fetch profile for organization/site onboarding check
+      // Also fetch profile for organization/site onboarding check + customer_id
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('organization_id, site_id')
+        .select('organization_id, site_id, customer_id')
         .eq('user_id', userId)
         .single();
       
@@ -65,14 +68,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const role = roleData?.role || 'field_worker';
       console.log('User role fetched successfully:', role);
       setUserRole(role);
+      setCustomerId(profileData?.customer_id || null);
       
-      // Check if user needs onboarding (missing organization or site)
-      const needsOnboarding = !profileData?.organization_id || !profileData?.site_id;
-      setNeedsOnboarding(needsOnboarding);
+      // Customers skip onboarding — they don't need org/site assignment
+      if (role === 'customer') {
+        setNeedsOnboarding(false);
+      } else {
+        const needsOnboarding = !profileData?.organization_id || !profileData?.site_id;
+        setNeedsOnboarding(needsOnboarding);
+      }
       console.log('User needs onboarding:', needsOnboarding);
     } catch (error) {
       console.error('Unexpected error fetching user role:', error);
       setUserRole(null);
+      setCustomerId(null);
       setNeedsOnboarding(false);
     }
   };
@@ -185,7 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       // Force navigation to auth page
-      window.location.href = '/auth';
+      window.location.href = '/';
       
     } catch (error) {
       console.error('Logout error:', error);
@@ -200,7 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Du er nå logget ut av systemet.",
       });
       
-      window.location.href = '/auth';
+      window.location.href = '/';
     }
   };
 
@@ -216,6 +225,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isSiteManager: userRole === 'site_manager',
     isBillingManager: userRole === 'billing_manager',
     isFieldSupervisor: userRole === 'field_supervisor',
+    isCustomer: userRole === 'customer',
+    customerId,
     signIn,
     signUp,
     signOut,

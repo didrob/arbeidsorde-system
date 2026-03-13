@@ -584,8 +584,8 @@ export const WorkOrderCompletionDialog = ({
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+                <div className="flex items-center gap-2 p-3 bg-status-complete-subtle rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-status-complete" />
                   <p className="text-sm">
                     Arbeidsordren vil bli markert som fullført og du vil ikke lenger kunne redigere den.
                   </p>
@@ -599,13 +599,13 @@ export const WorkOrderCompletionDialog = ({
         return (
           <div className="space-y-6 text-center">
             <div className="flex justify-center">
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-10 w-10 text-green-600" />
+              <div className="w-16 h-16 bg-status-complete-subtle rounded-full flex items-center justify-center">
+                <CheckCircle className="h-10 w-10 text-status-complete" />
               </div>
             </div>
             
             <div>
-              <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">
+              <h3 className="text-lg font-semibold text-foreground">
                 Arbeidsordre fullført!
               </h3>
               <p className="text-muted-foreground mt-2">
@@ -613,22 +613,22 @@ export const WorkOrderCompletionDialog = ({
               </p>
             </div>
 
-            <Card className="border-green-200 dark:border-green-800">
+            <Card className="border-status-complete">
               <CardContent className="pt-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="font-medium">Total tid brukt</p>
-                    <p className="text-lg text-green-600">{formatHours(totalTime)} timer</p>
+                    <p className="text-lg text-status-complete">{formatHours(totalTime)} timer</p>
                   </div>
                   <div>
                     <p className="font-medium">Materialer brukt</p>
-                    <p className="text-lg text-green-600">{completionData.materialsUsed.length} stk</p>
+                    <p className="text-lg text-status-complete">{completionData.materialsUsed.length} stk</p>
                   </div>
                 </div>
                 
                 {completionData.timeAdjustments.length > 0 && (
                   <div className="mt-4 pt-4 border-t">
-                    <p className="font-medium text-sm text-amber-600">
+                    <p className="font-medium text-sm text-status-active">
                       {completionData.timeAdjustments.length} tidsjustering(er) registrert
                     </p>
                   </div>
@@ -636,8 +636,8 @@ export const WorkOrderCompletionDialog = ({
               </CardContent>
             </Card>
 
-            <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
-              <p className="text-sm text-green-800 dark:text-green-200">
+            <div className="bg-status-complete-subtle p-4 rounded-lg">
+              <p className="text-sm text-foreground">
                 Arbeidsordren er klar for fakturering og vil vises som fullført i systemet.
               </p>
             </div>
@@ -669,14 +669,14 @@ export const WorkOrderCompletionDialog = ({
                   <div className={`
                     flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 transition-colors
                     ${isActive ? 'border-primary bg-primary text-primary-foreground' : 
-                      isCompleted ? 'border-green-500 bg-green-500 text-white' : 
+                      isCompleted ? 'border-status-complete bg-status-complete text-foreground' : 
                       'border-muted-foreground bg-background'}
                   `}>
                     <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
                   </div>
                   {index < steps.length - 1 && (
                     <div className={`w-4 sm:w-8 h-0.5 mx-1 sm:mx-2 ${
-                      isCompleted ? 'bg-green-500' : 'bg-muted'
+                      isCompleted ? 'bg-status-complete' : 'bg-muted'
                     }`} />
                   )}
                 </div>
@@ -721,7 +721,7 @@ export const WorkOrderCompletionDialog = ({
               <Button
                 onClick={handleComplete}
                 disabled={!canProceedToNext() || isSubmitting}
-                className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-initial"
+                className="bg-status-complete hover:bg-status-complete/90 text-foreground flex-1 sm:flex-initial"
               >
                 {isSubmitting ? 'Fullører...' : 'Fullfør arbeidsordre'}
               </Button>

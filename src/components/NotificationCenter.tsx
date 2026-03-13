@@ -14,8 +14,8 @@ export function NotificationCenter() {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'assignment': return <User className="h-4 w-4 text-primary" />;
-      case 'status_change': return <Clock className="h-4 w-4 text-blue-500" />;
-      case 'message': return <MessageSquare className="h-4 w-4 text-green-500" />;
+      case 'status_change': return <Clock className="h-4 w-4 text-primary-text" />;
+      case 'message': return <MessageSquare className="h-4 w-4 text-status-complete" />;
       case 'urgent': return <AlertTriangle className="h-4 w-4 text-destructive" />;
       default: return <Bell className="h-4 w-4 text-muted-foreground" />;
     }

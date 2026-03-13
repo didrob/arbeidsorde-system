@@ -108,7 +108,7 @@ export function DocumentationStep() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-4">
           <div className="flex items-center space-x-3">
-            <Image className="w-8 h-8 text-blue-500" />
+            <Image className="w-8 h-8 text-primary-text" />
             <div>
               <h4 className="font-medium">Bilder</h4>
               <p className="text-sm text-muted-foreground">JPG, PNG, WEBP</p>
@@ -118,7 +118,7 @@ export function DocumentationStep() {
 
         <Card className="p-4">
           <div className="flex items-center space-x-3">
-            <FileText className="w-8 h-8 text-green-500" />
+            <FileText className="w-8 h-8 text-status-complete" />
             <div>
               <h4 className="font-medium">Dokumenter</h4>
               <p className="text-sm text-muted-foreground">PDF, DOC, TXT</p>
@@ -128,7 +128,7 @@ export function DocumentationStep() {
 
         <Card className="p-4">
           <div className="flex items-center space-x-3">
-            <Camera className="w-8 h-8 text-purple-500" />
+            <Camera className="w-8 h-8 text-muted-foreground" />
             <div>
               <h4 className="font-medium">Fra kamera</h4>
               <p className="text-sm text-muted-foreground">Ta bilder direkte</p>
@@ -138,10 +138,10 @@ export function DocumentationStep() {
       </div>
 
       {/* Tips */}
-      <Card className="border-blue-200 bg-blue-50/50">
+      <Card className="bg-info">
         <CardContent className="p-4">
-          <h4 className="font-medium text-blue-900 mb-2">Tips for dokumentasjon</h4>
-          <ul className="text-sm text-blue-700 space-y-1">
+          <h4 className="font-medium text-info mb-2">Tips for dokumentasjon</h4>
+          <ul className="text-sm text-info space-y-1">
             <li>• Last opp bilder av arbeidsstedet før oppstart</li>
             <li>• Inkluder tekniske tegninger eller spesifikasjoner</li>
             <li>• Dokumenter eventuelle skader eller forhold som må tas hensyn til</li>

@@ -16,11 +16,15 @@ import {
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useSiteFilter } from "@/hooks/useSiteFilter";
+import { useUserAccessibleSites } from "@/hooks/useOrganizations";
+import { useCustomers } from "@/hooks/useApi";
 
 const navigationItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Arbeidsordrer", url: "/work-orders", icon: FileText },
-  { title: "Kunder", url: "/customers", icon: Users },
+  { title: "Kunder", url: "/customers", icon: Users, badgeKey: 'customers' as const },
   { title: "Materialer", url: "/materials", icon: Package },
   { title: "Ressurser", url: "/resources", icon: Wrench },
   { title: "Planlegger", url: "/planner", icon: Calendar },
@@ -34,11 +38,18 @@ const navigationItems = [
 export function SimpleSidebar() {
   const location = useLocation();
   const { signOut } = useAuth();
+  const { selectedSiteId } = useSiteFilter();
+  const { data: accessibleSites } = useUserAccessibleSites();
+  const { data: customers } = useCustomers();
+
+  const pendingCount = customers?.filter((c: any) => c.registration_status === 'pending_approval').length || 0;
+
+  const currentSiteName = selectedSiteId
+    ? accessibleSites?.find(s => s.site_id === selectedSiteId)?.site_name
+    : 'Alle lokasjoner';
 
   const isActive = (path: string) => {
-    if (path === "/") {
-      return location.pathname === "/";
-    }
+    if (path === "/dashboard") return location.pathname === "/dashboard";
     return location.pathname.startsWith(path);
   };
 
@@ -47,6 +58,12 @@ export function SimpleSidebar() {
       {/* Logo/Header */}
       <div className="p-6 border-b border-border">
         <ASCOLogo variant="light" />
+        {currentSiteName && (
+          <div className="flex items-center gap-1.5 mt-3 text-xs text-muted-foreground">
+            <MapPin className="h-3 w-3" />
+            <span className={!selectedSiteId ? 'text-primary' : ''}>{currentSiteName}</span>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
@@ -55,7 +72,7 @@ export function SimpleSidebar() {
           <NavLink
             key={item.title}
             to={item.url}
-            className={({ isActive: linkActive }) =>
+            className={() =>
               `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                 isActive(item.url)
                   ? "bg-primary text-primary-foreground font-medium"
@@ -64,7 +81,12 @@ export function SimpleSidebar() {
             }
           >
             <item.icon className="h-5 w-5" />
-            <span>{item.title}</span>
+            <span className="flex-1">{item.title}</span>
+            {item.badgeKey === 'customers' && pendingCount > 0 && (
+              <Badge variant="default" className="h-5 min-w-[1.25rem] px-1 text-xs">
+                {pendingCount}
+              </Badge>
+            )}
           </NavLink>
         ))}
       </nav>

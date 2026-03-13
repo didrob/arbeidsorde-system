@@ -3,118 +3,83 @@ import { Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
-import truckBackground from '@/assets/truck-background.jpg';
+import { PublicLayout } from '@/components/public/PublicLayout';
+import { GlassCard } from '@/components/public/GlassCard';
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
-  const { user, signIn, signUp } = useAuth();
+  const { user, signIn } = useAuth();
 
-  // Redirect if already authenticated
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    if (isLogin) {
-      await signIn(email, password);
-    } else {
-      await signUp(email, password, fullName);
-    }
-
+    await signIn(email, password);
     setLoading(false);
   };
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat relative"
-      style={{ backgroundImage: `url(${truckBackground})` }}
-    >
-      {/* Overlay for better text readability */}
-      <div className="absolute inset-0 bg-black/40" />
-      
-      <Card className="w-full max-w-md mx-4 relative z-10 bg-white/95 backdrop-blur-sm">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-primary">
-            Asco Workorder
-          </CardTitle>
-          <CardDescription>
-            {isLogin ? 'Logg inn på din konto' : 'Opprett ny konto'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Fullt navn</Label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                  placeholder="Skriv inn ditt fulle navn"
-                />
-              </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">E-post</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="din.epost@example.com"
-              />
-            </div>
+    <PublicLayout showBack>
+      <GlassCard className="w-full max-w-md p-8">
+        <div className="flex flex-col items-center mb-6">
+          <span className="font-heading text-2xl font-bold tracking-[0.15em] text-white select-none mb-2">
+            <span className="relative inline-block">
+              A
+              <span className="absolute -bottom-0.5 left-0 h-2 w-2 rounded-full bg-asco-teal" />
+            </span>
+            SCO
+          </span>
+          <p className="text-sm text-pale-blue">Ansattportal</p>
+        </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Passord</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="Skriv inn passord"
-                minLength={6}
-              />
-            </div>
-
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={loading}
-            >
-              {loading ? 'Behandler...' : isLogin ? 'Logg inn' : 'Opprett konto'}
-            </Button>
-          </form>
-
-          <div className="mt-4 text-center">
-            <Button
-              variant="link"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-muted-foreground"
-            >
-              {isLogin 
-                ? 'Har du ikke konto? Opprett en her'
-                : 'Har du allerede konto? Logg inn her'
-              }
-            </Button>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-white/80">E-post</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="din.epost@asco.no"
+              className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+            />
           </div>
-        </CardContent>
-      </Card>
-    </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-white/80">Passord</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="Skriv inn passord"
+              minLength={6}
+              className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+            />
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full bg-asco-teal text-asco-teal-foreground hover:bg-asco-teal/90"
+            disabled={loading}
+          >
+            {loading ? 'Logger inn...' : 'Logg inn'}
+          </Button>
+        </form>
+
+        <p className="mt-6 text-center text-sm text-white/40">
+          Har du ikke konto? Kontakt administrator
+        </p>
+      </GlassCard>
+    </PublicLayout>
   );
 };
 

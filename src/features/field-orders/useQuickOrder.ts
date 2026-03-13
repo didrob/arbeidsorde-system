@@ -12,6 +12,8 @@ export interface QuickOrderData {
   title: string;
   customer_id: string;
   is_urgent: boolean;
+  is_internal?: boolean;
+  cost_center?: string;
   image_file?: File | null;
   gps_lat?: number | null;
   gps_lng?: number | null;
@@ -119,6 +121,8 @@ export const useQuickOrder = () => {
       started_at: action === 'assign_self' ? new Date().toISOString() : null,
       pricing_type: 'hourly' as const,
       notes: data.is_urgent ? 'HASTER' : undefined,
+      is_internal: data.is_internal || false,
+      cost_center: data.is_internal ? data.cost_center || null : null,
       gps_location: data.gps_lat && data.gps_lng
         ? `(${data.gps_lng},${data.gps_lat})`
         : undefined,

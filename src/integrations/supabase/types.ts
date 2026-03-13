@@ -88,6 +88,93 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_attachments: {
+        Row: {
+          created_at: string
+          customer_id: string
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          file_url: string
+          id: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_attachments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_attachments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "org_customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_notes: {
+        Row: {
+          content: string
+          created_at: string
+          customer_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_notes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_notes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "org_customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_pricing_agreements: {
         Row: {
           agreement_type: string
@@ -151,34 +238,61 @@ export type Database = {
       customers: {
         Row: {
           address: string | null
+          approved_at: string | null
+          approved_by: string | null
           contact_person: string | null
           created_at: string
           email: string | null
           id: string
+          industry_code: string | null
+          invoice_email: string | null
           name: string
+          org_form: string | null
+          org_number: string | null
           phone: string | null
+          registered_by: string | null
+          registration_status: string
+          rejection_reason: string | null
           site_id: string | null
           updated_at: string
         }
         Insert: {
           address?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           contact_person?: string | null
           created_at?: string
           email?: string | null
           id?: string
+          industry_code?: string | null
+          invoice_email?: string | null
           name: string
+          org_form?: string | null
+          org_number?: string | null
           phone?: string | null
+          registered_by?: string | null
+          registration_status?: string
+          rejection_reason?: string | null
           site_id?: string | null
           updated_at?: string
         }
         Update: {
           address?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           contact_person?: string | null
           created_at?: string
           email?: string | null
           id?: string
+          industry_code?: string | null
+          invoice_email?: string | null
           name?: string
+          org_form?: string | null
+          org_number?: string | null
           phone?: string | null
+          registered_by?: string | null
+          registration_status?: string
+          rejection_reason?: string | null
           site_id?: string | null
           updated_at?: string
         }
@@ -626,6 +740,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          customer_id: string | null
           full_name: string | null
           id: string
           is_active: boolean | null
@@ -639,6 +754,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          customer_id?: string | null
           full_name?: string | null
           id?: string
           is_active?: boolean | null
@@ -652,6 +768,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          customer_id?: string | null
           full_name?: string | null
           id?: string
           is_active?: boolean | null
@@ -663,6 +780,20 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "org_customers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_organization_id_fkey"
             columns: ["organization_id"]
@@ -703,30 +834,42 @@ export type Database = {
       sites: {
         Row: {
           address: string | null
+          contact_email: string | null
+          contact_phone: string | null
           created_at: string
           id: string
           is_active: boolean
+          latitude: number | null
           location: string | null
+          longitude: number | null
           name: string
           organization_id: string
           updated_at: string
         }
         Insert: {
           address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           name: string
           organization_id: string
           updated_at?: string
         }
         Update: {
           address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           name?: string
           organization_id?: string
           updated_at?: string
@@ -1312,6 +1455,7 @@ export type Database = {
           actual_hours: number | null
           assigned_to: string | null
           completed_at: string | null
+          cost_center: string | null
           created_at: string
           customer_id: string
           deleted_at: string | null
@@ -1321,6 +1465,8 @@ export type Database = {
           gps_location: unknown
           id: string
           is_deleted: boolean
+          is_internal: boolean
+          linked_order_id: string | null
           notes: string | null
           price_value: number | null
           pricing_model: string | null
@@ -1339,6 +1485,7 @@ export type Database = {
           actual_hours?: number | null
           assigned_to?: string | null
           completed_at?: string | null
+          cost_center?: string | null
           created_at?: string
           customer_id: string
           deleted_at?: string | null
@@ -1348,6 +1495,8 @@ export type Database = {
           gps_location?: unknown
           id?: string
           is_deleted?: boolean
+          is_internal?: boolean
+          linked_order_id?: string | null
           notes?: string | null
           price_value?: number | null
           pricing_model?: string | null
@@ -1366,6 +1515,7 @@ export type Database = {
           actual_hours?: number | null
           assigned_to?: string | null
           completed_at?: string | null
+          cost_center?: string | null
           created_at?: string
           customer_id?: string
           deleted_at?: string | null
@@ -1375,6 +1525,8 @@ export type Database = {
           gps_location?: unknown
           id?: string
           is_deleted?: boolean
+          is_internal?: boolean
+          linked_order_id?: string | null
           notes?: string | null
           price_value?: number | null
           pricing_model?: string | null
@@ -1417,6 +1569,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "work_orders_linked_order_id_fkey"
+            columns: ["linked_order_id"]
+            isOneToOne: false
+            referencedRelation: "org_work_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_linked_order_id_fkey"
+            columns: ["linked_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "work_orders_site_id_fkey"
@@ -1768,6 +1934,7 @@ export type Database = {
           actual_hours: number | null
           assigned_to: string | null
           completed_at: string | null
+          cost_center: string | null
           created_at: string
           customer_id: string
           deleted_at: string | null
@@ -1777,6 +1944,8 @@ export type Database = {
           gps_location: unknown
           id: string
           is_deleted: boolean
+          is_internal: boolean
+          linked_order_id: string | null
           notes: string | null
           price_value: number | null
           pricing_model: string | null
@@ -1800,6 +1969,10 @@ export type Database = {
       }
       generate_invoice_number: { Args: never; Returns: string }
       get_current_user_role: { Args: never; Returns: string }
+      get_customer_id_for_user: {
+        Args: { user_uuid?: string }
+        Returns: string
+      }
       get_user_accessible_site_ids: {
         Args: { user_uuid?: string }
         Returns: string[]
@@ -1820,6 +1993,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      is_customer: { Args: never; Returns: boolean }
       is_field_worker: { Args: never; Returns: boolean }
       is_site_manager: { Args: never; Returns: boolean }
       is_system_admin: { Args: never; Returns: boolean }
@@ -1829,6 +2003,7 @@ export type Database = {
           actual_hours: number | null
           assigned_to: string | null
           completed_at: string | null
+          cost_center: string | null
           created_at: string
           customer_id: string
           deleted_at: string | null
@@ -1838,6 +2013,8 @@ export type Database = {
           gps_location: unknown
           id: string
           is_deleted: boolean
+          is_internal: boolean
+          linked_order_id: string | null
           notes: string | null
           price_value: number | null
           pricing_model: string | null
@@ -1868,7 +2045,7 @@ export type Database = {
           }
     }
     Enums: {
-      app_role: "system_admin" | "site_manager" | "field_worker"
+      app_role: "system_admin" | "site_manager" | "field_worker" | "customer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1996,7 +2173,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["system_admin", "site_manager", "field_worker"],
+      app_role: ["system_admin", "site_manager", "field_worker", "customer"],
     },
   },
 } as const

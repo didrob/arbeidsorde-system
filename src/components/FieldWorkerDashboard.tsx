@@ -44,19 +44,9 @@ export function FieldWorkerDashboard() {
       const { data, error } = await supabase
         .from('work_orders')
         .select(`
-          id,
-          title,
-          description,
-          status,
-          estimated_hours,
-          created_at,
-          started_at,
-          completed_at,
-          customer:customers!work_orders_customer_id_fkey (
-            name,
-            address,
-            phone
-          )
+          id, title, description, status, estimated_hours,
+          created_at, started_at, completed_at,
+          customer:customers!work_orders_customer_id_fkey (name, address, phone)
         `)
         .eq('assigned_to', user?.id)
         .order('created_at', { ascending: false });
@@ -78,7 +68,6 @@ export function FieldWorkerDashboard() {
   const updateWorkOrderStatus = async (workOrderId: string, status: string) => {
     try {
       if (status === 'in_progress') {
-        // Start via time entry to satisfy RLS/trigger path
         const { error: insertErr } = await supabase
           .from('work_order_time_entries')
           .insert({
@@ -88,10 +77,8 @@ export function FieldWorkerDashboard() {
             notes: ''
           });
         if (insertErr) throw insertErr;
-
         setActiveWorkOrder(workOrderId);
       } else if (status === 'completed') {
-        // Stop the latest active time entry for this user/order
         const { data: activeEntry, error: fetchErr } = await supabase
           .from('work_order_time_entries')
           .select('*')
@@ -108,7 +95,6 @@ export function FieldWorkerDashboard() {
           .update({ end_time: new Date().toISOString() })
           .eq('id', activeEntry.id);
         if (stopErr) throw stopErr;
-
         setActiveWorkOrder(null);
       }
 
@@ -130,11 +116,11 @@ export function FieldWorkerDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="text-amber-600 border-amber-600">Venter</Badge>;
+        return <Badge variant="outline" className="text-status-active border-status-active">Venter</Badge>;
       case 'in_progress':
-        return <Badge variant="outline" className="text-blue-600 border-blue-600">Pågår</Badge>;
+        return <Badge variant="outline" className="text-primary-text border-primary-text">Pågår</Badge>;
       case 'completed':
-        return <Badge variant="outline" className="text-green-600 border-green-600">Fullført</Badge>;
+        return <Badge variant="outline" className="text-status-complete border-status-complete">Fullført</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -163,25 +149,24 @@ export function FieldWorkerDashboard() {
       <div className="grid grid-cols-3 gap-4">
         <Card className="text-center">
           <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-amber-600">{pendingOrders.length}</div>
+            <div className="text-2xl font-bold text-status-active">{pendingOrders.length}</div>
             <div className="text-sm text-muted-foreground">Venter</div>
           </CardContent>
         </Card>
         <Card className="text-center">
           <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-blue-600">{activeOrders.length}</div>
+            <div className="text-2xl font-bold text-primary-text">{activeOrders.length}</div>
             <div className="text-sm text-muted-foreground">Aktiv</div>
           </CardContent>
         </Card>
         <Card className="text-center">
           <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-green-600">{completedOrders.length}</div>
+            <div className="text-2xl font-bold text-status-complete">{completedOrders.length}</div>
             <div className="text-sm text-muted-foreground">Fullført</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Active Time Tracker */}
       {activeWorkOrder && (
         <TimeTracker 
           workOrderId={activeWorkOrder} 
@@ -189,12 +174,11 @@ export function FieldWorkerDashboard() {
         />
       )}
 
-      {/* Pending Work Orders */}
       {pendingOrders.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-foreground">Nye Oppdrag</h2>
           {pendingOrders.map((workOrder) => (
-            <Card key={workOrder.id} className="border-l-4 border-l-amber-500">
+            <Card key={workOrder.id} className="border-l-4 border-l-status-active">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div>
@@ -237,12 +221,11 @@ export function FieldWorkerDashboard() {
         </div>
       )}
 
-      {/* Active Work Orders */}
       {activeOrders.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-foreground">Pågående Arbeid</h2>
           {activeOrders.map((workOrder) => (
-            <Card key={workOrder.id} className="border-l-4 border-l-blue-500">
+            <Card key={workOrder.id} className="border-l-4 border-l-primary">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div>
@@ -268,9 +251,7 @@ export function FieldWorkerDashboard() {
                     Startet: {format(new Date(workOrder.started_at), 'dd.MM.yyyy HH:mm')}
                   </div>
                 )}
-                
                 <MaterialTracker workOrderId={workOrder.id} />
-                
                 <div className="flex gap-2 pt-2">
                   <Button
                     onClick={() => updateWorkOrderStatus(workOrder.id, 'completed')}
@@ -287,12 +268,11 @@ export function FieldWorkerDashboard() {
         </div>
       )}
 
-      {/* Recent Completed Orders */}
       {completedOrders.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-foreground">Fullførte Oppdrag</h2>
           {completedOrders.slice(0, 3).map((workOrder) => (
-            <Card key={workOrder.id} className="border-l-4 border-l-green-500 opacity-75">
+            <Card key={workOrder.id} className="border-l-4 border-l-status-complete opacity-75">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div>

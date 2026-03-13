@@ -6,27 +6,37 @@ import { useIsMobile } from '@/hooks/use-mobile';
 export const useSmartRouting = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, userRole, isFieldWorker } = useAuth();
+  const { user, userRole, isFieldWorker, isCustomer } = useAuth();
   const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!user || !userRole) return;
 
-    // Skip if already on correct route or on auth pages
-    if (location.pathname.includes('/auth')) {
+    if (location.pathname.includes('/auth')) return;
+    if (location.pathname.startsWith('/portal')) return;
+
+    // Customers → portal
+    if (isCustomer) {
+      navigate('/portal', { replace: true });
       return;
     }
 
-    // Route field workers to field interface if they're not already there
-    if (isFieldWorker && !location.pathname.startsWith('/field')) {
+    // Field workers on mobile → /field
+    if (isFieldWorker && isMobile && !location.pathname.startsWith('/field')) {
       navigate('/field', { replace: true });
       return;
     }
-    
-    // Route non-field workers away from field interface to dashboard
-    if (!isFieldWorker && location.pathname.startsWith('/field')) {
-      navigate('/', { replace: true });
+
+    // Field workers on desktop → /dashboard
+    if (isFieldWorker && !isMobile && location.pathname.startsWith('/field')) {
+      navigate('/dashboard', { replace: true });
       return;
     }
-  }, [user, userRole, isFieldWorker, location.pathname, navigate]);
+    
+    // Non-field workers away from /field
+    if (!isFieldWorker && location.pathname.startsWith('/field')) {
+      navigate('/dashboard', { replace: true });
+      return;
+    }
+  }, [user, userRole, isFieldWorker, isCustomer, isMobile, location.pathname, navigate]);
 };

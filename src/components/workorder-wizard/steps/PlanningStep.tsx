@@ -78,9 +78,9 @@ export function PlanningStep() {
               </Popover>
             </div>
 
-            <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
-              <AlertCircle className="w-4 h-4 text-blue-600" />
-              <span className="text-sm text-blue-700">
+            <div className="flex items-center space-x-2 p-3 bg-info rounded-lg">
+              <AlertCircle className="w-4 h-4 text-info" />
+              <span className="text-sm text-info">
                 Hvis du ikke setter dato, kan feltarbeideren starte når som helst
               </span>
             </div>
@@ -171,12 +171,12 @@ export function PlanningStep() {
       </div>
 
       {/* Planning Summary */}
-      <Card className="border-green-200 bg-green-50/50">
+      <Card className="border-status-complete bg-status-complete-subtle">
         <CardHeader>
-          <CardTitle className="text-base text-green-900">Sammendrag av planlegging</CardTitle>
+          <CardTitle className="text-base text-status-complete">Sammendrag av planlegging</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 text-sm text-green-700">
+          <div className="space-y-2 text-sm text-foreground">
             <div className="flex justify-between">
               <span>Startdato:</span>
               <span className="font-medium">
@@ -211,10 +211,10 @@ export function PlanningStep() {
       </Card>
 
       {/* Tips */}
-      <Card className="border-blue-200 bg-blue-50/50">
+      <Card className="bg-info">
         <CardContent className="p-4">
-          <h4 className="font-medium text-blue-900 mb-2">Tips for planlegging</h4>
-          <ul className="text-sm text-blue-700 space-y-1">
+          <h4 className="font-medium text-info mb-2">Tips for planlegging</h4>
+          <ul className="text-sm text-info space-y-1">
             <li>• Gi tilstrekkelig tid for forberedelse og mobilisering</li>
             <li>• Husk å koordinere med kundens tilgjengelighet</li>
             <li>• For gjentakende oppdrag: vurder sesongvariasjoner</li>

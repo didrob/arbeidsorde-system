@@ -10,7 +10,9 @@ export interface User {
   updated_at: string;
 }
 
-export type UserRole = 'admin' | 'field_worker';
+export type UserRole = 'admin' | 'field_worker' | 'system_admin' | 'site_manager' | 'customer';
+
+export type RegistrationStatus = 'pending_approval' | 'approved' | 'rejected';
 
 export interface Customer {
   id: string;
@@ -20,6 +22,15 @@ export interface Customer {
   address?: string;
   contact_person?: string;
   site_id?: string;
+  org_number?: string;
+  org_form?: string;
+  industry_code?: string;
+  invoice_email?: string;
+  registration_status: RegistrationStatus;
+  registered_by?: string;
+  approved_by?: string;
+  approved_at?: string;
+  rejection_reason?: string;
   created_at: string;
   updated_at: string;
 }

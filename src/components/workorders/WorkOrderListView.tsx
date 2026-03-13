@@ -3,6 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Eye, MoreHorizontal, User, Clock, Edit, Trash2 } from 'lucide-react';
+import { isInternalOrder } from '@/lib/internalOrders';
+import { cn } from '@/lib/utils';
 
 interface WorkOrderListViewProps {
   orders: any[];
@@ -24,9 +26,12 @@ export function WorkOrderListView({
   return (
     <div className="space-y-3">
       {orders.map((order: any) => (
-        <Card 
+         <Card 
           key={order.id}
-          className="hover:shadow-md transition-shadow cursor-pointer"
+          className={cn(
+            "hover:shadow-md transition-shadow cursor-pointer",
+            isInternalOrder(order) && "bg-muted/30 border-[hsl(var(--cobalt))]/20"
+          )}
           onClick={() => onViewDetails(order)}
         >
           <div className="p-4">
@@ -38,6 +43,11 @@ export function WorkOrderListView({
               >
                 {getStatusText(order.status)}
               </Badge>
+              {isInternalOrder(order) && (
+                <Badge className="bg-[hsl(var(--cobalt))] text-white text-xs shrink-0">
+                  INTERN
+                </Badge>
+              )}
 
               {/* Main Content */}
               <div className="flex-1 min-w-0">

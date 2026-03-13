@@ -17,10 +17,10 @@ interface InvoiceDetailsDialogProps {
 
 const statusColors = {
   draft: "bg-secondary text-secondary-foreground",
-  sent: "bg-blue-100 text-blue-800",
-  paid: "bg-green-100 text-green-800", 
-  overdue: "bg-red-100 text-red-800",
-  cancelled: "bg-gray-100 text-gray-800",
+  sent: "bg-info text-info",
+  paid: "bg-status-complete-subtle text-status-complete", 
+  overdue: "bg-status-urgent-subtle text-status-urgent",
+  cancelled: "bg-muted text-muted-foreground",
 };
 
 const statusLabels = {
@@ -97,7 +97,7 @@ export function InvoiceDetailsDialog({ invoice, open, onOpenChange, onEdit }: In
                 size="sm"
                 onClick={() => handleStatusChange('paid')}
                 disabled={updateStatusMutation.isPending}
-                className="text-green-600 border-green-600 hover:bg-green-50"
+                className="text-status-complete border-status-complete hover:bg-status-complete-subtle"
               >
                 <Check className="h-4 w-4 mr-2" />
                 Marker som betalt
@@ -109,7 +109,7 @@ export function InvoiceDetailsDialog({ invoice, open, onOpenChange, onEdit }: In
                 size="sm"
                 onClick={() => handleStatusChange('cancelled')}
                 disabled={updateStatusMutation.isPending}
-                className="text-red-600 border-red-600 hover:bg-red-50"
+                className="text-destructive border-destructive hover:bg-destructive/10"
               >
                 <X className="h-4 w-4 mr-2" />
                 Avbryt faktura

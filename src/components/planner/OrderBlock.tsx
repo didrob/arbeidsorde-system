@@ -49,11 +49,11 @@ export function OrderBlock({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'bg-blue-500/90 border-blue-600 text-white';
+        return 'bg-asco-teal/90 border-asco-teal text-asco-teal-foreground';
       case 'in_progress':
-        return 'bg-amber-500/90 border-amber-600 text-white';
+        return 'bg-status-active/90 border-status-active text-foreground';
       case 'completed':
-        return 'bg-green-500/90 border-green-600 text-white';
+        return 'bg-status-complete/90 border-status-complete text-foreground';
       default:
         return 'bg-muted border-border text-foreground';
     }
