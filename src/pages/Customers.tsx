@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCustomers, useCreateCustomer, useUpdateCustomer } from '@/hooks/useApi';
 import { useSiteFilter } from '@/hooks/useSiteFilter';
 import { useAuth } from '@/hooks/useAuth';
