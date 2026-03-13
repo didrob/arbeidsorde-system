@@ -27,14 +27,7 @@ import { WorkOrderListView } from '@/components/workorders/WorkOrderListView';
 import { WorkOrderTableView } from '@/components/workorders/WorkOrderTableView';
 import { WorkOrderCompactView } from '@/components/workorders/WorkOrderCompactView';
 import { isInternalOrder } from '@/lib/internalOrders';
-import { useToast } from '@/hooks/use-toast';
-import { WorkOrderDetails } from '@/components/WorkOrderDetails';
-import { WorkOrderWizard } from '@/components/workorder-wizard/WorkOrderWizard';
-import { WorkOrderAssignment } from '@/components/WorkOrderAssignment';
-import { WorkOrderGridView } from '@/components/workorders/WorkOrderGridView';
-import { WorkOrderListView } from '@/components/workorders/WorkOrderListView';
-import { WorkOrderTableView } from '@/components/workorders/WorkOrderTableView';
-import { WorkOrderCompactView } from '@/components/workorders/WorkOrderCompactView';
+
 
 interface WorkOrderForm {
   title: string;
