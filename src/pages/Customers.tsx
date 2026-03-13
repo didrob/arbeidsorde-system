@@ -30,6 +30,7 @@ interface CustomerForm {
 }
 
 export default function Customers() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
