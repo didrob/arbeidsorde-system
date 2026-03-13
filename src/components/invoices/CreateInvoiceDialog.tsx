@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCustomers } from "@/hooks/useApi";
 import { useWorkOrders } from "@/hooks/useApi";
+import { isInternalCustomer } from "@/lib/internalOrders";
 import { useCreateInvoice } from "@/hooks/useInvoices";
 import { formatCurrency } from "@/lib/utils";
 
@@ -23,7 +24,8 @@ export function CreateInvoiceDialog({ open, onOpenChange }: CreateInvoiceDialogP
   const [notes, setNotes] = useState("");
   const [selectedWorkOrders, setSelectedWorkOrders] = useState<string[]>([]);
 
-  const { data: customers = [] } = useCustomers();
+  const { data: allCustomers = [] } = useCustomers();
+  const customers = allCustomers.filter(c => !isInternalCustomer(c));
   const { data: workOrders = [] } = useWorkOrders();
   const createInvoiceMutation = useCreateInvoice();
 
@@ -36,9 +38,9 @@ export function CreateInvoiceDialog({ open, onOpenChange }: CreateInvoiceDialogP
     }
   }, [open]);
 
-  // Filter work orders by selected customer
+  // Filter work orders by selected customer, exclude internal orders
   const filteredWorkOrders = workOrders.filter(wo => 
-    wo.customer_id === customerId && wo.status === 'completed'
+    wo.customer_id === customerId && wo.status === 'completed' && !wo.is_internal
   );
 
   const calculateTotal = () => {

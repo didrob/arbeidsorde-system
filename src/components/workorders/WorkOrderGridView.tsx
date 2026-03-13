@@ -3,6 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Eye, MoreHorizontal, User, Clock, Calendar, Edit, Trash2 } from 'lucide-react';
+import { isInternalOrder } from '@/lib/internalOrders';
+import { cn } from '@/lib/utils';
 
 interface WorkOrderGridViewProps {
   orders: any[];
@@ -26,7 +28,10 @@ export function WorkOrderGridView({
       {orders.map((order: any) => (
         <Card 
           key={order.id} 
-          className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer"
+          className={cn(
+            "group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer",
+            isInternalOrder(order) && "bg-muted/30 border-[hsl(var(--cobalt))]/20"
+          )}
           onClick={() => onViewDetails(order)}
         >
           <CardHeader className="pb-3">
@@ -40,12 +45,19 @@ export function WorkOrderGridView({
                   <span>ID: #{order.id?.slice(-6)}</span>
                 </div>
               </div>
-              <Badge 
-                variant="outline" 
-                className={`${getStatusColor(order.status)} shrink-0 text-xs font-medium`}
-              >
-                {getStatusText(order.status)}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge 
+                  variant="outline" 
+                  className={`${getStatusColor(order.status)} shrink-0 text-xs font-medium`}
+                >
+                  {getStatusText(order.status)}
+                </Badge>
+                {isInternalOrder(order) && (
+                  <Badge className="bg-[hsl(var(--cobalt))] text-white text-xs shrink-0">
+                    INTERN
+                  </Badge>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">

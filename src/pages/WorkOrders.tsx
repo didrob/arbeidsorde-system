@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { BulkWorkOrderEditor } from '@/components/backoffice/BulkWorkOrderEditor';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -24,6 +26,8 @@ import { WorkOrderGridView } from '@/components/workorders/WorkOrderGridView';
 import { WorkOrderListView } from '@/components/workorders/WorkOrderListView';
 import { WorkOrderTableView } from '@/components/workorders/WorkOrderTableView';
 import { WorkOrderCompactView } from '@/components/workorders/WorkOrderCompactView';
+import { isInternalOrder } from '@/lib/internalOrders';
+
 
 interface WorkOrderForm {
   title: string;
@@ -39,6 +43,7 @@ interface WorkOrderForm {
 
 export default function WorkOrders() {
   const [search, setSearch] = useState('');
+  const [showInternal, setShowInternal] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table' | 'compact'>(() => {
     return (localStorage.getItem('workOrderViewMode') as any) || 'grid';
@@ -69,7 +74,10 @@ export default function WorkOrders() {
   const deleteWorkOrder = useDeleteWorkOrder();
   const { toast } = useToast();
 
-  const filteredWorkOrders = workOrders?.filter((order: any) => {
+  // Filter orders: exclude internal by default
+  const visibleOrders = workOrders?.filter((order: any) => showInternal || !isInternalOrder(order));
+
+  const filteredWorkOrders = visibleOrders?.filter((order: any) => {
     const matchesSearch = order.title.toLowerCase().includes(search.toLowerCase()) ||
                          order.description?.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
@@ -215,25 +223,37 @@ export default function WorkOrders() {
                 <AlignLeft className="h-4 w-4" />
               </ToggleGroupItem>
             </ToggleGroup>
+
+            {/* Internal Orders Toggle */}
+            <div className="flex items-center gap-2">
+              <Switch
+                id="show-internal"
+                checked={showInternal}
+                onCheckedChange={setShowInternal}
+              />
+              <Label htmlFor="show-internal" className="text-sm cursor-pointer whitespace-nowrap">
+                Vis interne
+              </Label>
+            </div>
           </div>
 
           {/* Quick Status Tabs */}
           <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">
             <TabsList className="grid w-full grid-cols-5 h-auto">
               <TabsTrigger value="all" className="text-xs sm:text-sm">
-                Alle ({workOrders?.length || 0})
+                Alle ({visibleOrders?.length || 0})
               </TabsTrigger>
               <TabsTrigger value="pending" className="text-xs sm:text-sm">
-                Venter ({workOrders?.filter((o: any) => o.status === 'pending').length || 0})
+                Venter ({visibleOrders?.filter((o: any) => o.status === 'pending').length || 0})
               </TabsTrigger>
               <TabsTrigger value="in_progress" className="text-xs sm:text-sm">
-                Pågår ({workOrders?.filter((o: any) => o.status === 'in_progress').length || 0})
+                Pågår ({visibleOrders?.filter((o: any) => o.status === 'in_progress').length || 0})
               </TabsTrigger>
               <TabsTrigger value="completed" className="text-xs sm:text-sm">
-                Fullført ({workOrders?.filter((o: any) => o.status === 'completed').length || 0})
+                Fullført ({visibleOrders?.filter((o: any) => o.status === 'completed').length || 0})
               </TabsTrigger>
               <TabsTrigger value="cancelled" className="text-xs sm:text-sm">
-                Avbrutt ({workOrders?.filter((o: any) => o.status === 'cancelled').length || 0})
+                Avbrutt ({visibleOrders?.filter((o: any) => o.status === 'cancelled').length || 0})
               </TabsTrigger>
             </TabsList>
           </Tabs>

@@ -1,5 +1,8 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye } from 'lucide-react';
+import { isInternalOrder } from '@/lib/internalOrders';
+import { cn } from '@/lib/utils';
 
 interface WorkOrderCompactViewProps {
   orders: any[];
@@ -17,7 +20,10 @@ export function WorkOrderCompactView({
       {orders.map((order: any) => (
         <div 
           key={order.id}
-          className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer group"
+          className={cn(
+            "flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer group",
+            isInternalOrder(order) && "bg-muted/20 border-[hsl(var(--cobalt))]/20"
+          )}
           onClick={() => onViewDetails(order)}
         >
           {/* Status Dot */}
@@ -36,8 +42,15 @@ export function WorkOrderCompactView({
             <div className="font-semibold text-sm truncate group-hover:text-primary transition-colors">
               {order.title}
             </div>
-            <div className="text-xs text-muted-foreground truncate">
-              {order.customer?.name || 'Ingen kunde'} • #{order.id?.slice(-6)}
+            <div className="flex items-center gap-1.5">
+              <div className="text-xs text-muted-foreground truncate">
+                {order.customer?.name || 'Ingen kunde'} • #{order.id?.slice(-6)}
+              </div>
+              {isInternalOrder(order) && (
+                <Badge className="bg-[hsl(var(--cobalt))] text-white text-[10px] px-1.5 py-0">
+                  INTERN
+                </Badge>
+              )}
             </div>
           </div>
 

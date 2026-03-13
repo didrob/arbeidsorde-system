@@ -17,6 +17,9 @@ const initialFormData: WizardFormData = {
   is_recurring: false,
   recurring_frequency: 'weekly',
   recurring_end_date: undefined,
+  is_internal: false,
+  cost_center: undefined,
+  linked_order_id: undefined,
 };
 
 const initialSteps: WizardStep[] = [

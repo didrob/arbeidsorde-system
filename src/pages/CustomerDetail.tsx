@@ -112,13 +112,15 @@ export default function CustomerDetail() {
   }
 
   const status = statusConfig[customer.registration_status] || statusConfig.approved;
-  const activeOrders = orders?.filter(o => o.status === 'in_progress').length || 0;
-  const totalOrders = orders?.length || 0;
+  // Exclude internal orders from customer stats
+  const externalOrders = orders?.filter(o => !o.is_internal);
+  const activeOrders = externalOrders?.filter(o => o.status === 'in_progress').length || 0;
+  const totalOrders = externalOrders?.length || 0;
   const totalRevenue = economy?.totalRevenue || 0;
 
   const filteredOrders = orderStatusFilter === 'all'
-    ? orders || []
-    : (orders || []).filter(o => o.status === orderStatusFilter);
+    ? externalOrders || []
+    : (externalOrders || []).filter(o => o.status === orderStatusFilter);
 
   const handleEditOpen = () => {
     setValue('name', customer.name);

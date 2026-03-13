@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Eye, MoreHorizontal, User, Edit, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import { isInternalOrder } from '@/lib/internalOrders';
 import { format } from 'date-fns';
 import { nb } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -58,12 +59,17 @@ export function WorkOrderTableView({
                       #{order.id?.slice(-6)}
                     </p>
                   </div>
-                  <Badge
+                   <Badge
                     variant="outline"
                     className={`${getStatusColor(order.status)} text-xs shrink-0`}
                   >
                     {getStatusText(order.status)}
                   </Badge>
+                  {isInternalOrder(order) && (
+                    <Badge className="bg-[hsl(var(--cobalt))] text-white text-xs ml-1">
+                      INTERN
+                    </Badge>
+                  )}
                 </div>
 
                 {/* Customer always visible */}
@@ -160,7 +166,10 @@ export function WorkOrderTableView({
           {orders.map((order: any) => (
             <TableRow 
               key={order.id}
-              className="cursor-pointer hover:bg-muted/50"
+              className={cn(
+                "cursor-pointer hover:bg-muted/50",
+                isInternalOrder(order) && "bg-muted/20"
+              )}
               onClick={() => onViewDetails(order)}
             >
               <TableCell className="font-mono text-xs">
@@ -175,12 +184,19 @@ export function WorkOrderTableView({
                 </div>
               </TableCell>
               <TableCell>
-                <Badge 
-                  variant="outline" 
-                  className={`${getStatusColor(order.status)} text-xs`}
-                >
-                  {getStatusText(order.status)}
-                </Badge>
+                <div className="flex items-center gap-1">
+                  <Badge 
+                    variant="outline" 
+                    className={`${getStatusColor(order.status)} text-xs`}
+                  >
+                    {getStatusText(order.status)}
+                  </Badge>
+                  {isInternalOrder(order) && (
+                    <Badge className="bg-[hsl(var(--cobalt))] text-white text-xs">
+                      INTERN
+                    </Badge>
+                  )}
+                </div>
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
