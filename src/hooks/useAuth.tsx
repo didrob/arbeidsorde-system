@@ -46,10 +46,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .limit(1)
         .maybeSingle();
 
-      // Also fetch profile for organization/site onboarding check
+      // Also fetch profile for organization/site onboarding check + customer_id
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('organization_id, site_id')
+        .select('organization_id, site_id, customer_id')
         .eq('user_id', userId)
         .single();
       
