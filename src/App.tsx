@@ -112,12 +112,13 @@ const App = () => (
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </BrowserRouter>
-          </SiteFilterProvider>
-        </WorkOrderWizardProvider>
-      </AuthProvider>
-    </QueryClientProvider>
-  </TooltipProvider>
+              </BrowserRouter>
+            </SiteFilterProvider>
+          </WorkOrderWizardProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </TooltipProvider>
+  </ThemeProvider>
 );
 
 

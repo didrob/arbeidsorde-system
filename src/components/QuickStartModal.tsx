@@ -452,7 +452,7 @@ export const QuickStartModal = ({ open, onClose, onSuccess }: QuickStartModalPro
                 <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
                   <div className="flex items-center justify-between">
                     <span className="font-medium">Estimert kostnad:</span>
-                    <span className="text-lg font-bold text-primary">
+                    <span className="text-lg font-bold text-foreground">
                       {totalEstimatedCost.toLocaleString('no-NO')} kr
                     </span>
                   </div>

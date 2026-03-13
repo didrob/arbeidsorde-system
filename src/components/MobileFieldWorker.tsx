@@ -517,7 +517,7 @@ export const MobileFieldWorker = () => {
           <div className="space-y-4">
             {activeTimer && activeOrder ? (
               <div className="text-center">
-                <div className="text-3xl font-mono text-primary mb-2">
+                <div className="text-3xl font-mono text-foreground mb-2">
                   {Math.floor(elapsedTime / 3600)}:{String(Math.floor((elapsedTime % 3600) / 60)).padStart(2, '0')}:{String(elapsedTime % 60).padStart(2, '0')}
                 </div>
                 <p className="text-sm text-muted-foreground">{activeOrder.title}</p>

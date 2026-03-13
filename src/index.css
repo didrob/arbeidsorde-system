@@ -120,6 +120,7 @@
     /* Primary = Teal (unchanged) */
     --primary: 167 100% 50%;
     --primary-foreground: 232 21% 20%;
+    --primary-text: 167 100% 50%; /* Teal OK on dark bg */
 
     /* Secondary = Cobalt Light */
     --secondary: 232 23% 25%;
