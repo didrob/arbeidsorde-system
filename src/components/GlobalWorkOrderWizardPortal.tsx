@@ -22,15 +22,19 @@ export function GlobalWorkOrderWizardPortal() {
   const handleSubmit = useCallback(async (data: any) => {
     if (!user) return;
     
-    const { error } = await supabase.from('work_orders').insert({
+    const { data: inserted, error } = await supabase.from('work_orders').insert({
       ...data,
       user_id: user.id,
       status: 'pending',
-    });
+    }).select('id').single();
 
     if (error) {
       toast.error('Kunne ikke opprette arbeidsordre');
       throw error;
+    }
+
+    if (inserted) {
+      sendOrderEmail('order_confirmation', inserted.id);
     }
 
     toast.success('Arbeidsordre opprettet!');
