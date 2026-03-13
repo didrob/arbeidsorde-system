@@ -6,6 +6,11 @@ export interface WizardFormData {
   assigned_to?: string;
   notes?: string;
 
+  // Internal order fields
+  is_internal?: boolean;
+  cost_center?: string;
+  linked_order_id?: string;
+
   // Step 2: Pricing Model
   pricing_model: 'fixed' | 'resource_based';
   price_value?: number;
