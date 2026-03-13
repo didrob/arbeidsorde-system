@@ -166,7 +166,10 @@ export function WorkOrderTableView({
           {orders.map((order: any) => (
             <TableRow 
               key={order.id}
-              className="cursor-pointer hover:bg-muted/50"
+              className={cn(
+                "cursor-pointer hover:bg-muted/50",
+                isInternalOrder(order) && "bg-muted/20"
+              )}
               onClick={() => onViewDetails(order)}
             >
               <TableCell className="font-mono text-xs">
