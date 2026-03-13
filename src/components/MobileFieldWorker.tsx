@@ -377,18 +377,18 @@ export const MobileFieldWorker = () => {
               )}
 
               {/* Quick Start Button */}
-              <Card className="bg-primary/5 border-primary/20 animate-fade-in">
+              <Card className="bg-cobalt border-cobalt animate-fade-in">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-medium text-primary">Hurtigstart</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="font-medium text-white">Hurtigstart</h3>
+                      <p className="text-sm text-white/80">
                         Start en ny jobb med én gang
                       </p>
                     </div>
                     <Button 
                       onClick={() => setShowQuickStart(true)}
-                      className="bg-primary hover:bg-primary/90 focus-ring"
+                      className="bg-asco-teal text-cobalt hover:bg-asco-teal/90 focus-ring font-medium"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Start jobb
