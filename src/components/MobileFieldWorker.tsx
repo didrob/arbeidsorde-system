@@ -24,7 +24,7 @@ import { QuickStartModal } from './QuickStartModal';
 import { WorkOrderCompletionDialog } from './WorkOrderCompletionDialog';
 import { WorkOrderConfirmationDialog } from './WorkOrderConfirmationDialog';
 import { TimeTracker } from './TimeTracker';
-import { QuickOrderFAB } from '@/features/field-orders/QuickOrderFAB';
+
 import { QuickOrderSheet } from '@/features/field-orders/QuickOrderSheet';
 import { useQuickOrder } from '@/features/field-orders/useQuickOrder';
 import { 
