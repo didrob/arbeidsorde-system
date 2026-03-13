@@ -34,7 +34,7 @@ export function AscoLogoMark({ size = 40, color = 'white', className = '' }: Asc
       />
 
       {/* Teal dot — directly under the left foot of A */}
-      <circle cx="4" cy="34" r="3" fill="hsl(var(--asco-teal))" />
+      <circle cx="4" cy="34" r="3" fill="#00FDC7" />
 
       {/* SCO — rendered as text */}
       <text
