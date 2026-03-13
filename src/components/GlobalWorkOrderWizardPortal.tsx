@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
+import { sendOrderEmail } from '@/lib/emailService';
 
 const LazyWorkOrderWizard = React.lazy(
   () => import('@/components/workorder-wizard/WorkOrderWizard')
