@@ -1,5 +1,8 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye } from 'lucide-react';
+import { isInternalOrder } from '@/lib/internalOrders';
+import { cn } from '@/lib/utils';
 
 interface WorkOrderCompactViewProps {
   orders: any[];
