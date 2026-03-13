@@ -45,12 +45,19 @@ export function WorkOrderGridView({
                   <span>ID: #{order.id?.slice(-6)}</span>
                 </div>
               </div>
-              <Badge 
-                variant="outline" 
-                className={`${getStatusColor(order.status)} shrink-0 text-xs font-medium`}
-              >
-                {getStatusText(order.status)}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge 
+                  variant="outline" 
+                  className={`${getStatusColor(order.status)} shrink-0 text-xs font-medium`}
+                >
+                  {getStatusText(order.status)}
+                </Badge>
+                {isInternalOrder(order) && (
+                  <Badge className="bg-[hsl(var(--cobalt))] text-white text-xs shrink-0">
+                    INTERN
+                  </Badge>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">

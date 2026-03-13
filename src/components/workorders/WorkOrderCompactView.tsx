@@ -42,8 +42,15 @@ export function WorkOrderCompactView({
             <div className="font-semibold text-sm truncate group-hover:text-primary transition-colors">
               {order.title}
             </div>
-            <div className="text-xs text-muted-foreground truncate">
-              {order.customer?.name || 'Ingen kunde'} • #{order.id?.slice(-6)}
+            <div className="flex items-center gap-1.5">
+              <div className="text-xs text-muted-foreground truncate">
+                {order.customer?.name || 'Ingen kunde'} • #{order.id?.slice(-6)}
+              </div>
+              {isInternalOrder(order) && (
+                <Badge className="bg-[hsl(var(--cobalt))] text-white text-[10px] px-1.5 py-0">
+                  INTERN
+                </Badge>
+              )}
             </div>
           </div>
 

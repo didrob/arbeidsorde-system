@@ -184,12 +184,19 @@ export function WorkOrderTableView({
                 </div>
               </TableCell>
               <TableCell>
-                <Badge 
-                  variant="outline" 
-                  className={`${getStatusColor(order.status)} text-xs`}
-                >
-                  {getStatusText(order.status)}
-                </Badge>
+                <div className="flex items-center gap-1">
+                  <Badge 
+                    variant="outline" 
+                    className={`${getStatusColor(order.status)} text-xs`}
+                  >
+                    {getStatusText(order.status)}
+                  </Badge>
+                  {isInternalOrder(order) && (
+                    <Badge className="bg-[hsl(var(--cobalt))] text-white text-xs">
+                      INTERN
+                    </Badge>
+                  )}
+                </div>
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">

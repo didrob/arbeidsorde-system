@@ -43,6 +43,11 @@ export function WorkOrderListView({
               >
                 {getStatusText(order.status)}
               </Badge>
+              {isInternalOrder(order) && (
+                <Badge className="bg-[hsl(var(--cobalt))] text-white text-xs shrink-0">
+                  INTERN
+                </Badge>
+              )}
 
               {/* Main Content */}
               <div className="flex-1 min-w-0">
