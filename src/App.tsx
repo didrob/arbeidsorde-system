@@ -11,6 +11,7 @@ import { useSmartRouting } from "@/hooks/useSmartRouting";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { UserOnboarding } from "@/components/onboarding/UserOnboarding";
+import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import FieldWorker from "./pages/FieldWorker";
