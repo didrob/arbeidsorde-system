@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useForm } from 'react-hook-form';
 import { Search, Mail, Phone, MapPin, Edit, CheckCircle, XCircle, Building2, Loader2, ChevronRight } from 'lucide-react';
+import { isInternalCustomer } from '@/lib/internalOrders';
 import { useToast } from '@/hooks/use-toast';
 import { useBrregLookup } from '@/features/customers/useBrregLookup';
 import { supabase } from '@/integrations/supabase/client';
