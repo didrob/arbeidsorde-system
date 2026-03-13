@@ -150,7 +150,8 @@ const App = () => (
                   <Route path="/time-tracking" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
                   <Route path="/map" element={<ProtectedRoute><Map /></ProtectedRoute>} />
                   <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
-                  <Route path="/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
+                  <Route path="/sales-orders" element={<ProtectedRoute><SalesOrders /></ProtectedRoute>} />
+                  <Route path="/invoices" element={<Navigate to="/sales-orders" replace />} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
