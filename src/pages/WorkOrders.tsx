@@ -230,6 +230,18 @@ export default function WorkOrders() {
                 <AlignLeft className="h-4 w-4" />
               </ToggleGroupItem>
             </ToggleGroup>
+
+            {/* Internal Orders Toggle */}
+            <div className="flex items-center gap-2">
+              <Switch
+                id="show-internal"
+                checked={showInternal}
+                onCheckedChange={setShowInternal}
+              />
+              <Label htmlFor="show-internal" className="text-sm cursor-pointer whitespace-nowrap">
+                Vis interne
+              </Label>
+            </div>
           </div>
 
           {/* Quick Status Tabs */}
