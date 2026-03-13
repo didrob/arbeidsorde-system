@@ -36,6 +36,7 @@ const CustomerAgreements = lazy(() => import("./pages/CustomerAgreements"));
 const Invoices = lazy(() => import("./pages/Invoices"));
 const Planner = lazy(() => import("./pages/Planner"));
 const RegisterCustomer = lazy(() => import("./pages/RegisterCustomer"));
+const CustomerDetail = lazy(() => import("./pages/CustomerDetail"));
 
 // Lazy-loaded portal pages
 const PortalLogin = lazy(() => import("./pages/portal/PortalLogin"));
