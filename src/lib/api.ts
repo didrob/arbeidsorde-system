@@ -228,7 +228,7 @@ class ApiClient {
   }
 
   // Customers API - Site segregation handled by RLS + manual filtering
-  async getCustomers(selectedSiteId?: string): Promise<ApiResponse<Customer[]>> {
+  async getCustomers(selectedSiteId?: string): Promise<ApiResponse<any[]>> {
     let query = supabase
       .from('customers')
       .select(`
@@ -243,20 +243,20 @@ class ApiClient {
     }
 
     const { data, error } = await query;
-    return this.handleResponse(data, error);
+    return this.handleResponse(data || [], error);
   }
 
-  async createCustomer(customerData: Omit<Customer, 'id' | 'created_at' | 'updated_at'>): Promise<ApiResponse<Customer>> {
+  async createCustomer(customerData: Record<string, any>): Promise<ApiResponse<any>> {
     const { data, error } = await supabase
       .from('customers')
-      .insert(customerData)
+      .insert(customerData as any)
       .select()
       .single();
 
     return this.handleResponse(data, error);
   }
 
-  async updateCustomer(id: string, customerData: Partial<Omit<Customer, 'id' | 'created_at' | 'updated_at'>>): Promise<ApiResponse<Customer>> {
+  async updateCustomer(id: string, customerData: Record<string, any>): Promise<ApiResponse<any>> {
     const { data, error } = await supabase
       .from('customers')
       .update(customerData)

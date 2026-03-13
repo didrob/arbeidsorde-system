@@ -151,34 +151,61 @@ export type Database = {
       customers: {
         Row: {
           address: string | null
+          approved_at: string | null
+          approved_by: string | null
           contact_person: string | null
           created_at: string
           email: string | null
           id: string
+          industry_code: string | null
+          invoice_email: string | null
           name: string
+          org_form: string | null
+          org_number: string | null
           phone: string | null
+          registered_by: string | null
+          registration_status: string
+          rejection_reason: string | null
           site_id: string | null
           updated_at: string
         }
         Insert: {
           address?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           contact_person?: string | null
           created_at?: string
           email?: string | null
           id?: string
+          industry_code?: string | null
+          invoice_email?: string | null
           name: string
+          org_form?: string | null
+          org_number?: string | null
           phone?: string | null
+          registered_by?: string | null
+          registration_status?: string
+          rejection_reason?: string | null
           site_id?: string | null
           updated_at?: string
         }
         Update: {
           address?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           contact_person?: string | null
           created_at?: string
           email?: string | null
           id?: string
+          industry_code?: string | null
+          invoice_email?: string | null
           name?: string
+          org_form?: string | null
+          org_number?: string | null
           phone?: string | null
+          registered_by?: string | null
+          registration_status?: string
+          rejection_reason?: string | null
           site_id?: string | null
           updated_at?: string
         }
