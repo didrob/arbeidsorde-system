@@ -68,10 +68,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const role = roleData?.role || 'field_worker';
       console.log('User role fetched successfully:', role);
       setUserRole(role);
+      setCustomerId(profileData?.customer_id || null);
       
-      // Check if user needs onboarding (missing organization or site)
-      const needsOnboarding = !profileData?.organization_id || !profileData?.site_id;
-      setNeedsOnboarding(needsOnboarding);
+      // Customers skip onboarding — they don't need org/site assignment
+      if (role === 'customer') {
+        setNeedsOnboarding(false);
+      } else {
+        const needsOnboarding = !profileData?.organization_id || !profileData?.site_id;
+        setNeedsOnboarding(needsOnboarding);
+      }
       console.log('User needs onboarding:', needsOnboarding);
     } catch (error) {
       console.error('Unexpected error fetching user role:', error);
