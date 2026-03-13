@@ -154,6 +154,14 @@ export const useQuickOrder = () => {
       queryClient.invalidateQueries({ queryKey: ['assignedWorkOrders'] });
       queryClient.invalidateQueries({ queryKey: ['activeTimer'] });
 
+      // Fire-and-forget email notifications
+      if (workOrder) {
+        sendOrderEmail('order_confirmation', workOrder.id);
+        if (data.is_urgent) {
+          sendOrderEmail('urgent_alert', workOrder.id);
+        }
+      }
+
       toast.success(
         action === 'assign_self'
           ? 'Ordre opprettet og startet!'
