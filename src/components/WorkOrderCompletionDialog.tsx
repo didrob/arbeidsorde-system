@@ -584,8 +584,8 @@ export const WorkOrderCompletionDialog = ({
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+                <div className="flex items-center gap-2 p-3 bg-status-complete-subtle rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-status-complete" />
                   <p className="text-sm">
                     Arbeidsordren vil bli markert som fullført og du vil ikke lenger kunne redigere den.
                   </p>
