@@ -1856,6 +1856,10 @@ export type Database = {
       }
       generate_invoice_number: { Args: never; Returns: string }
       get_current_user_role: { Args: never; Returns: string }
+      get_customer_id_for_user: {
+        Args: { user_uuid?: string }
+        Returns: string
+      }
       get_user_accessible_site_ids: {
         Args: { user_uuid?: string }
         Returns: string[]
@@ -1876,6 +1880,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      is_customer: { Args: never; Returns: boolean }
       is_field_worker: { Args: never; Returns: boolean }
       is_site_manager: { Args: never; Returns: boolean }
       is_system_admin: { Args: never; Returns: boolean }
