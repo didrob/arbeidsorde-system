@@ -9,13 +9,7 @@ const Landing = () => {
     <PublicLayout showFooter variant="landing">
       {/* Hero logo */}
       <div className="flex flex-col items-center">
-        <span className="font-heading text-5xl font-bold tracking-[0.15em] text-white select-none mb-8">
-          <span className="relative inline-block">
-            A
-            <span className="absolute -bottom-1 left-0 h-3 w-3 rounded-full bg-asco-teal" />
-          </span>
-          SCO
-        </span>
+        <img src="/logo-light.png" alt="ASCO" className="h-20 w-auto object-contain mb-8" />
 
         <h1 className="font-heading text-2xl md:text-[32px] text-white text-center mb-2">
           Velkommen til ASCO

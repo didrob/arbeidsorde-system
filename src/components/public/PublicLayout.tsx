@@ -10,18 +10,6 @@ interface PublicLayoutProps {
   variant?: 'landing' | 'form';
 }
 
-function AscoLogoSmall() {
-  return (
-    <span className="font-heading text-xl font-bold tracking-[0.15em] text-white select-none">
-      <span className="relative inline-block">
-        A
-        <span className="absolute -bottom-0.5 left-0 h-2 w-2 rounded-full bg-asco-teal" />
-      </span>
-      SCO
-    </span>
-  );
-}
-
 export function PublicLayout({ children, showBack = false, showFooter = false, variant = 'form' }: PublicLayoutProps) {
   const navigate = useNavigate();
   const isLanding = variant === 'landing';
@@ -29,7 +17,7 @@ export function PublicLayout({ children, showBack = false, showFooter = false, v
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
       {/* Cobalt base fallback */}
-      <div className="absolute inset-0 bg-asco-cobalt" />
+      <div className="absolute inset-0 bg-cobalt" />
 
       {/* Industrial background image */}
       <img
@@ -37,29 +25,29 @@ export function PublicLayout({ children, showBack = false, showFooter = false, v
         alt=""
         aria-hidden="true"
         className={`absolute inset-0 w-full h-full object-cover object-center ${
-          isLanding ? 'opacity-[0.35]' : 'opacity-[0.20]'
+          isLanding ? 'opacity-[0.60]' : 'opacity-[0.45]'
         }`}
       />
 
       {/* Cobalt overlay */}
       <div
         className={`absolute inset-0 ${
-          isLanding ? 'bg-[rgba(41,44,63,0.85)]' : 'bg-[rgba(41,44,63,0.90)]'
+          isLanding ? 'bg-[rgba(41,44,63,0.55)]' : 'bg-[rgba(41,44,63,0.65)]'
         }`}
       />
 
       {/* Gradient overlay for landing */}
       <div className={`absolute inset-0 bg-gradient-to-b ${
         isLanding
-          ? 'from-[rgba(30,32,48,0.95)] via-[rgba(41,44,63,0.80)] to-[rgba(41,44,63,0.75)]'
-          : 'from-[rgba(30,32,48,0.95)] via-transparent to-[rgba(41,44,63,0.85)]'
+          ? 'from-[rgba(30,32,48,0.75)] via-[rgba(41,44,63,0.60)] to-[rgba(41,44,63,0.55)]'
+          : 'from-[rgba(30,32,48,0.75)] via-transparent to-[rgba(41,44,63,0.65)]'
       }`} />
 
       {/* Topbar */}
       <header className="relative z-10 flex items-center justify-between px-4 md:px-8 py-4">
         <div className="flex items-center gap-4">
           <Link to="/" aria-label="ASCO — Gå til forsiden">
-            <AscoLogoSmall />
+            <img src="/logo-light.png" alt="ASCO" className="h-10 w-auto object-contain" />
           </Link>
           {showBack && (
             <button
