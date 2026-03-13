@@ -97,8 +97,8 @@ export default {
 
       /* — ASCO Fonts — */
       fontFamily: {
-        heading: ["'PP Neue Machina'", "Arial", "sans-serif"],
-        body: ["'TT Commons Pro'", "Arial", "sans-serif"],
+        heading: ["Arial", "sans-serif"],
+        body: ["Arial", "sans-serif"],
       },
 
       /* — ASCO Spacing — */
