@@ -7,30 +7,11 @@
    All colors are HSL. No hex in components.
    ══════════════════════════════════════════════════════ */
 
-/* ── Font Faces ── */
-@font-face {
-  font-family: "TT Commons Pro";
-  src: url("/fonts/TTCommonsPro-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "TT Commons Pro";
-  src: url("/fonts/TTCommonsPro-DemiBold.woff2") format("woff2");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "PP Neue Machina";
-  src: url("/fonts/PPNeueMachina-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+/* ── Font Faces ──
+   NOTE: Custom fonts (PP Neue Machina, TT Commons Pro) removed temporarily.
+   woff2 files not committed to repo — using Arial as fallback.
+   Re-add @font-face blocks when font files are available in /public/fonts/
+── */
 
 /* ── Theme Variables ── */
 @layer base {
