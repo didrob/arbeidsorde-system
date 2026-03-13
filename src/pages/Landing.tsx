@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Users, Building2 } from 'lucide-react';
 import { PublicLayout } from '@/components/public/PublicLayout';
+import { AscoLogoMark } from '@/components/AscoLogoMark';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -9,13 +10,7 @@ const Landing = () => {
     <PublicLayout showFooter variant="landing">
       {/* Hero logo */}
       <div className="flex flex-col items-center">
-        <span className="font-heading text-5xl font-bold tracking-[0.15em] text-white select-none mb-8">
-          <span className="relative inline-block">
-            A
-            <span className="absolute -bottom-1 left-0 h-3 w-3 rounded-full bg-asco-teal" />
-          </span>
-          SCO
-        </span>
+        <AscoLogoMark size={56} color="white" className="mb-8" />
 
         <h1 className="font-heading text-2xl md:text-[32px] text-white text-center mb-2">
           Velkommen til ASCO

@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Phone, AlertTriangle } from 'lucide-react';
+import { AscoLogoMark } from '@/components/AscoLogoMark';
 
 
 interface PublicLayoutProps {
@@ -8,18 +9,6 @@ interface PublicLayoutProps {
   showBack?: boolean;
   showFooter?: boolean;
   variant?: 'landing' | 'form';
-}
-
-function AscoLogoSmall() {
-  return (
-    <span className="font-heading text-xl font-bold tracking-[0.15em] text-white select-none">
-      <span className="relative inline-block">
-        A
-        <span className="absolute -bottom-0.5 left-0 h-2 w-2 rounded-full bg-asco-teal" />
-      </span>
-      SCO
-    </span>
-  );
 }
 
 export function PublicLayout({ children, showBack = false, showFooter = false, variant = 'form' }: PublicLayoutProps) {
@@ -59,7 +48,7 @@ export function PublicLayout({ children, showBack = false, showFooter = false, v
       <header className="relative z-10 flex items-center justify-between px-4 md:px-8 py-4">
         <div className="flex items-center gap-4">
           <Link to="/" aria-label="ASCO — Gå til forsiden">
-            <AscoLogoSmall />
+            <AscoLogoMark size={28} color="white" />
           </Link>
           {showBack && (
             <button
