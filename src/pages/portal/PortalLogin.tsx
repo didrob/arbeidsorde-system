@@ -5,9 +5,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, ArrowLeft, Loader2 } from 'lucide-react';
+import { MapPin, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { PublicLayout } from '@/components/public/PublicLayout';
+import { GlassCard } from '@/components/public/GlassCard';
+import { useTheme } from '@/hooks/useTheme';
 
 const STORAGE_KEY = 'asco-portal-site';
 
@@ -20,6 +22,7 @@ const PortalLogin = () => {
   const navigate = useNavigate();
   const { user, isCustomer } = useAuth();
   const { toast } = useToast();
+  const { isDark } = useTheme();
   const [step, setStep] = useState<'location' | 'login'>('location');
   const [sites, setSites] = useState<Site[]>([]);
   const [selectedSite, setSelectedSite] = useState<string | null>(null);
@@ -27,14 +30,12 @@ const PortalLogin = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Redirect if already logged in as customer
   useEffect(() => {
     if (user && isCustomer) {
       navigate('/portal', { replace: true });
     }
   }, [user, isCustomer, navigate]);
 
-  // Load sites
   useEffect(() => {
     const fetchSites = async () => {
       const { data } = await supabase
@@ -47,7 +48,6 @@ const PortalLogin = () => {
     fetchSites();
   }, []);
 
-  // Restore saved site
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved && sites.some(s => s.id === saved)) {
@@ -70,7 +70,6 @@ const PortalLogin = () => {
       if (error) {
         toast({ variant: 'destructive', title: 'Innlogging feilet', description: error.message });
       }
-      // Auth state listener in useAuth will handle redirect
     } catch {
       toast({ variant: 'destructive', title: 'Feil', description: 'Noe gikk galt' });
     } finally {
@@ -79,87 +78,95 @@ const PortalLogin = () => {
   };
 
   const siteName = sites.find(s => s.id === selectedSite)?.name;
+  const textClass = isDark ? 'text-white' : 'text-foreground';
+  const mutedClass = isDark ? 'text-white/50' : 'text-muted-foreground';
+  const inputClass = isDark ? 'bg-white/10 border-white/20 text-white placeholder:text-white/40' : '';
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
-      <button onClick={() => navigate('/')} className="absolute top-6 left-6 text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm">
-        <ArrowLeft className="h-4 w-4" /> Tilbake
-      </button>
-
-      <img src="/logo-light.png" alt="ASCO" className="h-10 mb-8 dark:hidden" />
-      <img src="/logo-dark.png" alt="ASCO" className="h-10 mb-8 hidden dark:block" />
-
+    <PublicLayout showBack>
       {step === 'location' ? (
-        <Card className="w-full max-w-md shadow-brand-lg">
-          <CardHeader>
-            <CardTitle className="font-heading text-xl text-center">Velg lokasjon</CardTitle>
-            <p className="text-sm text-muted-foreground text-center">Hvor ønsker du tjenester?</p>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-3">
+        <div className="w-full max-w-lg">
+          <div className="text-center mb-8">
+            <h1 className={`font-heading text-2xl md:text-3xl mb-2 ${textClass}`}>
+              Velg lokasjon
+            </h1>
+            <p className={mutedClass}>Hvor ønsker du tjenester?</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             {sites.map(site => (
-              <Button
-                key={site.id}
-                variant="outline"
-                className="h-20 flex flex-col gap-1 hover:border-primary hover:bg-primary/5"
-                onClick={() => handleSiteSelect(site.id)}
-              >
-                <MapPin className="h-5 w-5 text-primary-text" />
-                <span className="text-sm font-medium">{site.name}</span>
-              </Button>
+              <button key={site.id} onClick={() => handleSiteSelect(site.id)} className="text-left">
+                <GlassCard
+                  className={`flex flex-col items-center justify-center gap-2 p-6 min-h-[120px] cursor-pointer hover:border-asco-teal/40 ${
+                    selectedSite === site.id ? 'border-asco-teal ring-2 ring-asco-teal/30' : ''
+                  }`}
+                >
+                  <MapPin className="h-6 w-6 text-asco-teal" />
+                  <span className={`text-sm font-medium ${textClass}`}>{site.name}</span>
+                </GlassCard>
+              </button>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : (
-        <Card className="w-full max-w-md shadow-brand-lg">
-          <CardHeader>
-            <CardTitle className="font-heading text-xl text-center">Kundeinnlogging</CardTitle>
+        <GlassCard className="w-full max-w-md p-8">
+          <div className="flex flex-col items-center mb-6">
+            <img
+              src={isDark ? '/logo-dark.png' : '/logo-light.png'}
+              alt="ASCO"
+              className="h-10 mb-3"
+            />
+            <p className={`text-sm mb-1 ${mutedClass}`}>Kundeportal</p>
             <button
               onClick={() => setStep('location')}
-              className="flex items-center gap-1 text-sm text-primary-text hover:underline mx-auto"
+              className="flex items-center gap-1 text-xs text-asco-teal hover:underline"
             >
               <MapPin className="h-3 w-3" /> {siteName}
             </button>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">E-post</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="din@bedrift.no"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Passord</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                Logg inn
-              </Button>
-            </form>
-            <div className="mt-4 text-center">
-              <button
-                onClick={() => navigate('/register-customer')}
-                className="text-sm text-primary-text hover:underline"
-              >
-                Ny kunde? Registrer bedrift →
-              </button>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label className={isDark ? 'text-white/80' : 'text-foreground'}>E-post</Label>
+              <Input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="din@bedrift.no"
+                required
+                className={inputClass}
+              />
             </div>
-          </CardContent>
-        </Card>
+            <div className="space-y-2">
+              <Label className={isDark ? 'text-white/80' : 'text-foreground'}>Passord</Label>
+              <Input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                className={inputClass}
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-asco-teal text-asco-teal-foreground hover:bg-asco-teal/90"
+              disabled={loading}
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Logg inn
+            </Button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => navigate('/register-customer')}
+              className="text-sm text-primary-text hover:underline"
+            >
+              Ny kunde? Registrer bedrift →
+            </button>
+          </div>
+        </GlassCard>
       )}
-    </div>
+    </PublicLayout>
   );
 };
 
