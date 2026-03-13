@@ -20,7 +20,10 @@ export function WorkOrderCompactView({
       {orders.map((order: any) => (
         <div 
           key={order.id}
-          className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer group"
+          className={cn(
+            "flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer group",
+            isInternalOrder(order) && "bg-muted/20 border-[hsl(var(--cobalt))]/20"
+          )}
           onClick={() => onViewDetails(order)}
         >
           {/* Status Dot */}
