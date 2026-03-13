@@ -1,6 +1,5 @@
 import { ReactNode } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useAuth } from '@/hooks/useAuth';
 import { MobileNav } from '@/components/mobile/MobileNav';
 import { SimpleSidebar } from '@/components/SimpleSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
