@@ -20,7 +20,7 @@ interface QuickOrderSheetProps {
 export const QuickOrderSheet: React.FC<QuickOrderSheetProps> = ({ open, onOpenChange }) => {
   const { gpsPosition, requestGps, getLastCustomerId, createOrder, isSubmitting } = useQuickOrder();
   const { data: allCustomers = [] } = useCustomers();
-  const { data: profile } = useUserProfile();
+  const { profile } = useUserProfile();
 
   const customers = allCustomers.filter((c: any) => !isInternalCustomer(c));
   const internalCustomer = getInternalCustomerForSite(allCustomers, profile?.site_id);

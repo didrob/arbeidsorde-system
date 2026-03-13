@@ -15,7 +15,7 @@ export function BasicInfoStep() {
   const { formData, dispatch } = useWizard();
   const { data: allCustomers } = useCustomers();
   const { data: fieldWorkers } = useFieldWorkers();
-  const { data: profile } = useUserProfile();
+  const { profile } = useUserProfile();
   const { data: existingOrders } = useWorkOrders();
 
   // Filter out internal customers from normal customer list
