@@ -194,7 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       // Force navigation to auth page
-      window.location.href = '/auth';
+      window.location.href = '/';
       
     } catch (error) {
       console.error('Logout error:', error);
