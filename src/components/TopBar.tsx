@@ -11,7 +11,7 @@ interface TopBarProps {
   actions?: ReactNode;
 }
 
-export function TopBar({ title, onCreateClick, actions }: TopBarProps) {
+export function TopBar({ title, onCreateClick, createLabel = "Opprett ny", actions }: TopBarProps) {
   const isMobile = useIsMobile();
   
   return (
