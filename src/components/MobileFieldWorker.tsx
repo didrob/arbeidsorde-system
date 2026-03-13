@@ -24,6 +24,9 @@ import { QuickStartModal } from './QuickStartModal';
 import { WorkOrderCompletionDialog } from './WorkOrderCompletionDialog';
 import { WorkOrderConfirmationDialog } from './WorkOrderConfirmationDialog';
 import { TimeTracker } from './TimeTracker';
+import { QuickOrderFAB } from '@/features/field-orders/QuickOrderFAB';
+import { QuickOrderSheet } from '@/features/field-orders/QuickOrderSheet';
+import { useQuickOrder } from '@/features/field-orders/useQuickOrder';
 import { 
   useAssignedWorkOrders, 
   useActiveTimer, 
@@ -96,6 +99,8 @@ export const MobileFieldWorker = () => {
   const [showQuickStart, setShowQuickStart] = useState(false);
   const [showTimeTracker, setShowTimeTracker] = useState(false);
   const [activeWorkOrderId, setActiveWorkOrderId] = useState<string | null>(null);
+  const [quickOrderOpen, setQuickOrderOpen] = useState(false);
+  const { queueLength } = useQuickOrder();
 
   const { data: customers } = useCustomers();
   const createWorkOrder = useCreateWorkOrder();
@@ -654,6 +659,10 @@ export const MobileFieldWorker = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Quick Order FAB + Sheet */}
+      <QuickOrderFAB onClick={() => setQuickOrderOpen(true)} queueCount={queueLength} />
+      <QuickOrderSheet open={quickOrderOpen} onOpenChange={setQuickOrderOpen} />
     </div>
   );
 };
