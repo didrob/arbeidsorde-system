@@ -6,13 +6,13 @@ const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <PublicLayout showFooter>
+    <PublicLayout showFooter variant="landing">
       {/* Hero logo */}
       <div className="flex flex-col items-center">
-        <span className="font-heading text-5xl font-bold tracking-[0.3em] text-white select-none mb-8">
+        <span className="font-heading text-5xl font-bold tracking-[0.15em] text-white select-none mb-8">
           <span className="relative inline-block">
             A
-            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-3 w-3 rounded-full bg-asco-teal" />
+            <span className="absolute -bottom-1 left-0 h-3 w-3 rounded-full bg-asco-teal" />
           </span>
           SCO
         </span>
@@ -30,14 +30,14 @@ const Landing = () => {
         {/* Ansatt */}
         <button
           onClick={() => navigate('/auth')}
-          className="w-[260px] h-[220px] bg-white/[0.06] border border-white/[0.12] rounded-[16px] px-10 py-12 flex flex-col items-center justify-center gap-4 transition-all duration-300 hover:border-white/30 cursor-pointer"
+          className="w-[280px] h-[220px] bg-white/[0.06] border border-white/[0.12] rounded-[16px] px-12 py-14 flex flex-col items-center justify-center gap-4 transition-all duration-300 hover:border-white/30 hover:-translate-y-0.5 cursor-pointer"
         >
           <Users className="h-10 w-10 text-white/80" />
           <div className="text-center">
             <span className="font-heading text-xl font-bold text-white block mb-1">
               Ansatt
             </span>
-            <span className="text-sm text-pale-blue">
+            <span className="text-sm text-pale-blue whitespace-nowrap">
               Logg inn som ASCO-medarbeider
             </span>
           </div>
@@ -46,14 +46,14 @@ const Landing = () => {
         {/* Kundeportal */}
         <button
           onClick={() => navigate('/portal/login')}
-          className="w-[260px] h-[220px] bg-white/[0.06] border border-[rgba(0,253,199,0.3)] rounded-[16px] px-10 py-12 flex flex-col items-center justify-center gap-4 transition-all duration-300 hover:border-asco-teal cursor-pointer"
+          className="w-[280px] h-[220px] bg-white/[0.06] border border-[rgba(0,253,199,0.3)] rounded-[16px] px-12 py-14 flex flex-col items-center justify-center gap-4 transition-all duration-300 hover:border-asco-teal hover:-translate-y-0.5 cursor-pointer"
         >
           <Building2 className="h-10 w-10 text-asco-teal" />
           <div className="text-center">
             <span className="font-heading text-xl font-bold text-white block mb-1">
               Kundeportal
             </span>
-            <span className="text-sm text-pale-blue">
+            <span className="text-sm text-pale-blue whitespace-nowrap">
               Bestill tjenester og følg ordrer
             </span>
           </div>
