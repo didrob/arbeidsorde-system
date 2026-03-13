@@ -24,7 +24,8 @@ export function CreateInvoiceDialog({ open, onOpenChange }: CreateInvoiceDialogP
   const [notes, setNotes] = useState("");
   const [selectedWorkOrders, setSelectedWorkOrders] = useState<string[]>([]);
 
-  const { data: customers = [] } = useCustomers();
+  const { data: allCustomers = [] } = useCustomers();
+  const customers = allCustomers.filter(c => !isInternalCustomer(c));
   const { data: workOrders = [] } = useWorkOrders();
   const createInvoiceMutation = useCreateInvoice();
 
