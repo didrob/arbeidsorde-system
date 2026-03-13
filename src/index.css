@@ -268,6 +268,51 @@
     color: hsl(var(--status-active));
   }
 
+  /* Info/accent utility classes */
+  .bg-info {
+    background-color: hsl(var(--accent));
+  }
+
+  .text-info {
+    color: hsl(var(--primary-text));
+  }
+
+  .bg-success-subtle {
+    background-color: hsl(var(--status-complete) / 0.1);
+  }
+
+  .text-status-complete {
+    color: hsl(var(--status-complete));
+  }
+
+  .text-status-active {
+    color: hsl(var(--status-active));
+  }
+
+  .text-status-urgent {
+    color: hsl(var(--status-urgent));
+  }
+
+  .border-status-active {
+    border-color: hsl(var(--status-active));
+  }
+
+  .border-status-complete {
+    border-color: hsl(var(--status-complete));
+  }
+
+  .bg-status-complete-subtle {
+    background-color: hsl(var(--status-complete) / 0.1);
+  }
+
+  .bg-status-active-subtle {
+    background-color: hsl(var(--status-active) / 0.1);
+  }
+
+  .bg-status-urgent-subtle {
+    background-color: hsl(var(--status-urgent) / 0.1);
+  }
+
   /* Recharts palette overrides */
   .recharts-bar-rectangle .recharts-rectangle { fill: hsl(var(--chart-1)) !important; }
   .recharts-pie .recharts-sector:nth-of-type(5n+1) { fill: hsl(var(--chart-1)) !important; }

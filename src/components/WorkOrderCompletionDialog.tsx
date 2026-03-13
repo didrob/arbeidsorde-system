@@ -721,7 +721,7 @@ export const WorkOrderCompletionDialog = ({
               <Button
                 onClick={handleComplete}
                 disabled={!canProceedToNext() || isSubmitting}
-                className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-initial"
+                className="bg-status-complete hover:bg-status-complete/90 text-foreground flex-1 sm:flex-initial"
               >
                 {isSubmitting ? 'Fullører...' : 'Fullfør arbeidsordre'}
               </Button>

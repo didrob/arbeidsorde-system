@@ -17,17 +17,15 @@ interface WorkOrderDetailsProps {
 export function WorkOrderDetails({ workOrder, isOpen, onClose }: WorkOrderDetailsProps) {
   if (!workOrder) return null;
 
-  const handleAttachmentUpdate = () => {
-    // Refresh logic if needed - for now just a placeholder
-  };
+  const handleAttachmentUpdate = () => {};
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending': return 'bg-status-active-subtle text-status-active';
+      case 'in_progress': return 'bg-info text-info';
+      case 'completed': return 'bg-status-complete-subtle text-status-complete';
+      case 'cancelled': return 'bg-status-urgent-subtle text-status-urgent';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -43,7 +41,6 @@ export function WorkOrderDetails({ workOrder, isOpen, onClose }: WorkOrderDetail
 
   const calculateActualHours = () => {
     if (!workOrder.time_entries || workOrder.time_entries.length === 0) return 0;
-    
     return workOrder.time_entries.reduce((total: number, entry: any) => {
       if (entry.start_time && entry.end_time) {
         const start = new Date(entry.start_time);
@@ -58,17 +55,15 @@ export function WorkOrderDetails({ workOrder, isOpen, onClose }: WorkOrderDetail
   const calculateEfficiency = () => {
     const actualHours = calculateActualHours();
     const estimatedHours = workOrder.estimated_hours || 0;
-    
     if (actualHours === 0 || estimatedHours === 0) return null;
-    
     return Math.round((estimatedHours / actualHours) * 100);
   };
 
   const getEfficiencyColor = (efficiency: number | null) => {
     if (efficiency === null) return 'text-muted-foreground';
-    if (efficiency >= 90) return 'text-green-600';
-    if (efficiency >= 70) return 'text-yellow-600';
-    return 'text-red-600';
+    if (efficiency >= 90) return 'text-status-complete';
+    if (efficiency >= 70) return 'text-status-active';
+    return 'text-destructive';
   };
 
   const actualHours = calculateActualHours();
@@ -98,7 +93,6 @@ export function WorkOrderDetails({ workOrder, isOpen, onClose }: WorkOrderDetail
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Basic Information */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -141,7 +135,6 @@ export function WorkOrderDetails({ workOrder, isOpen, onClose }: WorkOrderDetail
           </TabsContent>
 
           <TabsContent value="time" className="space-y-6">
-            {/* Time and Efficiency Analysis */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -151,22 +144,22 @@ export function WorkOrderDetails({ workOrder, isOpen, onClose }: WorkOrderDetail
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <Clock className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                    <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-center p-4 bg-info rounded-lg">
+                    <Clock className="h-8 w-8 mx-auto mb-2 text-info" />
+                    <div className="text-2xl font-bold text-info">
                       {workOrder.estimated_hours || 0}t
                     </div>
                     <div className="text-sm text-muted-foreground">Estimert tid</div>
                   </div>
-                  <div className="text-center p-4 bg-orange-50 rounded-lg">
-                    <Clock className="h-8 w-8 mx-auto mb-2 text-orange-600" />
-                    <div className="text-2xl font-bold text-orange-600">
+                  <div className="text-center p-4 bg-status-active-subtle rounded-lg">
+                    <Clock className="h-8 w-8 mx-auto mb-2 text-status-active" />
+                    <div className="text-2xl font-bold text-status-active">
                       {actualHours.toFixed(1)}t
                     </div>
                     <div className="text-sm text-muted-foreground">Faktisk tid</div>
                   </div>
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <Calculator className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                  <div className="text-center p-4 bg-status-complete-subtle rounded-lg">
+                    <Calculator className="h-8 w-8 mx-auto mb-2 text-status-complete" />
                     <div className={`text-2xl font-bold ${getEfficiencyColor(efficiency)}`}>
                       {efficiency ? `${efficiency}%` : 'N/A'}
                     </div>
@@ -176,7 +169,6 @@ export function WorkOrderDetails({ workOrder, isOpen, onClose }: WorkOrderDetail
               </CardContent>
             </Card>
 
-            {/* Time Entries */}
             {workOrder.time_entries && workOrder.time_entries.length > 0 && (
               <Card>
                 <CardHeader>
@@ -188,20 +180,18 @@ export function WorkOrderDetails({ workOrder, isOpen, onClose }: WorkOrderDetail
                 <CardContent>
                   <div className="space-y-3">
                     {workOrder.time_entries.map((entry: any, index: number) => (
-                      <div key={entry.id || index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                      <div key={entry.id || index} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                         <div>
                           <div className="font-medium">
                             {new Date(entry.start_time).toLocaleDateString('nb-NO')}
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {new Date(entry.start_time).toLocaleTimeString('nb-NO', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
+                              hour: '2-digit', minute: '2-digit' 
                             })} - {
                               entry.end_time 
                                 ? new Date(entry.end_time).toLocaleTimeString('nb-NO', { 
-                                    hour: '2-digit', 
-                                    minute: '2-digit' 
+                                    hour: '2-digit', minute: '2-digit' 
                                   })
                                 : 'Pågår'
                             }
@@ -227,7 +217,6 @@ export function WorkOrderDetails({ workOrder, isOpen, onClose }: WorkOrderDetail
           </TabsContent>
 
           <TabsContent value="materials" className="space-y-6">
-            {/* Materials */}
             {workOrder.materials && workOrder.materials.length > 0 ? (
               <Card>
                 <CardHeader>

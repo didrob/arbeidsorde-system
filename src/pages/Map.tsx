@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Navigation, Clock, User } from 'lucide-react';
 
-// Mock data for work orders with locations
 const mockWorkOrders = [
   {
     id: '1',
@@ -38,11 +37,11 @@ const mockWorkOrders = [
 export default function Map() {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending': return 'bg-status-active-subtle text-status-active';
+      case 'in_progress': return 'bg-info text-info';
+      case 'completed': return 'bg-status-complete-subtle text-status-complete';
+      case 'cancelled': return 'bg-status-urgent-subtle text-status-urgent';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -62,7 +61,6 @@ export default function Map() {
       
       <div className="flex-1 p-8">
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* Map Placeholder */}
           <div className="lg:col-span-2">
             <Card className="h-[600px]">
               <CardHeader>
@@ -89,7 +87,6 @@ export default function Map() {
             </Card>
           </div>
 
-          {/* Work Orders List */}
           <div className="space-y-4">
             <Card>
               <CardHeader>
@@ -105,23 +102,18 @@ export default function Map() {
                           {getStatusText(order.status)}
                         </Badge>
                       </div>
-                      
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 text-sm">
                           <MapPin className="h-4 w-4 text-muted-foreground" />
                           <span className="text-muted-foreground">{order.address}</span>
                         </div>
-                        
                         <div className="flex items-center gap-2 text-sm">
                           <User className="h-4 w-4 text-muted-foreground" />
                           <span className="text-muted-foreground">{order.assigned_to}</span>
                         </div>
                       </div>
-                      
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
-                          Vis på kart
-                        </Button>
+                        <Button size="sm" variant="outline">Vis på kart</Button>
                         <Button size="sm" variant="outline">
                           <Navigation className="h-4 w-4 mr-1" />
                           Veibeskrivelse
@@ -133,7 +125,6 @@ export default function Map() {
               </CardContent>
             </Card>
 
-            {/* Quick Stats */}
             <Card>
               <CardHeader>
                 <CardTitle>Statistikk</CardTitle>
@@ -143,24 +134,21 @@ export default function Map() {
                   <span className="text-sm">Totale oppdrag:</span>
                   <span className="font-semibold">{mockWorkOrders.length}</span>
                 </div>
-                
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Pågående:</span>
-                  <span className="font-semibold text-blue-600">
+                  <span className="font-semibold text-primary-text">
                     {mockWorkOrders.filter(o => o.status === 'in_progress').length}
                   </span>
                 </div>
-                
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Fullført:</span>
-                  <span className="font-semibold text-green-600">
+                  <span className="font-semibold text-status-complete">
                     {mockWorkOrders.filter(o => o.status === 'completed').length}
                   </span>
                 </div>
-                
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Venter:</span>
-                  <span className="font-semibold text-yellow-600">
+                  <span className="font-semibold text-status-active">
                     {mockWorkOrders.filter(o => o.status === 'pending').length}
                   </span>
                 </div>

@@ -32,11 +32,10 @@ export function ResponsiveLayout({
         </header>
         <main className={cn(
           "flex-1",
-          showMobileNav && "pb-20"
+          showMobileNav && "pb-24"
         )}>
           {children}
         </main>
-        <GlobalWorkOrderButton />
         {showMobileNav && (
           <MobileNav notificationCount={notificationCount} />
         )}
@@ -53,11 +52,10 @@ export function ResponsiveLayout({
         </header>
         <main className={cn(
           "flex-1",
-          showMobileNav && "pb-20"
+          showMobileNav && "pb-24"
         )}>
           {children}
         </main>
-        <GlobalWorkOrderButton />
         {showMobileNav && (
           <MobileNav notificationCount={notificationCount} />
         )}

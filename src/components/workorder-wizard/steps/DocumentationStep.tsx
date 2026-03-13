@@ -138,10 +138,10 @@ export function DocumentationStep() {
       </div>
 
       {/* Tips */}
-      <Card className="border-blue-200 bg-blue-50/50">
+      <Card className="bg-info">
         <CardContent className="p-4">
-          <h4 className="font-medium text-blue-900 mb-2">Tips for dokumentasjon</h4>
-          <ul className="text-sm text-blue-700 space-y-1">
+          <h4 className="font-medium text-info mb-2">Tips for dokumentasjon</h4>
+          <ul className="text-sm text-info space-y-1">
             <li>• Last opp bilder av arbeidsstedet før oppstart</li>
             <li>• Inkluder tekniske tegninger eller spesifikasjoner</li>
             <li>• Dokumenter eventuelle skader eller forhold som må tas hensyn til</li>

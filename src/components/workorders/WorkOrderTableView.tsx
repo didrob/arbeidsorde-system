@@ -1,10 +1,14 @@
+import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Eye, MoreHorizontal, User, Edit, Trash2 } from 'lucide-react';
+import { Eye, MoreHorizontal, User, Edit, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { nb } from 'date-fns/locale';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 interface WorkOrderTableViewProps {
   orders: any[];
@@ -23,6 +27,120 @@ export function WorkOrderTableView({
   getStatusColor,
   getStatusText 
 }: WorkOrderTableViewProps) {
+  const isMobile = useIsMobile();
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  const toggleExpand = (id: string) => {
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  // Mobile: stacked cards
+  if (isMobile) {
+    return (
+      <div className="space-y-3">
+        {orders.map((order: any) => {
+          const isExpanded = expandedIds.has(order.id);
+          return (
+            <Card
+              key={order.id}
+              className="rounded-brand shadow-brand-sm overflow-hidden"
+            >
+              <CardContent className="p-4">
+                {/* Primary: title + status */}
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm truncate">{order.title}</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      #{order.id?.slice(-6)}
+                    </p>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={`${getStatusColor(order.status)} text-xs shrink-0`}
+                  >
+                    {getStatusText(order.status)}
+                  </Badge>
+                </div>
+
+                {/* Customer always visible */}
+                {order.customer?.name && (
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {order.customer.name}
+                  </p>
+                )}
+
+                {/* Expand toggle */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full h-8 text-xs"
+                  onClick={() => toggleExpand(order.id)}
+                >
+                  {isExpanded ? (
+                    <>
+                      <ChevronDown className="h-3 w-3 mr-1" />
+                      Skjul detaljer
+                    </>
+                  ) : (
+                    <>
+                      <ChevronRight className="h-3 w-3 mr-1" />
+                      Vis mer
+                    </>
+                  )}
+                </Button>
+
+                {/* Expanded details */}
+                {isExpanded && (
+                  <div className="pt-3 mt-2 border-t border-border space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Tildelt</span>
+                      <span>{order.assigned_user?.full_name || 'Ikke tildelt'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Timer</span>
+                      <span>{order.estimated_hours || 0}t</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Opprettet</span>
+                      <span>
+                        {order.created_at
+                          ? format(new Date(order.created_at), 'dd MMM yyyy', { locale: nb })
+                          : '-'}
+                      </span>
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => onViewDetails(order)}
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        Detaljer
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onAssign(order)}
+                      >
+                        <User className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Desktop: table
   return (
     <div className="border rounded-lg overflow-hidden">
       <Table>

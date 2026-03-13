@@ -211,10 +211,10 @@ export function PlanningStep() {
       </Card>
 
       {/* Tips */}
-      <Card className="border-blue-200 bg-blue-50/50">
+      <Card className="bg-info">
         <CardContent className="p-4">
-          <h4 className="font-medium text-blue-900 mb-2">Tips for planlegging</h4>
-          <ul className="text-sm text-blue-700 space-y-1">
+          <h4 className="font-medium text-info mb-2">Tips for planlegging</h4>
+          <ul className="text-sm text-info space-y-1">
             <li>• Gi tilstrekkelig tid for forberedelse og mobilisering</li>
             <li>• Husk å koordinere med kundens tilgjengelighet</li>
             <li>• For gjentakende oppdrag: vurder sesongvariasjoner</li>

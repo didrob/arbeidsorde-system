@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, ClipboardList, Users, BarChart3, Settings, User } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, Plus, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
+import { useWorkOrderWizard } from '@/contexts/WorkOrderWizardContext';
 
 interface NavItem {
   to: string;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
-  badge?: number;
 }
 
 interface MobileNavProps {
@@ -19,6 +18,7 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
   const location = useLocation();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const { openWizard } = useWorkOrderWizard();
 
   // Hide nav on scroll down, show on scroll up
   useEffect(() => {
@@ -38,17 +38,13 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
-  const navItems: NavItem[] = [
-    { to: '/', icon: Home, label: 'Hjem' },
-    { 
-      to: '/work-orders', 
-      icon: ClipboardList, 
-      label: 'Ordrer',
-      badge: notificationCount
-    },
-    { to: '/customers', icon: Users, label: 'Kunder' },
-    { to: '/reports', icon: BarChart3, label: 'Rapporter' },
-    { to: '/settings', icon: Settings, label: 'Innstillinger' }
+  const leftItems: NavItem[] = [
+    { to: '/', icon: LayoutDashboard, label: 'Hjem' },
+    { to: '/work-orders', icon: ClipboardList, label: 'Oppdrag' },
+  ];
+
+  const rightItems: NavItem[] = [
+    { to: '/settings', icon: User, label: 'Profil' },
   ];
 
   const isActive = (path: string) => {
@@ -58,49 +54,55 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
     return location.pathname.startsWith(path);
   };
 
+  const renderNavItem = (item: NavItem) => {
+    const Icon = item.icon;
+    const active = isActive(item.to);
+
+    return (
+      <NavLink
+        key={item.to}
+        to={item.to}
+        className={cn(
+          'flex flex-col items-center justify-center flex-1 px-2 py-2 rounded-lg',
+          'transition-colors duration-200',
+          active
+            ? 'text-primary-text'
+            : 'text-muted-grey hover:text-foreground'
+        )}
+      >
+        <Icon className="h-5 w-5 mb-0.5" />
+        <span className="text-[10px] font-medium">{item.label}</span>
+      </NavLink>
+    );
+  };
+
   return (
-    <nav 
+    <nav
       className={cn(
         'fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border',
-        'transition-transform duration-300 ease-in-out safe-area-padding-bottom',
+        'transition-transform duration-300 ease-in-out',
         isVisible ? 'translate-y-0' : 'translate-y-full'
       )}
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      <div className="flex items-center justify-around px-2 py-2">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item.to);
-          
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={cn(
-                'flex flex-col items-center justify-center min-w-0 flex-1 px-2 py-2 rounded-lg',
-                'transition-colors duration-200 relative',
-                'thumb-zone', // Touch-friendly zone
-                active 
-                  ? 'text-primary bg-primary/10' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              )}
-            >
-              <div className="relative">
-                <Icon className="h-5 w-5 mb-1" />
-                {item.badge && item.badge > 0 && (
-                  <Badge 
-                    variant="destructive" 
-                    className="absolute -top-2 -right-2 h-4 w-4 text-xs p-0 flex items-center justify-center"
-                  >
-                    {item.badge > 9 ? '9+' : item.badge}
-                  </Badge>
-                )}
-              </div>
-              <span className="text-xs font-medium truncate max-w-full">
-                {item.label}
-              </span>
-            </NavLink>
-          );
-        })}
+      <div className="flex items-end justify-around px-2 py-1">
+        {/* Left nav items */}
+        {leftItems.map(renderNavItem)}
+
+        {/* Central FAB */}
+        <div className="flex flex-col items-center justify-center flex-1 -mt-4">
+          <button
+            onClick={openWizard}
+            className="flex items-center justify-center w-14 h-14 rounded-full bg-asco-teal text-asco-teal-foreground shadow-brand-lg active:scale-95 transition-transform"
+            aria-label="Ny arbeidsordre"
+          >
+            <Plus className="h-7 w-7" />
+          </button>
+          <span className="text-[10px] font-medium text-muted-grey mt-0.5">Ny</span>
+        </div>
+
+        {/* Right nav items */}
+        {rightItems.map(renderNavItem)}
       </div>
     </nav>
   );

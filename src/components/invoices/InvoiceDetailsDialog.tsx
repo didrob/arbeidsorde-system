@@ -109,7 +109,7 @@ export function InvoiceDetailsDialog({ invoice, open, onOpenChange, onEdit }: In
                 size="sm"
                 onClick={() => handleStatusChange('cancelled')}
                 disabled={updateStatusMutation.isPending}
-                className="text-red-600 border-red-600 hover:bg-red-50"
+                className="text-destructive border-destructive hover:bg-destructive/10"
               >
                 <X className="h-4 w-4 mr-2" />
                 Avbryt faktura

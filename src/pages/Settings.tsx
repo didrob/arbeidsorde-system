@@ -464,7 +464,7 @@ export default function Settings() {
                 <div>
                   <div className="text-sm text-muted-foreground">Server status</div>
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <div className="w-2 h-2 bg-status-complete rounded-full"></div>
                     <span className="font-medium">Online</span>
                   </div>
                 </div>

@@ -7,17 +7,9 @@ export function GlobalWorkOrderButton() {
   const { openWizard } = useWorkOrderWizard();
   const isMobile = useIsMobile();
 
-  // Mobile: FAB in bottom-right corner
+  // Mobile: FAB is now in MobileNav bottom bar, don't render separate FAB
   if (isMobile) {
-    return (
-      <button
-        onClick={openWizard}
-        className="fixed bottom-24 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-asco-teal text-asco-teal-foreground shadow-lg active:scale-95 transition-transform"
-        aria-label="Ny arbeidsordre"
-      >
-        <Plus className="h-6 w-6" />
-      </button>
-    );
+    return null;
   }
 
   // Desktop: Button in topbar

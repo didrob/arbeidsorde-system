@@ -467,7 +467,7 @@ export const MobileFieldWorker = () => {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => updateWorkOrderStatus(order.id, 'completed')}
-                                className="focus-ring bg-green-50 border-green-200 text-green-700 hover:bg-green-100 w-full"
+                                className="focus-ring bg-status-complete-subtle border-status-complete text-status-complete hover:bg-status-complete-subtle/80 w-full"
                               >
                                 <CheckCircle className="h-4 w-4 mr-2" />
                                 Fullfør
