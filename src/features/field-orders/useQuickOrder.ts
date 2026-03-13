@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { sendOrderEmail } from '@/lib/emailService';
 
 const LAST_CUSTOMER_KEY = 'quick-order-last-customer';
 const OFFLINE_QUEUE_KEY = 'quick-order-offline-queue';
