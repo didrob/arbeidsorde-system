@@ -99,6 +99,8 @@ export const MobileFieldWorker = () => {
   const [showQuickStart, setShowQuickStart] = useState(false);
   const [showTimeTracker, setShowTimeTracker] = useState(false);
   const [activeWorkOrderId, setActiveWorkOrderId] = useState<string | null>(null);
+  const [quickOrderOpen, setQuickOrderOpen] = useState(false);
+  const { queueLength } = useQuickOrder();
 
   const { data: customers } = useCustomers();
   const createWorkOrder = useCreateWorkOrder();
