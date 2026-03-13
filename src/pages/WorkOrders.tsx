@@ -165,7 +165,7 @@ export default function WorkOrders() {
     <div className="flex-1 flex flex-col min-h-screen bg-background">
       <TopBar 
         title="Arbeidsordrer" 
-        onCreateClick={() => setIsCreateDialogOpen(true)}
+        
         actions={
           <SiteSelector
             selectedSiteId={selectedSiteId}

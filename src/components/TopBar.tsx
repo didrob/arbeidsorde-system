@@ -53,9 +53,9 @@ export function TopBar({ title, onCreateClick, createLabel = "Opprett ny", actio
         )}
         
         {!isMobile && onCreateClick && (
-          <Button onClick={onCreateClick} className="flex items-center gap-2">
+          <Button onClick={onCreateClick} variant="outline" className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            Opprett ny
+            {createLabel}
           </Button>
         )}
       </div>

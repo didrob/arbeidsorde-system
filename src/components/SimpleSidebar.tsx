@@ -46,7 +46,7 @@ export function SimpleSidebar() {
     <div className="w-64 bg-card border-r border-border flex flex-col h-full">
       {/* Logo/Header */}
       <div className="p-6 border-b border-border">
-        <ASCOLogo variant="dark" />
+        <ASCOLogo variant="light" />
       </div>
 
       {/* Navigation */}
