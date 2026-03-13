@@ -118,7 +118,7 @@ export function DocumentationStep() {
 
         <Card className="p-4">
           <div className="flex items-center space-x-3">
-            <FileText className="w-8 h-8 text-green-500" />
+            <FileText className="w-8 h-8 text-status-complete" />
             <div>
               <h4 className="font-medium">Dokumenter</h4>
               <p className="text-sm text-muted-foreground">PDF, DOC, TXT</p>
