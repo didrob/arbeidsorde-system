@@ -605,7 +605,7 @@ export const WorkOrderCompletionDialog = ({
             </div>
             
             <div>
-              <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">
+              <h3 className="text-lg font-semibold text-foreground">
                 Arbeidsordre fullført!
               </h3>
               <p className="text-muted-foreground mt-2">
