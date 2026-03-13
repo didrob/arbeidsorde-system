@@ -379,12 +379,24 @@ export default function Customers() {
         </Dialog>
 
         {/* Edit Customer Dialog */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <Dialog open={isEditDialogOpen} onOpenChange={v => { setIsEditDialogOpen(v); if (!v) { setSelectedCustomer(null); resetEdit(); setEditBrregResult(null); } }}>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Rediger kunde</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmitEdit(onEditSubmit)} className="space-y-4">
+              {/* BRREG search for edit */}
+              <BrregSearchInput
+                label="Søk i Brønnøysundregistrene"
+                onSelect={(r) => {
+                  setEditBrregResult(r);
+                  setValue('name', r.name);
+                  setValue('address', r.address);
+                  setValue('org_number', r.org_number);
+                }}
+                onReset={() => setEditBrregResult(null)}
+              />
+
               <div>
                 <Input placeholder="Firmanavn *" {...registerEdit('name', { required: 'Firmanavn er påkrevd' })} />
                 {editErrors.name && <p className="text-destructive text-sm mt-1">{editErrors.name.message}</p>}
