@@ -1455,6 +1455,7 @@ export type Database = {
           actual_hours: number | null
           assigned_to: string | null
           completed_at: string | null
+          cost_center: string | null
           created_at: string
           customer_id: string
           deleted_at: string | null
@@ -1464,6 +1465,8 @@ export type Database = {
           gps_location: unknown
           id: string
           is_deleted: boolean
+          is_internal: boolean
+          linked_order_id: string | null
           notes: string | null
           price_value: number | null
           pricing_model: string | null
@@ -1482,6 +1485,7 @@ export type Database = {
           actual_hours?: number | null
           assigned_to?: string | null
           completed_at?: string | null
+          cost_center?: string | null
           created_at?: string
           customer_id: string
           deleted_at?: string | null
@@ -1491,6 +1495,8 @@ export type Database = {
           gps_location?: unknown
           id?: string
           is_deleted?: boolean
+          is_internal?: boolean
+          linked_order_id?: string | null
           notes?: string | null
           price_value?: number | null
           pricing_model?: string | null
@@ -1509,6 +1515,7 @@ export type Database = {
           actual_hours?: number | null
           assigned_to?: string | null
           completed_at?: string | null
+          cost_center?: string | null
           created_at?: string
           customer_id?: string
           deleted_at?: string | null
@@ -1518,6 +1525,8 @@ export type Database = {
           gps_location?: unknown
           id?: string
           is_deleted?: boolean
+          is_internal?: boolean
+          linked_order_id?: string | null
           notes?: string | null
           price_value?: number | null
           pricing_model?: string | null
@@ -1560,6 +1569,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "work_orders_linked_order_id_fkey"
+            columns: ["linked_order_id"]
+            isOneToOne: false
+            referencedRelation: "org_work_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_linked_order_id_fkey"
+            columns: ["linked_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "work_orders_site_id_fkey"
@@ -1911,6 +1934,7 @@ export type Database = {
           actual_hours: number | null
           assigned_to: string | null
           completed_at: string | null
+          cost_center: string | null
           created_at: string
           customer_id: string
           deleted_at: string | null
@@ -1920,6 +1944,8 @@ export type Database = {
           gps_location: unknown
           id: string
           is_deleted: boolean
+          is_internal: boolean
+          linked_order_id: string | null
           notes: string | null
           price_value: number | null
           pricing_model: string | null
@@ -1977,6 +2003,7 @@ export type Database = {
           actual_hours: number | null
           assigned_to: string | null
           completed_at: string | null
+          cost_center: string | null
           created_at: string
           customer_id: string
           deleted_at: string | null
@@ -1986,6 +2013,8 @@ export type Database = {
           gps_location: unknown
           id: string
           is_deleted: boolean
+          is_internal: boolean
+          linked_order_id: string | null
           notes: string | null
           price_value: number | null
           pricing_model: string | null
