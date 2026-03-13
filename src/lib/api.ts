@@ -256,7 +256,7 @@ class ApiClient {
     return this.handleResponse(data, error);
   }
 
-  async updateCustomer(id: string, customerData: Partial<Omit<Customer, 'id' | 'created_at' | 'updated_at'>>): Promise<ApiResponse<Customer>> {
+  async updateCustomer(id: string, customerData: Record<string, any>): Promise<ApiResponse<any>> {
     const { data, error } = await supabase
       .from('customers')
       .update(customerData)
