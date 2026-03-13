@@ -73,10 +73,7 @@ export function SiteSelector({ selectedSiteId, onSiteChange, className }: SiteSe
           )}
           {accessibleSites.map((site) => (
             <SelectItem key={site.site_id} value={site.site_id}>
-              <div className="flex flex-col">
-                <span>{site.site_name}</span>
-                <span className="text-xs text-muted-foreground">{site.organization_name}</span>
-              </div>
+              <span>{site.site_name}</span>
             </SelectItem>
           ))}
         </SelectContent>
