@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Building2, CheckCircle2, Search, ArrowLeft, ArrowRight, Send, Loader2, AlertCircle } from 'lucide-react';
 import { PublicLayout } from '@/components/public/PublicLayout';
 import { GlassCard } from '@/components/public/GlassCard';
-import { useTheme } from '@/hooks/useTheme';
 
 const STEPS = ['Organisasjon', 'Kontaktinfo', 'Lokasjon', 'Bekreftelse'];
 
@@ -35,7 +34,6 @@ export default function RegisterCustomer() {
   const [sites, setSites] = useState<{ id: string; name: string }[]>([]);
   const [orgInput, setOrgInput] = useState('');
   const { lookup, isLoading: brregLoading, error: brregError, result: brregResult, reset: resetBrreg } = useBrregLookup();
-  const { isDark } = useTheme();
 
   const [data, setData] = useState<RegistrationData>({
     org_number: '', name: '', address: '', org_form: '', industry_code: '',
@@ -76,7 +74,7 @@ export default function RegisterCustomer() {
   const canProceed = useCallback(() => {
     switch (step) {
       case 0: return confirmed && !!data.name;
-      case 1: return !!data.contact_person.trim() && !!data.email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email);
+      case 1: return !!data.contact_person.trim() && !!data.email.trim() && /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(data.email);
       case 2: return !!data.site_id;
       case 3: return true;
       default: return false;
@@ -110,18 +108,15 @@ export default function RegisterCustomer() {
     }
   };
 
-  const textClass = isDark ? 'text-white' : 'text-foreground';
-  const mutedClass = isDark ? 'text-white/50' : 'text-muted-foreground';
-  const labelClass = isDark ? 'text-white/80' : 'text-foreground';
-  const inputClass = isDark ? 'bg-white/10 border-white/20 text-white placeholder:text-white/40' : '';
+  const inputClass = 'bg-white/10 border-white/20 text-white placeholder:text-white/40';
 
   if (submitted) {
     return (
       <PublicLayout showBack>
         <GlassCard className="max-w-md w-full p-8 text-center">
           <CheckCircle2 className="h-16 w-16 mx-auto text-asco-teal mb-4" />
-          <h2 className={`text-2xl font-heading mb-2 ${textClass}`}>Takk for registreringen!</h2>
-          <p className={mutedClass}>
+          <h2 className="text-2xl font-heading mb-2 text-white">Takk for registreringen!</h2>
+          <p className="text-pale-blue">
             Din registrering er sendt til ASCO for godkjenning. Du vil bli kontaktet når søknaden er behandlet.
           </p>
         </GlassCard>
@@ -136,7 +131,7 @@ export default function RegisterCustomer() {
         <div className="mb-8">
           <div className="flex justify-between mb-2">
             {STEPS.map((s, i) => (
-              <span key={s} className={`text-xs font-medium ${i <= step ? 'text-asco-teal' : mutedClass}`}>
+              <span key={s} className={`text-xs font-medium ${i <= step ? 'text-asco-teal' : 'text-white/50'}`}>
                 {s}
               </span>
             ))}
@@ -145,7 +140,7 @@ export default function RegisterCustomer() {
         </div>
 
         <GlassCard className="p-6 md:p-8">
-          <h2 className={`font-heading text-xl mb-6 ${textClass}`}>
+          <h2 className="font-heading text-xl mb-6 text-white">
             {step === 0 && 'Finn din organisasjon'}
             {step === 1 && 'Kontaktinformasjon'}
             {step === 2 && 'Foretrukket lokasjon'}
@@ -157,7 +152,7 @@ export default function RegisterCustomer() {
             {step === 0 && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="org_number" className={labelClass}>Organisasjonsnummer</Label>
+                  <Label htmlFor="org_number" className="text-white/80">Organisasjonsnummer</Label>
                   <div className="relative">
                     <Input
                       id="org_number"
@@ -167,10 +162,10 @@ export default function RegisterCustomer() {
                       className={`text-lg h-12 pr-10 ${inputClass}`}
                       maxLength={11}
                     />
-                    {brregLoading && <Loader2 className="absolute right-3 top-3 h-5 w-5 animate-spin text-muted-foreground" />}
-                    {!brregLoading && !brregResult && <Search className={`absolute right-3 top-3 h-5 w-5 ${mutedClass}`} />}
+                    {brregLoading && <Loader2 className="absolute right-3 top-3 h-5 w-5 animate-spin text-white/50" />}
+                    {!brregLoading && !brregResult && <Search className="absolute right-3 top-3 h-5 w-5 text-white/50" />}
                   </div>
-                  <p className={`text-xs ${mutedClass}`}>Skriv inn 9-sifret organisasjonsnummer for automatisk oppslag</p>
+                  <p className="text-xs text-white/50">Skriv inn 9-sifret organisasjonsnummer for automatisk oppslag</p>
                 </div>
 
                 {brregError && (
@@ -184,9 +179,9 @@ export default function RegisterCustomer() {
                   <div className="rounded-lg border-2 border-asco-teal/30 bg-asco-teal/5 p-4 space-y-3">
                     <div className="flex items-center gap-2">
                       <Building2 className="h-5 w-5 text-asco-teal" />
-                      <span className={`font-semibold ${textClass}`}>{brregResult.name}</span>
+                      <span className="font-semibold text-white">{brregResult.name}</span>
                     </div>
-                    <div className={`text-sm space-y-1 ${mutedClass}`}>
+                    <div className="text-sm space-y-1 text-white/50">
                       <p>{brregResult.address}</p>
                       <p>Organisasjonsform: {brregResult.org_form}</p>
                       {brregResult.industry_code && <p>Næring: {brregResult.industry_code}</p>}
@@ -201,8 +196,8 @@ export default function RegisterCustomer() {
                 {confirmed && (
                   <div className="flex items-center gap-2 p-3 rounded-md bg-asco-teal/10 text-sm">
                     <CheckCircle2 className="h-4 w-4 text-asco-teal" />
-                    <span className={`font-medium ${textClass}`}>{data.name}</span>
-                    <Button variant="ghost" size="sm" className="ml-auto text-xs" onClick={() => { setConfirmed(false); resetBrreg(); }}>
+                    <span className="font-medium text-white">{data.name}</span>
+                    <Button variant="ghost" size="sm" className="ml-auto text-xs text-white/60 hover:text-white hover:bg-white/10" onClick={() => { setConfirmed(false); resetBrreg(); }}>
                       Endre
                     </Button>
                   </div>
@@ -214,19 +209,19 @@ export default function RegisterCustomer() {
             {step === 1 && (
               <>
                 <div className="space-y-2">
-                  <Label className={labelClass}>Kontaktperson *</Label>
+                  <Label className="text-white/80">Kontaktperson *</Label>
                   <Input value={data.contact_person} onChange={e => setData(d => ({ ...d, contact_person: e.target.value }))} placeholder="Fullt navn" className={inputClass} />
                 </div>
                 <div className="space-y-2">
-                  <Label className={labelClass}>E-post *</Label>
+                  <Label className="text-white/80">E-post *</Label>
                   <Input type="email" value={data.email} onChange={e => setData(d => ({ ...d, email: e.target.value }))} placeholder="kontakt@bedrift.no" className={inputClass} />
                 </div>
                 <div className="space-y-2">
-                  <Label className={labelClass}>Telefon</Label>
+                  <Label className="text-white/80">Telefon</Label>
                   <Input value={data.phone} onChange={e => setData(d => ({ ...d, phone: e.target.value }))} placeholder="+47 123 45 678" className={inputClass} />
                 </div>
                 <div className="space-y-2">
-                  <Label className={labelClass}>Faktura-epost</Label>
+                  <Label className="text-white/80">Faktura-epost</Label>
                   <Input type="email" value={data.invoice_email} onChange={e => setData(d => ({ ...d, invoice_email: e.target.value }))} placeholder="Samme som kontakt-epost" className={inputClass} />
                 </div>
               </>
@@ -235,7 +230,7 @@ export default function RegisterCustomer() {
             {/* Step 2: Site selection */}
             {step === 2 && (
               <div className="space-y-2">
-                <Label className={labelClass}>Foretrukket ASCO-lokasjon *</Label>
+                <Label className="text-white/80">Foretrukket ASCO-lokasjon *</Label>
                 <Select value={data.site_id} onValueChange={v => setData(d => ({ ...d, site_id: v }))}>
                   <SelectTrigger className={inputClass}>
                     <SelectValue placeholder="Velg lokasjon" />
@@ -252,19 +247,19 @@ export default function RegisterCustomer() {
             {/* Step 3: Confirmation */}
             {step === 3 && (
               <div className="space-y-4">
-                <div className={`rounded-lg border p-4 space-y-3 text-sm ${isDark ? 'border-white/10' : 'border-border'}`}>
-                  <Row label="Bedrift" value={data.name} isDark={isDark} />
-                  <Row label="Org.nr" value={data.org_number} isDark={isDark} />
-                  <Row label="Adresse" value={data.address} isDark={isDark} />
-                  <Row label="Org.form" value={data.org_form} isDark={isDark} />
-                  {data.industry_code && <Row label="Næring" value={data.industry_code} isDark={isDark} />}
-                  <hr className={isDark ? 'border-white/10' : 'border-border'} />
-                  <Row label="Kontaktperson" value={data.contact_person} isDark={isDark} />
-                  <Row label="E-post" value={data.email} isDark={isDark} />
-                  {data.phone && <Row label="Telefon" value={data.phone} isDark={isDark} />}
-                  {data.invoice_email && <Row label="Faktura-epost" value={data.invoice_email} isDark={isDark} />}
-                  <hr className={isDark ? 'border-white/10' : 'border-border'} />
-                  <Row label="Lokasjon" value={sites.find(s => s.id === data.site_id)?.name || ''} isDark={isDark} />
+                <div className="rounded-lg border border-white/10 p-4 space-y-3 text-sm">
+                  <Row label="Bedrift" value={data.name} />
+                  <Row label="Org.nr" value={data.org_number} />
+                  <Row label="Adresse" value={data.address} />
+                  <Row label="Org.form" value={data.org_form} />
+                  {data.industry_code && <Row label="Næring" value={data.industry_code} />}
+                  <hr className="border-white/10" />
+                  <Row label="Kontaktperson" value={data.contact_person} />
+                  <Row label="E-post" value={data.email} />
+                  {data.phone && <Row label="Telefon" value={data.phone} />}
+                  {data.invoice_email && <Row label="Faktura-epost" value={data.invoice_email} />}
+                  <hr className="border-white/10" />
+                  <Row label="Lokasjon" value={sites.find(s => s.id === data.site_id)?.name || ''} />
                 </div>
                 {submitError && (
                   <div className="flex items-start gap-2 p-3 rounded-md bg-destructive/10 text-destructive text-sm">
@@ -281,7 +276,7 @@ export default function RegisterCustomer() {
                 variant="outline"
                 onClick={() => setStep(s => s - 1)}
                 disabled={step === 0}
-                className={isDark ? 'border-white/20 text-white hover:bg-white/10' : ''}
+                className="border-white/20 text-white hover:bg-white/10"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Tilbake
@@ -313,12 +308,12 @@ export default function RegisterCustomer() {
   );
 }
 
-function Row({ label, value, isDark }: { label: string; value: string; isDark: boolean }) {
+function Row({ label, value }: { label: string; value: string }) {
   if (!value) return null;
   return (
     <div className="flex justify-between">
-      <span className={isDark ? 'text-white/50' : 'text-muted-foreground'}>{label}</span>
-      <span className={`font-medium text-right ${isDark ? 'text-white' : 'text-foreground'}`}>{value}</span>
+      <span className="text-white/50">{label}</span>
+      <span className="font-medium text-right text-white">{value}</span>
     </div>
   );
 }
