@@ -225,6 +225,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isSiteManager: userRole === 'site_manager',
     isBillingManager: userRole === 'billing_manager',
     isFieldSupervisor: userRole === 'field_supervisor',
+    isCustomer: userRole === 'customer',
+    customerId,
     signIn,
     signUp,
     signOut,
