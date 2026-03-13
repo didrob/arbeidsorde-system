@@ -121,6 +121,8 @@ export const useQuickOrder = () => {
       started_at: action === 'assign_self' ? new Date().toISOString() : null,
       pricing_type: 'hourly' as const,
       notes: data.is_urgent ? 'HASTER' : undefined,
+      is_internal: data.is_internal || false,
+      cost_center: data.is_internal ? data.cost_center || null : null,
       gps_location: data.gps_lat && data.gps_lng
         ? `(${data.gps_lng},${data.gps_lat})`
         : undefined,
