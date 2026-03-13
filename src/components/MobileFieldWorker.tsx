@@ -660,8 +660,7 @@ export const MobileFieldWorker = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Quick Order FAB + Sheet */}
-      <QuickOrderFAB onClick={() => setQuickOrderOpen(true)} queueCount={queueLength} />
+      {/* Quick Order Sheet (opened from bottom nav) */}
       <QuickOrderSheet open={quickOrderOpen} onOpenChange={setQuickOrderOpen} />
     </div>
   );
