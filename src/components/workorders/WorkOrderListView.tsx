@@ -26,9 +26,12 @@ export function WorkOrderListView({
   return (
     <div className="space-y-3">
       {orders.map((order: any) => (
-        <Card 
+         <Card 
           key={order.id}
-          className="hover:shadow-md transition-shadow cursor-pointer"
+          className={cn(
+            "hover:shadow-md transition-shadow cursor-pointer",
+            isInternalOrder(order) && "bg-muted/30 border-[hsl(var(--cobalt))]/20"
+          )}
           onClick={() => onViewDetails(order)}
         >
           <div className="p-4">
