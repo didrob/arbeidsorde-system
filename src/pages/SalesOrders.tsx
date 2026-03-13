@@ -90,7 +90,7 @@ export default function SalesOrders() {
     <PageLayout title="Salgsordrer" description="Generer og administrer salgsordrer for eksport">
       {/* Ready for Sales Order */}
       {readyGroups.length > 0 && (
-        <Card className="border-teal-200 dark:border-teal-800 bg-teal-50/50 dark:bg-teal-950/20 mb-6">
+        <Card className="border-primary/30 bg-primary/5 mb-6">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
