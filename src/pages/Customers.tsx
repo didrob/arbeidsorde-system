@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCustomers, useCreateCustomer, useUpdateCustomer } from '@/hooks/useApi';
 import { useSiteFilter } from '@/hooks/useSiteFilter';
@@ -14,10 +14,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useForm } from 'react-hook-form';
-import { Search, Mail, Phone, MapPin, Edit, CheckCircle, XCircle, Building2, Loader2, ChevronRight } from 'lucide-react';
+import { Search, Mail, Phone, MapPin, Edit, CheckCircle, XCircle, Loader2, ChevronRight } from 'lucide-react';
 import { isInternalCustomer } from '@/lib/internalOrders';
 import { useToast } from '@/hooks/use-toast';
-import { useBrregLookup } from '@/features/customers/useBrregLookup';
+import { BrregSearchInput } from '@/features/customers/BrregSearchInput';
+import type { BrregResult } from '@/features/customers/useBrregLookup';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CustomerForm {
@@ -51,24 +52,11 @@ export default function Customers() {
   const { register, handleSubmit, reset, setValue: setFormValue, formState: { errors } } = useForm<CustomerForm>();
   const { register: registerEdit, handleSubmit: handleSubmitEdit, reset: resetEdit, setValue, formState: { errors: editErrors } } = useForm<CustomerForm>();
 
-  // BRREG lookup for create dialog
-  const { lookup: brregLookup, isLoading: brregLoading, result: brregResult, reset: resetBrreg } = useBrregLookup();
-  const [createOrgInput, setCreateOrgInput] = useState('');
+  // BRREG state for create dialog
+  const [createBrregResult, setCreateBrregResult] = useState<BrregResult | null>(null);
 
-  useEffect(() => {
-    const clean = createOrgInput.replace(/\s/g, '');
-    if (clean.length !== 9 || !/^\d{9}$/.test(clean)) return;
-    const timer = setTimeout(() => brregLookup(clean), 500);
-    return () => clearTimeout(timer);
-  }, [createOrgInput, brregLookup]);
-
-  useEffect(() => {
-    if (brregResult) {
-      setFormValue('name', brregResult.name);
-      setFormValue('address', brregResult.address);
-      setFormValue('org_number', brregResult.org_number);
-    }
-  }, [brregResult, setFormValue]);
+  // BRREG state for edit dialog
+  const [editBrregResult, setEditBrregResult] = useState<BrregResult | null>(null);
 
   const filterByStatus = (list: any[], status?: string) => {
     if (!list) return [];
@@ -99,14 +87,13 @@ export default function Customers() {
         registered_by: 'admin',
         approved_by: user?.id,
         approved_at: new Date().toISOString(),
-        org_form: brregResult?.org_form || null,
-        industry_code: brregResult?.industry_code || null,
+        org_form: createBrregResult?.org_form || null,
+        industry_code: createBrregResult?.industry_code || null,
       });
       toast({ title: 'Kunde opprettet', description: 'Ny kunde er lagt til' });
       setIsCreateDialogOpen(false);
       reset();
-      resetBrreg();
-      setCreateOrgInput('');
+      setCreateBrregResult(null);
     } catch (error) {
       console.error('Failed to create customer:', error);
     }
@@ -351,32 +338,25 @@ export default function Customers() {
         </Tabs>
 
         {/* Create Customer Dialog */}
-        <Dialog open={isCreateDialogOpen} onOpenChange={v => { setIsCreateDialogOpen(v); if (!v) { reset(); resetBrreg(); setCreateOrgInput(''); } }}>
+        <Dialog open={isCreateDialogOpen} onOpenChange={v => { setIsCreateDialogOpen(v); if (!v) { reset(); setCreateBrregResult(null); } }}>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Legg til ny kunde</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {/* Org number with BRREG lookup */}
-              <div>
-                <Label htmlFor="create-org">Org.nr (valgfritt)</Label>
-                <div className="relative mt-1">
-                  <Input
-                    id="create-org"
-                    placeholder="123 456 789"
-                    value={createOrgInput}
-                    onChange={e => { setCreateOrgInput(e.target.value); setFormValue('org_number', e.target.value.replace(/\s/g, '')); }}
-                    maxLength={11}
-                  />
-                  {brregLoading && <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />}
-                </div>
-                {brregResult && (
-                  <div className="mt-2 p-2 rounded border border-primary/20 bg-primary/5 text-xs flex items-center gap-2">
-                    <Building2 className="h-3.5 w-3.5 text-primary" />
-                    <span>{brregResult.name}</span>
-                  </div>
-                )}
-              </div>
+              {/* BRREG search */}
+              <BrregSearchInput
+                label="Søk i Brønnøysundregistrene (valgfritt)"
+                onSelect={(r) => {
+                  setCreateBrregResult(r);
+                  setFormValue('name', r.name);
+                  setFormValue('address', r.address);
+                  setFormValue('org_number', r.org_number);
+                }}
+                onReset={() => {
+                  setCreateBrregResult(null);
+                }}
+              />
 
               <div>
                 <Input placeholder="Firmanavn *" {...register('name', { required: 'Firmanavn er påkrevd' })} />
@@ -399,12 +379,24 @@ export default function Customers() {
         </Dialog>
 
         {/* Edit Customer Dialog */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <Dialog open={isEditDialogOpen} onOpenChange={v => { setIsEditDialogOpen(v); if (!v) { setSelectedCustomer(null); resetEdit(); setEditBrregResult(null); } }}>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Rediger kunde</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmitEdit(onEditSubmit)} className="space-y-4">
+              {/* BRREG search for edit */}
+              <BrregSearchInput
+                label="Søk i Brønnøysundregistrene"
+                onSelect={(r) => {
+                  setEditBrregResult(r);
+                  setValue('name', r.name);
+                  setValue('address', r.address);
+                  setValue('org_number', r.org_number);
+                }}
+                onReset={() => setEditBrregResult(null)}
+              />
+
               <div>
                 <Input placeholder="Firmanavn *" {...registerEdit('name', { required: 'Firmanavn er påkrevd' })} />
                 {editErrors.name && <p className="text-destructive text-sm mt-1">{editErrors.name.message}</p>}
