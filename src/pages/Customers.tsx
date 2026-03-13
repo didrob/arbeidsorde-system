@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCustomers, useCreateCustomer, useUpdateCustomer } from '@/hooks/useApi';
 import { useSiteFilter } from '@/hooks/useSiteFilter';
@@ -14,10 +14,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useForm } from 'react-hook-form';
-import { Search, Mail, Phone, MapPin, Edit, CheckCircle, XCircle, Building2, Loader2, ChevronRight } from 'lucide-react';
+import { Search, Mail, Phone, MapPin, Edit, CheckCircle, XCircle, Loader2, ChevronRight } from 'lucide-react';
 import { isInternalCustomer } from '@/lib/internalOrders';
 import { useToast } from '@/hooks/use-toast';
-import { useBrregLookup } from '@/features/customers/useBrregLookup';
+import { BrregSearchInput } from '@/features/customers/BrregSearchInput';
+import type { BrregResult } from '@/features/customers/useBrregLookup';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CustomerForm {
