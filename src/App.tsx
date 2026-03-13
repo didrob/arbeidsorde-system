@@ -27,6 +27,7 @@ import Settings from './pages/Settings';
 import CustomerAgreements from './pages/CustomerAgreements';
 import Invoices from './pages/Invoices';
 import Planner from './pages/Planner';
+import RegisterCustomer from './pages/RegisterCustomer';
 
 const queryClient = new QueryClient();
 
