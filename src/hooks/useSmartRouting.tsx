@@ -12,21 +12,24 @@ export const useSmartRouting = () => {
   useEffect(() => {
     if (!user || !userRole) return;
 
-    // Skip if already on correct route or on auth pages
-    if (location.pathname.includes('/auth')) {
-      return;
-    }
+    if (location.pathname.includes('/auth')) return;
 
-    // Route field workers to field interface if they're not already there
-    if (isFieldWorker && !location.pathname.startsWith('/field')) {
+    // Field workers on mobile → /field
+    if (isFieldWorker && isMobile && !location.pathname.startsWith('/field')) {
       navigate('/field', { replace: true });
       return;
     }
+
+    // Field workers on desktop → / (admin dashboard)
+    if (isFieldWorker && !isMobile && location.pathname.startsWith('/field')) {
+      navigate('/', { replace: true });
+      return;
+    }
     
-    // Route non-field workers away from field interface to dashboard
+    // Non-field workers away from /field
     if (!isFieldWorker && location.pathname.startsWith('/field')) {
       navigate('/', { replace: true });
       return;
     }
-  }, [user, userRole, isFieldWorker, location.pathname, navigate]);
+  }, [user, userRole, isFieldWorker, isMobile, location.pathname, navigate]);
 };

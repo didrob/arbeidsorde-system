@@ -24,7 +24,7 @@ import { QuickStartModal } from './QuickStartModal';
 import { WorkOrderCompletionDialog } from './WorkOrderCompletionDialog';
 import { WorkOrderConfirmationDialog } from './WorkOrderConfirmationDialog';
 import { TimeTracker } from './TimeTracker';
-import { QuickOrderFAB } from '@/features/field-orders/QuickOrderFAB';
+
 import { QuickOrderSheet } from '@/features/field-orders/QuickOrderSheet';
 import { useQuickOrder } from '@/features/field-orders/useQuickOrder';
 import { 
@@ -255,30 +255,27 @@ export const MobileFieldWorker = () => {
 
   return (
     <div className="min-h-screen bg-background safe-area-padding-top">
-      {/* Header */}
-      <div className="bg-card border-b sticky top-0 z-10 safe-area-padding-top">
+      {/* Sub-header with stats and actions */}
+      <div className="bg-card border-b sticky top-0 z-10">
         <div className="p-4">
           <div className="flex items-center justify-between mb-2">
-            <h1 className="text-xl font-bold">Dagens Arbeid</h1>
-            <div className="flex items-center gap-2">
-              {/* Clock/Timer Button */}
+            <h1 className="text-lg font-bold text-foreground">Dagens Arbeid</h1>
+            <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => setShowTimeDialog(true)}
-                className="focus-ring"
+                className="h-9 w-9"
               >
-                <Timer className="h-4 w-4" />
+                <Timer className="h-5 w-5" />
               </Button>
-              
-              {/* Notification Center */}
               <Button
                 variant="ghost"
-                size="sm"
-                className="relative focus-ring"
+                size="icon"
+                className="relative h-9 w-9"
                 onClick={() => setShowNotifications(true)}
               >
-                <Bell className="h-4 w-4" />
+                <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
                   <Badge 
                     variant="destructive" 
@@ -288,12 +285,10 @@ export const MobileFieldWorker = () => {
                   </Badge>
                 )}
               </Button>
-              
-              {/* Menu Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="focus-ring">
-                    <Menu className="h-4 w-4" />
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
+                    <Menu className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -301,10 +296,7 @@ export const MobileFieldWorker = () => {
                     <Search className="h-4 w-4 mr-2" />
                     <span>{showPool ? 'Mine ordrer' : 'Ledig pool'}</span>
                     {!showPool && poolNotificationCount > 0 && (
-                      <Badge 
-                        variant="destructive" 
-                        className="ml-2 h-4 text-xs"
-                      >
+                      <Badge variant="destructive" className="ml-2 h-4 text-xs">
                         {poolNotificationCount} nye
                       </Badge>
                     )}
@@ -322,9 +314,9 @@ export const MobileFieldWorker = () => {
             <span>{workOrders.length} ordrer tildelt</span>
             <span>
               {new Intl.DateTimeFormat('nb-NO', { 
-                weekday: 'short', 
+                weekday: 'long', 
                 day: 'numeric', 
-                month: 'short'
+                month: 'long'
               }).format(new Date())}
             </span>
           </div>
@@ -385,18 +377,18 @@ export const MobileFieldWorker = () => {
               )}
 
               {/* Quick Start Button */}
-              <Card className="bg-primary/5 border-primary/20 animate-fade-in">
+              <Card className="bg-cobalt border-cobalt animate-fade-in">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-medium text-primary">Hurtigstart</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="font-medium text-white">Hurtigstart</h3>
+                      <p className="text-sm text-white/80">
                         Start en ny jobb med én gang
                       </p>
                     </div>
                     <Button 
                       onClick={() => setShowQuickStart(true)}
-                      className="bg-primary hover:bg-primary/90 focus-ring"
+                      className="bg-asco-teal text-cobalt hover:bg-asco-teal/90 focus-ring font-medium"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Start jobb
@@ -483,7 +475,7 @@ export const MobileFieldWorker = () => {
 
               {/* Show message when no orders */}
               {workOrders.length === 0 && (
-                <Card className="animate-fade-in">
+                <Card className="animate-fade-in shadow-brand-sm">
                   <CardContent className="p-8 text-center">
                     <h3 className="text-lg font-medium mb-2">Ingen tildelte ordrer</h3>
                     <p className="text-muted-foreground mb-4">
@@ -660,8 +652,7 @@ export const MobileFieldWorker = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Quick Order FAB + Sheet */}
-      <QuickOrderFAB onClick={() => setQuickOrderOpen(true)} queueCount={queueLength} />
+      {/* Quick Order Sheet (opened from bottom nav) */}
       <QuickOrderSheet open={quickOrderOpen} onOpenChange={setQuickOrderOpen} />
     </div>
   );
