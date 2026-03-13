@@ -618,11 +618,11 @@ export const WorkOrderCompletionDialog = ({
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="font-medium">Total tid brukt</p>
-                    <p className="text-lg text-green-600">{formatHours(totalTime)} timer</p>
+                    <p className="text-lg text-status-complete">{formatHours(totalTime)} timer</p>
                   </div>
                   <div>
                     <p className="font-medium">Materialer brukt</p>
-                    <p className="text-lg text-green-600">{completionData.materialsUsed.length} stk</p>
+                    <p className="text-lg text-status-complete">{completionData.materialsUsed.length} stk</p>
                   </div>
                 </div>
                 
