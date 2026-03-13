@@ -1,15 +1,20 @@
 {
-  "name": "Asco Workorder",
-  "short_name": "Asco WO",
-  "description": "Profesjonelt arbeidsordre- og tidssporingssystem for feltarbeidere og administrasjon",
+  "name": "ASCO Workorder",
+  "short_name": "ASCO",
+  "description": "Arbeidsordre og bestillingsportal for ASCO",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
+  "background_color": "#292C3F",
+  "theme_color": "#292C3F",
   "orientation": "any",
   "categories": ["productivity", "business"],
   "lang": "nb-NO",
   "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
     {
       "src": "/favicon.png",
       "sizes": "32x32",
@@ -22,18 +27,10 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/app-icon-192.png", 
+      "src": "/app-icon-192.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/app-icon-192.png",
-      "sizes": "540x720",
-      "type": "image/png",
-      "form_factor": "narrow"
     }
   ],
   "shortcuts": [
@@ -44,8 +41,8 @@
       "url": "/field",
       "icons": [
         {
-          "src": "/favicon.png",
-          "sizes": "96x96"
+          "src": "/favicon.svg",
+          "sizes": "any"
         }
       ]
     },
@@ -56,8 +53,8 @@
       "url": "/work-orders",
       "icons": [
         {
-          "src": "/favicon.png",
-          "sizes": "96x96"
+          "src": "/favicon.svg",
+          "sizes": "any"
         }
       ]
     }
