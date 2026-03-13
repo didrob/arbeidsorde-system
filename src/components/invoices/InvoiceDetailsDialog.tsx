@@ -97,7 +97,7 @@ export function InvoiceDetailsDialog({ invoice, open, onOpenChange, onEdit }: In
                 size="sm"
                 onClick={() => handleStatusChange('paid')}
                 disabled={updateStatusMutation.isPending}
-                className="text-green-600 border-green-600 hover:bg-green-50"
+                className="text-status-complete border-status-complete hover:bg-status-complete-subtle"
               >
                 <Check className="h-4 w-4 mr-2" />
                 Marker som betalt
