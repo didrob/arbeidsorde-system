@@ -9,7 +9,6 @@ import { MapPin, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PublicLayout } from '@/components/public/PublicLayout';
 import { GlassCard } from '@/components/public/GlassCard';
-import { useTheme } from '@/hooks/useTheme';
 
 const STORAGE_KEY = 'asco-portal-site';
 
@@ -22,7 +21,6 @@ const PortalLogin = () => {
   const navigate = useNavigate();
   const { user, isCustomer } = useAuth();
   const { toast } = useToast();
-  const { isDark } = useTheme();
   const [step, setStep] = useState<'location' | 'login'>('location');
   const [sites, setSites] = useState<Site[]>([]);
   const [selectedSite, setSelectedSite] = useState<string | null>(null);
@@ -78,30 +76,27 @@ const PortalLogin = () => {
   };
 
   const siteName = sites.find(s => s.id === selectedSite)?.name;
-  const textClass = isDark ? 'text-white' : 'text-foreground';
-  const mutedClass = isDark ? 'text-white/50' : 'text-muted-foreground';
-  const inputClass = isDark ? 'bg-white/10 border-white/20 text-white placeholder:text-white/40' : '';
 
   return (
     <PublicLayout showBack>
       {step === 'location' ? (
         <div className="w-full max-w-lg">
           <div className="text-center mb-8">
-            <h1 className={`font-heading text-2xl md:text-3xl mb-2 ${textClass}`}>
+            <h1 className="font-heading text-2xl md:text-3xl mb-2 text-white">
               Velg lokasjon
             </h1>
-            <p className={mutedClass}>Hvor ønsker du tjenester?</p>
+            <p className="text-pale-blue">Hvor ønsker du tjenester?</p>
           </div>
           <div className="grid grid-cols-2 gap-4">
             {sites.map(site => (
               <button key={site.id} onClick={() => handleSiteSelect(site.id)} className="text-left">
                 <GlassCard
-                  className={`flex flex-col items-center justify-center gap-2 p-6 min-h-[120px] cursor-pointer hover:border-asco-teal/40 ${
+                  className={`flex flex-col items-center justify-center gap-2 p-6 min-h-[120px] cursor-pointer ${
                     selectedSite === site.id ? 'border-asco-teal ring-2 ring-asco-teal/30' : ''
                   }`}
                 >
                   <MapPin className="h-6 w-6 text-asco-teal" />
-                  <span className={`text-sm font-medium ${textClass}`}>{site.name}</span>
+                  <span className="text-sm font-medium text-white">{site.name}</span>
                 </GlassCard>
               </button>
             ))}
@@ -111,11 +106,11 @@ const PortalLogin = () => {
         <GlassCard className="w-full max-w-md p-8">
           <div className="flex flex-col items-center mb-6">
             <img
-              src={isDark ? '/logo-dark.png' : '/logo-light.png'}
+              src="/logo-dark.png"
               alt="ASCO"
               className="h-10 mb-3"
             />
-            <p className={`text-sm mb-1 ${mutedClass}`}>Kundeportal</p>
+            <p className="text-sm mb-1 text-pale-blue">Kundeportal</p>
             <button
               onClick={() => setStep('location')}
               className="flex items-center gap-1 text-xs text-asco-teal hover:underline"
@@ -126,24 +121,24 @@ const PortalLogin = () => {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label className={isDark ? 'text-white/80' : 'text-foreground'}>E-post</Label>
+              <Label className="text-white/80">E-post</Label>
               <Input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="din@bedrift.no"
                 required
-                className={inputClass}
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
               />
             </div>
             <div className="space-y-2">
-              <Label className={isDark ? 'text-white/80' : 'text-foreground'}>Passord</Label>
+              <Label className="text-white/80">Passord</Label>
               <Input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
-                className={inputClass}
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
               />
             </div>
             <Button
@@ -159,7 +154,7 @@ const PortalLogin = () => {
           <div className="mt-6 text-center">
             <button
               onClick={() => navigate('/register-customer')}
-              className="text-sm text-primary-text hover:underline"
+              className="text-sm text-asco-teal hover:underline"
             >
               Ny kunde? Registrer bedrift →
             </button>
