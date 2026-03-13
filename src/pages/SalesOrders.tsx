@@ -87,7 +87,7 @@ export default function SalesOrders() {
   };
 
   return (
-    <PageLayout title="Salgsordrer" subtitle="Generer og administrer salgsordrer for eksport">
+    <PageLayout title="Salgsordrer" description="Generer og administrer salgsordrer for eksport">
       {/* Ready for Sales Order */}
       {readyGroups.length > 0 && (
         <Card className="border-teal-200 dark:border-teal-800 bg-teal-50/50 dark:bg-teal-950/20 mb-6">
