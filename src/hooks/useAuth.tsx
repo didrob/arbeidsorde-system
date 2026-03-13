@@ -81,6 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Unexpected error fetching user role:', error);
       setUserRole(null);
+      setCustomerId(null);
       setNeedsOnboarding(false);
     }
   };
