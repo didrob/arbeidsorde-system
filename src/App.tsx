@@ -84,12 +84,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 const App = () => (
-  <TooltipProvider>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <WorkOrderWizardProvider>
-          <SiteFilterProvider>
-            <BrowserRouter>
+  <ThemeProvider attribute="class" defaultTheme="system" storageKey="asco-theme">
+    <TooltipProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <WorkOrderWizardProvider>
+            <SiteFilterProvider>
+              <BrowserRouter>
               <Toaster />
               <Sonner />
               <PWAWrapper />
