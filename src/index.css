@@ -174,7 +174,7 @@
 
   /* Headings use brand font */
   h1, h2, h3 {
-    font-family: "PP Neue Machina", Arial, sans-serif;
+    @apply font-heading;
   }
 
   /* Focus accessibility — teal outline */
