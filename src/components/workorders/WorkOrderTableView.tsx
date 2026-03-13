@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Eye, MoreHorizontal, User, Edit, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import { isInternalOrder } from '@/lib/internalOrders';
 import { format } from 'date-fns';
 import { nb } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
