@@ -59,12 +59,17 @@ export function WorkOrderTableView({
                       #{order.id?.slice(-6)}
                     </p>
                   </div>
-                  <Badge
+                   <Badge
                     variant="outline"
                     className={`${getStatusColor(order.status)} text-xs shrink-0`}
                   >
                     {getStatusText(order.status)}
                   </Badge>
+                  {isInternalOrder(order) && (
+                    <Badge className="bg-[hsl(var(--cobalt))] text-white text-xs ml-1">
+                      INTERN
+                    </Badge>
+                  )}
                 </div>
 
                 {/* Customer always visible */}
