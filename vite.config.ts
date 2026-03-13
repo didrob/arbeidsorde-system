@@ -36,11 +36,11 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       manifest: {
-        name: 'Asco Workorder',
-        short_name: 'Asco WO',
-        description: 'Profesjonelt arbeidsordre- og tidssporingssystem for feltarbeidere og administrasjon',
-        theme_color: '#2563eb',
-        background_color: '#ffffff',
+        name: 'ASCO Workorder',
+        short_name: 'ASCO',
+        description: 'Arbeidsordre og bestillingsportal for ASCO',
+        theme_color: '#292C3F',
+        background_color: '#292C3F',
         display: 'standalone',
         orientation: 'any',
         scope: '/',
