@@ -81,7 +81,10 @@ export default function WorkOrders() {
   const deleteWorkOrder = useDeleteWorkOrder();
   const { toast } = useToast();
 
-  const filteredWorkOrders = workOrders?.filter((order: any) => {
+  // Filter orders: exclude internal by default
+  const visibleOrders = workOrders?.filter((order: any) => showInternal || !isInternalOrder(order));
+
+  const filteredWorkOrders = visibleOrders?.filter((order: any) => {
     const matchesSearch = order.title.toLowerCase().includes(search.toLowerCase()) ||
                          order.description?.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
