@@ -1,6 +1,7 @@
-project_id = "altwmywwfpjumzscxrjl"
+project_id = "pofayvcrhypkcnjgkhqk"
 
 [functions.send-invitation]
-# JWT verification is enabled by default - this function requires authentication
-# Only system_admin and site_manager roles can call this function
-verify_jwt = true
+verify_jwt = false
+
+[functions.send-order-email]
+verify_jwt = false

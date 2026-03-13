@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { sendOrderEmail } from '@/lib/emailService';
 
 const LAST_CUSTOMER_KEY = 'quick-order-last-customer';
 const OFFLINE_QUEUE_KEY = 'quick-order-offline-queue';
@@ -152,6 +153,14 @@ export const useQuickOrder = () => {
       queryClient.invalidateQueries({ queryKey: ['workOrders'] });
       queryClient.invalidateQueries({ queryKey: ['assignedWorkOrders'] });
       queryClient.invalidateQueries({ queryKey: ['activeTimer'] });
+
+      // Fire-and-forget email notifications
+      if (workOrder) {
+        sendOrderEmail('order_confirmation', workOrder.id);
+        if (data.is_urgent) {
+          sendOrderEmail('urgent_alert', workOrder.id);
+        }
+      }
 
       toast.success(
         action === 'assign_self'
