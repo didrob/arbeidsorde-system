@@ -37,10 +37,11 @@ export function TopBar({ title, onCreateClick, createLabel = "Opprett ny", actio
             <Button 
               onClick={onCreateClick} 
               size="sm"
+              variant="outline"
               className="flex items-center gap-2"
             >
               <Plus className="h-4 w-4" />
-              <span className="hidden xs:inline">Opprett ny</span>
+              <span className="hidden xs:inline">{createLabel}</span>
             </Button>
           )}
         </div>
