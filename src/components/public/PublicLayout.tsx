@@ -37,22 +37,22 @@ export function PublicLayout({ children, showBack = false, showFooter = false, v
         alt=""
         aria-hidden="true"
         className={`absolute inset-0 w-full h-full object-cover object-center ${
-          isLanding ? 'opacity-[0.50]' : 'opacity-[0.35]'
+          isLanding ? 'opacity-[0.60]' : 'opacity-[0.45]'
         }`}
       />
 
       {/* Cobalt overlay */}
       <div
         className={`absolute inset-0 ${
-          isLanding ? 'bg-[rgba(41,44,63,0.65)]' : 'bg-[rgba(41,44,63,0.75)]'
+          isLanding ? 'bg-[rgba(41,44,63,0.55)]' : 'bg-[rgba(41,44,63,0.65)]'
         }`}
       />
 
       {/* Gradient overlay for landing */}
       <div className={`absolute inset-0 bg-gradient-to-b ${
         isLanding
-          ? 'from-[rgba(30,32,48,0.85)] via-[rgba(41,44,63,0.70)] to-[rgba(41,44,63,0.65)]'
-          : 'from-[rgba(30,32,48,0.85)] via-transparent to-[rgba(41,44,63,0.75)]'
+          ? 'from-[rgba(30,32,48,0.75)] via-[rgba(41,44,63,0.60)] to-[rgba(41,44,63,0.55)]'
+          : 'from-[rgba(30,32,48,0.75)] via-transparent to-[rgba(41,44,63,0.65)]'
       }`} />
 
       {/* Topbar */}
