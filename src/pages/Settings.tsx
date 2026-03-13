@@ -351,11 +351,11 @@ export default function Settings() {
             </CardHeader>
             <CardContent className="space-y-6">
               {isInstalled ? (
-                <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <div className="flex items-center gap-3 p-4 bg-status-complete-subtle border border-status-complete rounded-lg">
+                  <div className="w-2 h-2 bg-status-complete rounded-full"></div>
                   <div>
-                    <div className="font-medium text-green-900">App er installert</div>
-                    <div className="text-sm text-green-700">
+                    <div className="font-medium text-foreground">App er installert</div>
+                    <div className="text-sm text-muted-foreground">
                       Appen kjører som en installert app på enheten din
                     </div>
                   </div>
