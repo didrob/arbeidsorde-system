@@ -464,7 +464,7 @@ const Dashboard = () => {
                           >
                             <div className="flex items-center gap-4">
                               <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                                <span className="text-primary font-bold text-sm">#{index + 1}</span>
+                                <span className="text-primary-text font-bold text-sm">#{index + 1}</span>
                               </div>
                               <div>
                                 <h3 className="font-semibold">{order.title}</h3>
