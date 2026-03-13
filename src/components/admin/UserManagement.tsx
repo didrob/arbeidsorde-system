@@ -13,7 +13,7 @@ import { useOrganizations, useSites, useUserAdditionalSites, useGrantSiteAccess,
 import { useInvitations, useResendInvitation, useCancelInvitation } from "@/hooks/useInvitations";
 import { InviteUserDialog } from "./InviteUserDialog";
 import { AdditionalSiteAccessManager } from "./AdditionalSiteAccessManager";
-import { Pencil, UserPlus, Mail, Search, RotateCcw, X, Download, Plus, Trash2 } from "lucide-react";
+import { Pencil, UserPlus, Mail, Search, RotateCcw, X, Download, Users, Shield, Wrench, MapPin } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -44,23 +44,26 @@ interface UserProfile {
   created_at: string;
   organization_name?: string;
   site_name?: string;
+  auth_email?: string;
 }
 
-const roleLabels = {
+const roleLabels: Record<string, string> = {
   system_admin: 'System Admin',
   site_manager: 'Site Manager', 
   billing_manager: 'Billing Manager',
   field_supervisor: 'Field Supervisor',
   field_worker: 'Field Worker',
+  customer: 'Kunde',
   admin: 'Admin'
 };
 
-const roleColors = {
+const roleColors: Record<string, string> = {
   system_admin: 'bg-purple-100 text-purple-800',
   site_manager: 'bg-blue-100 text-blue-800',
   billing_manager: 'bg-green-100 text-green-800',
   field_supervisor: 'bg-yellow-100 text-yellow-800', 
   field_worker: 'bg-gray-100 text-gray-800',
+  customer: 'bg-teal-100 text-teal-800',
   admin: 'bg-red-100 text-red-800'
 };
 
@@ -72,6 +75,8 @@ export function UserManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("users");
+  const [filterRole, setFilterRole] = useState<string>("all");
+  const [filterSite, setFilterSite] = useState<string>("all");
   const [createForm, setCreateForm] = useState({
     email: "",
     full_name: "",
@@ -99,7 +104,21 @@ export function UserManagement() {
   const grantSiteAccess = useGrantSiteAccess();
   const revokeSiteAccess = useRevokeSiteAccess();
 
-  // Fetch users
+  // Fetch all sites for filter dropdown
+  const allSites = useQuery({
+    queryKey: ['all-sites'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('sites')
+        .select('id, name')
+        .eq('is_active', true)
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch users with auth email
   const users = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
@@ -116,25 +135,48 @@ export function UserManagement() {
       
       return data.map(user => ({
         ...user,
-        organization_name: user.organizations?.name,
-        site_name: user.sites?.name
+        organization_name: (user.organizations as any)?.name,
+        site_name: (user.sites as any)?.name
       })) as UserProfile[];
     },
   });
 
-  // Filter users based on search query
+  // Filter users based on search query, role, and site
   const filteredUsers = useMemo(() => {
     if (!users.data) return [];
-    if (!searchQuery) return users.data;
+    let result = users.data;
     
-    const query = searchQuery.toLowerCase();
-    return users.data.filter(user => 
-      user.full_name?.toLowerCase().includes(query) ||
-      user.role.toLowerCase().includes(query) ||
-      user.organization_name?.toLowerCase().includes(query) ||
-      user.site_name?.toLowerCase().includes(query)
-    );
-  }, [users.data, searchQuery]);
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(user => 
+        user.full_name?.toLowerCase().includes(query) ||
+        user.role.toLowerCase().includes(query) ||
+        user.organization_name?.toLowerCase().includes(query) ||
+        user.site_name?.toLowerCase().includes(query) ||
+        user.email?.toLowerCase().includes(query)
+      );
+    }
+
+    if (filterRole !== "all") {
+      result = result.filter(user => user.role === filterRole);
+    }
+
+    if (filterSite !== "all") {
+      result = result.filter(user => user.site_id === filterSite);
+    }
+    
+    return result;
+  }, [users.data, searchQuery, filterRole, filterSite]);
+
+  // Role summary counts
+  const roleSummary = useMemo(() => {
+    if (!users.data) return {};
+    const counts: Record<string, number> = {};
+    users.data.forEach(user => {
+      counts[user.role] = (counts[user.role] || 0) + 1;
+    });
+    return counts;
+  }, [users.data]);
 
   // Filter invitations based on search query
   const filteredInvitations = useMemo(() => {
@@ -144,8 +186,8 @@ export function UserManagement() {
     return invitations.filter(invitation => 
       invitation.email?.toLowerCase().includes(query) ||
       invitation.role.toLowerCase().includes(query) ||
-      invitation.organizations?.name?.toLowerCase().includes(query) ||
-      invitation.sites?.name?.toLowerCase().includes(query)
+      (invitation as any).organizations?.name?.toLowerCase().includes(query) ||
+      (invitation as any).sites?.name?.toLowerCase().includes(query)
     );
   }, [invitations, searchQuery]);
 
@@ -187,7 +229,7 @@ export function UserManagement() {
     mutationFn: async (userData: typeof createForm) => {
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: userData.email,
-        password: 'TempPassword123!', // Temporary password - user should reset
+        password: 'TempPassword123!',
         email_confirm: true,
         user_metadata: {
           full_name: userData.full_name
@@ -227,9 +269,9 @@ export function UserManagement() {
     },
   });
 
-  // Update user mutation
+  // Update user mutation - now also syncs user_roles
   const updateUserMutation = useMutation({
-    mutationFn: async (userData: typeof editForm & { id: string }) => {
+    mutationFn: async (userData: typeof editForm & { id: string; user_id: string }) => {
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -242,12 +284,28 @@ export function UserManagement() {
         .eq('id', userData.id);
 
       if (error) throw error;
+
+      // Sync user_roles table
+      // First delete existing roles, then insert new one
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userData.user_id);
+
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: userData.user_id,
+          role: userData.role as any,
+        });
+
+      if (roleError) throw roleError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
         title: 'User updated successfully',
-        description: 'The user profile has been updated.',
+        description: 'The user profile and role have been updated.',
       });
       setIsEditDialogOpen(false);
       setSelectedUser(null);
@@ -279,7 +337,7 @@ export function UserManagement() {
 
   const onEditSubmit = (data: typeof editForm) => {
     if (!selectedUser) return;
-    updateUserMutation.mutate({ ...data, id: selectedUser.id });
+    updateUserMutation.mutate({ ...data, id: selectedUser.id, user_id: selectedUser.user_id });
   };
 
   if (users.isLoading) {
@@ -314,15 +372,54 @@ export function UserManagement() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search users..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+          {/* Role Summary */}
+          <div className="flex flex-wrap gap-2">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-muted text-sm">
+              <Users className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="font-medium">{users.data?.length || 0}</span>
+              <span className="text-muted-foreground">totalt</span>
+            </div>
+            {Object.entries(roleSummary).map(([role, count]) => (
+              <div key={role} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm ${roleColors[role] || 'bg-muted'}`}>
+                <span className="font-medium">{count}</span>
+                <span>{roleLabels[role] || role}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Search + Filters */}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Søk brukere..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={filterRole} onValueChange={setFilterRole}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Alle roller" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle roller</SelectItem>
+                {Object.entries(roleLabels).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={filterSite} onValueChange={setFilterSite}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Alle lokasjoner" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle lokasjoner</SelectItem>
+                {(allSites.data || []).map((site) => (
+                  <SelectItem key={site.id} value={site.id}>{site.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -358,12 +455,12 @@ export function UserManagement() {
                         onCheckedChange={handleSelectAll}
                       />
                     </TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Organization</TableHead>
-                    <TableHead>Site</TableHead>
+                    <TableHead>Navn</TableHead>
+                    <TableHead>E-post</TableHead>
+                    <TableHead>Rolle</TableHead>
+                    <TableHead>Lokasjon</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead>Handlinger</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -376,16 +473,16 @@ export function UserManagement() {
                         />
                       </TableCell>
                       <TableCell className="font-medium">{user.full_name}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{user.email || '—'}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={roleColors[user.role] || "bg-gray-500"}>
                           {roleLabels[user.role] || user.role}
                         </Badge>
                       </TableCell>
-                      <TableCell>{user.organization_name || "-"}</TableCell>
-                      <TableCell>{user.site_name || "-"}</TableCell>
+                      <TableCell>{user.site_name || "—"}</TableCell>
                       <TableCell>
                         <Badge variant={user.is_active ? "default" : "secondary"}>
-                          {user.is_active ? "Active" : "Inactive"}
+                          {user.is_active ? "Aktiv" : "Inaktiv"}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -425,8 +522,8 @@ export function UserManagement() {
                           {roleLabels[invitation.role] || invitation.role}
                         </Badge>
                       </TableCell>
-                      <TableCell>{invitation.organizations?.name || "-"}</TableCell>
-                      <TableCell>{invitation.sites?.name || "-"}</TableCell>
+                      <TableCell>{(invitation as any).organizations?.name || "—"}</TableCell>
+                      <TableCell>{(invitation as any).sites?.name || "—"}</TableCell>
                       <TableCell>
                         <Badge variant={
                           invitation.status === 'pending' ? "secondary" :

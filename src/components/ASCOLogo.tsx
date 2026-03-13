@@ -1,14 +1,22 @@
 import { Link } from 'react-router-dom';
 import { AscoLogoMark } from '@/components/AscoLogoMark';
+import { useTheme } from '@/hooks/useTheme';
 
 interface ASCOLogoProps {
-  variant?: 'light' | 'dark';
+  /** 'light' = always white logo, 'dark' = always cobalt logo, 'auto' = theme-aware */
+  variant?: 'light' | 'dark' | 'auto';
   className?: string;
 }
 
-export function ASCOLogo({ variant = 'light', className = '' }: ASCOLogoProps) {
-  const logoSrc = variant === 'light' ? '/logo-light.png' : '/logo-dark.png';
-  const color = variant === 'light' ? 'hsl(var(--foreground))' : 'hsl(var(--primary))';
+export function ASCOLogo({ variant = 'auto', className = '' }: ASCOLogoProps) {
+  const { isDark } = useTheme();
+
+  const resolvedVariant = variant === 'auto'
+    ? (isDark ? 'light' : 'dark')
+    : variant;
+
+  const logoSrc = resolvedVariant === 'light' ? '/logo-light.png' : '/logo-dark.png';
+  const color = resolvedVariant === 'light' ? '#FFFFFF' : 'hsl(232, 21%, 20%)';
 
   return (
     <Link to="/dashboard" className={`block shrink-0 ${className}`} aria-label="ASCO — Gå til forsiden">

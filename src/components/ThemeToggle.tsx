@@ -10,7 +10,7 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className="text-cobalt-foreground hover:bg-cobalt-light"
+      className="text-foreground hover:bg-accent"
       aria-label={isDark ? 'Bytt til lyst tema' : 'Bytt til mørkt tema'}
     >
       {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
