@@ -94,7 +94,7 @@ export default function SalesOrders() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
-                <ClipboardList className="h-4 w-4 text-teal-600" />
+                <ClipboardList className="h-4 w-4 text-primary" />
                 Klare for salgsordre
                 <Badge variant="secondary">{readyGroups.reduce((s, g) => s + g.orders.length, 0)} ordrer</Badge>
               </CardTitle>
