@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 interface TopBarProps {
   title: string;
   onCreateClick?: () => void;
+  createLabel?: string;
   actions?: ReactNode;
 }
 
