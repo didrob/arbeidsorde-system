@@ -3,6 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Eye, MoreHorizontal, User, Clock, Edit, Trash2 } from 'lucide-react';
+import { isInternalOrder } from '@/lib/internalOrders';
+import { cn } from '@/lib/utils';
 
 interface WorkOrderListViewProps {
   orders: any[];
