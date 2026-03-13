@@ -171,12 +171,12 @@ export function PlanningStep() {
       </div>
 
       {/* Planning Summary */}
-      <Card className="border-green-200 bg-green-50/50">
+      <Card className="border-status-complete bg-status-complete-subtle">
         <CardHeader>
-          <CardTitle className="text-base text-green-900">Sammendrag av planlegging</CardTitle>
+          <CardTitle className="text-base text-status-complete">Sammendrag av planlegging</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 text-sm text-green-700">
+          <div className="space-y-2 text-sm text-foreground">
             <div className="flex justify-between">
               <span>Startdato:</span>
               <span className="font-medium">
