@@ -36,9 +36,9 @@ export function CreateInvoiceDialog({ open, onOpenChange }: CreateInvoiceDialogP
     }
   }, [open]);
 
-  // Filter work orders by selected customer
+  // Filter work orders by selected customer, exclude internal orders
   const filteredWorkOrders = workOrders.filter(wo => 
-    wo.customer_id === customerId && wo.status === 'completed'
+    wo.customer_id === customerId && wo.status === 'completed' && !wo.is_internal
   );
 
   const calculateTotal = () => {
