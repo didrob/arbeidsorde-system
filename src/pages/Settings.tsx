@@ -279,7 +279,7 @@ export default function Settings() {
                       <div className="space-y-2">
                         <Label>Status</Label>
                         <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                          <CheckCircle className={`w-4 h-4 ${profile.is_active ? 'text-green-500' : 'text-red-500'}`} />
+                          <CheckCircle className={`w-4 h-4 ${profile.is_active ? 'text-status-complete' : 'text-destructive'}`} />
                           <span className="text-sm">
                             {profile.is_active ? 'Aktiv' : 'Inaktiv'}
                           </span>
@@ -351,11 +351,11 @@ export default function Settings() {
             </CardHeader>
             <CardContent className="space-y-6">
               {isInstalled ? (
-                <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <div className="flex items-center gap-3 p-4 bg-status-complete-subtle border border-status-complete rounded-lg">
+                  <div className="w-2 h-2 bg-status-complete rounded-full"></div>
                   <div>
-                    <div className="font-medium text-green-900">App er installert</div>
-                    <div className="text-sm text-green-700">
+                    <div className="font-medium text-foreground">App er installert</div>
+                    <div className="text-sm text-muted-foreground">
                       Appen kjører som en installert app på enheten din
                     </div>
                   </div>
@@ -464,7 +464,7 @@ export default function Settings() {
                 <div>
                   <div className="text-sm text-muted-foreground">Server status</div>
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <div className="w-2 h-2 bg-status-complete rounded-full"></div>
                     <span className="font-medium">Online</span>
                   </div>
                 </div>
