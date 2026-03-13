@@ -33,9 +33,6 @@ export default function RegisterCustomer() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [sites, setSites] = useState<{ id: string; name: string }[]>([]);
-  const [orgInput, setOrgInput] = useState('');
-  const { lookup, isLoading: brregLoading, error: brregError, result: brregResult, reset: resetBrreg } = useBrregLookup();
-
   const [data, setData] = useState<RegistrationData>({
     org_number: '', name: '', address: '', org_form: '', industry_code: '',
     contact_person: '', email: '', phone: '', invoice_email: '', site_id: '',
@@ -46,30 +43,21 @@ export default function RegisterCustomer() {
       .then(({ data: s }) => { if (s) setSites(s); });
   }, []);
 
-  useEffect(() => {
-    const clean = orgInput.replace(/\s/g, '');
-    if (clean.length !== 9 || !/^\d{9}$/.test(clean)) return;
-    const timer = setTimeout(() => { lookup(clean); }, 500);
-    return () => clearTimeout(timer);
-  }, [orgInput, lookup]);
+  const handleBrregSelect = (result: BrregResult) => {
+    setData(prev => ({
+      ...prev,
+      org_number: result.org_number,
+      name: result.name,
+      address: result.address,
+      org_form: result.org_form,
+      industry_code: result.industry_code,
+    }));
+    setConfirmed(true);
+  };
 
-  useEffect(() => {
-    if (brregResult) {
-      setData(prev => ({
-        ...prev,
-        org_number: brregResult.org_number,
-        name: brregResult.name,
-        address: brregResult.address,
-        org_form: brregResult.org_form,
-        industry_code: brregResult.industry_code,
-      }));
-    }
-  }, [brregResult]);
-
-  const handleOrgInputChange = (value: string) => {
-    setOrgInput(value);
+  const handleBrregReset = () => {
     setConfirmed(false);
-    resetBrreg();
+    setData(prev => ({ ...prev, org_number: '', name: '', address: '', org_form: '', industry_code: '' }));
   };
 
   const canProceed = useCallback(() => {
