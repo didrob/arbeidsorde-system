@@ -28,7 +28,10 @@ export function WorkOrderGridView({
       {orders.map((order: any) => (
         <Card 
           key={order.id} 
-          className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer"
+          className={cn(
+            "group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer",
+            isInternalOrder(order) && "bg-muted/30 border-[hsl(var(--cobalt))]/20"
+          )}
           onClick={() => onViewDetails(order)}
         >
           <CardHeader className="pb-3">
