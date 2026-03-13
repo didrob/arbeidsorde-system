@@ -44,9 +44,14 @@ export function PublicLayout({ children, showBack = false, showFooter = false, v
       {/* Cobalt overlay */}
       <div
         className={`absolute inset-0 ${
-          isLanding ? 'bg-asco-cobalt/75' : 'bg-asco-cobalt/85'
+          isLanding ? 'bg-[rgba(41,44,63,0.85)]' : 'bg-asco-cobalt/85'
         }`}
       />
+
+      {/* Gradient overlay for landing */}
+      {isLanding && (
+        <div className="absolute inset-0 bg-gradient-to-b from-[rgba(30,32,48,0.95)] via-[rgba(41,44,63,0.80)] to-[rgba(41,44,63,0.75)]" />
+      )}
 
       {/* Topbar */}
       <header className="relative z-10 flex items-center justify-between px-4 md:px-8 py-4">
