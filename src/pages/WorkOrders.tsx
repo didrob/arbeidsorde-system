@@ -50,6 +50,7 @@ interface WorkOrderForm {
 
 export default function WorkOrders() {
   const [search, setSearch] = useState('');
+  const [showInternal, setShowInternal] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table' | 'compact'>(() => {
     return (localStorage.getItem('workOrderViewMode') as any) || 'grid';
