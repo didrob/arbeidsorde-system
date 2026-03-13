@@ -230,8 +230,9 @@ export function useCustomerPricingAgreements(customerId?: string) {
       return (data || []).map(item => ({
         ...item,
         agreement_type: item.agreement_type as AgreementType,
-        resource_type: item.resource_type as ResourceType
-      }));
+        resource_type: item.resource_type as ResourceType,
+        customer: item.customer ? { ...item.customer, registration_status: (item.customer as any).registration_status as any } : undefined,
+      })) as CustomerPricingAgreement[];
     },
     enabled: !!customerId || customerId === undefined,
   });
