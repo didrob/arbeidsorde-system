@@ -338,32 +338,25 @@ export default function Customers() {
         </Tabs>
 
         {/* Create Customer Dialog */}
-        <Dialog open={isCreateDialogOpen} onOpenChange={v => { setIsCreateDialogOpen(v); if (!v) { reset(); resetBrreg(); setCreateOrgInput(''); } }}>
+        <Dialog open={isCreateDialogOpen} onOpenChange={v => { setIsCreateDialogOpen(v); if (!v) { reset(); setCreateBrregResult(null); } }}>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Legg til ny kunde</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {/* Org number with BRREG lookup */}
-              <div>
-                <Label htmlFor="create-org">Org.nr (valgfritt)</Label>
-                <div className="relative mt-1">
-                  <Input
-                    id="create-org"
-                    placeholder="123 456 789"
-                    value={createOrgInput}
-                    onChange={e => { setCreateOrgInput(e.target.value); setFormValue('org_number', e.target.value.replace(/\s/g, '')); }}
-                    maxLength={11}
-                  />
-                  {brregLoading && <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />}
-                </div>
-                {brregResult && (
-                  <div className="mt-2 p-2 rounded border border-primary/20 bg-primary/5 text-xs flex items-center gap-2">
-                    <Building2 className="h-3.5 w-3.5 text-primary" />
-                    <span>{brregResult.name}</span>
-                  </div>
-                )}
-              </div>
+              {/* BRREG search */}
+              <BrregSearchInput
+                label="Søk i Brønnøysundregistrene (valgfritt)"
+                onSelect={(r) => {
+                  setCreateBrregResult(r);
+                  setFormValue('name', r.name);
+                  setFormValue('address', r.address);
+                  setFormValue('org_number', r.org_number);
+                }}
+                onReset={() => {
+                  setCreateBrregResult(null);
+                }}
+              />
 
               <div>
                 <Input placeholder="Firmanavn *" {...register('name', { required: 'Firmanavn er påkrevd' })} />
