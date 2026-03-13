@@ -11,10 +11,10 @@ export function GlassCard({ children, className, accent = false }: GlassCardProp
   return (
     <div
       className={cn(
-        'backdrop-blur-[20px] rounded-brand shadow-brand-lg transition-all duration-300',
-        'bg-white/[0.08] border border-white/[0.15]',
-        'hover:border-white/[0.25] hover:shadow-[0_0_30px_rgba(0,253,199,0.08)]',
-        accent && 'border-asco-teal/30 hover:border-asco-teal/50',
+        'rounded-[16px] transition-all duration-300',
+        'bg-white/[0.06] border border-white/[0.12]',
+        'hover:border-white/[0.25]',
+        accent && 'border-[rgba(0,253,199,0.3)] hover:border-asco-teal',
         className
       )}
     >

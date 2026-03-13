@@ -9,60 +9,44 @@ interface PublicLayoutProps {
   showFooter?: boolean;
 }
 
+function AscoLogoSmall() {
+  return (
+    <span className="font-heading text-xl font-bold tracking-[0.2em] text-white select-none">
+      <span className="relative inline-block">
+        A
+        <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-2 w-2 rounded-full bg-asco-teal" />
+      </span>
+      SCO
+    </span>
+  );
+}
+
 export function PublicLayout({ children, showBack = false, showFooter = false }: PublicLayoutProps) {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
-      {/* Layer 1: Base cobalt gradient */}
+      {/* Background: solid cobalt + radial gradient for depth */}
       <div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(135deg, hsl(232 25% 15%) 0%, hsl(232 21% 20%) 50%, hsl(232 23% 25%) 100%)',
+          background: 'radial-gradient(ellipse at 50% 40%, hsl(232 21% 24%) 0%, hsl(232 25% 15%) 70%)',
         }}
       />
 
-      {/* Layer 2: Industrial background image at low opacity */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.12]"
-        style={{ backgroundImage: "url('/bg-industrial.jpg')" }}
-      />
-
-      {/* Layer 3: Dark gradient overlay for text readability */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: 'linear-gradient(180deg, rgba(30,32,48,0.7) 0%, rgba(30,32,48,0.4) 40%, rgba(30,32,48,0.6) 100%)',
-        }}
-      />
-
-      {/* Layer 4: Subtle teal grid pattern */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage:
-            'linear-gradient(rgba(0,253,199,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,253,199,0.06) 1px, transparent 1px)',
-          backgroundSize: '60px 60px',
-        }}
-      />
-
-      {/* Layer 5: Teal glow behind content */}
+      {/* Subtle teal glow behind content */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 600px 400px at 50% 55%, rgba(0,253,199,0.06) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse 500px 300px at 50% 55%, rgba(0,253,199,0.035) 0%, transparent 70%)',
         }}
       />
 
       {/* Topbar */}
       <header className="relative z-10 flex items-center justify-between px-4 md:px-8 py-4">
         <div className="flex items-center gap-4">
-          <Link to="/" className="block shrink-0" aria-label="ASCO — Gå til forsiden">
-            <img
-              src="/logo-dark.png"
-              alt="ASCO"
-              className="h-8 md:h-10 w-auto object-contain"
-            />
+          <Link to="/" aria-label="ASCO — Gå til forsiden">
+            <AscoLogoSmall />
           </Link>
           {showBack && (
             <button
@@ -88,7 +72,7 @@ export function PublicLayout({ children, showBack = false, showFooter = false }:
           <div className="max-w-2xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
             <a
               href="tel:+4738395700"
-              className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+              className="flex items-center gap-2 text-white/40 hover:text-white/60 transition-colors"
             >
               <Phone className="h-4 w-4" />
               <span>Kontakt: 38 39 57 00</span>

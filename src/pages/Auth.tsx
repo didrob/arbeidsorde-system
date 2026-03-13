@@ -28,21 +28,19 @@ const Auth = () => {
     <PublicLayout showBack>
       <GlassCard className="w-full max-w-md p-8">
         <div className="flex flex-col items-center mb-6">
-          <img
-            src="/logo-dark.png"
-            alt="ASCO"
-            className="h-10 mb-3"
-          />
-          <p className="text-sm text-pale-blue">
-            Ansattportal
-          </p>
+          <span className="font-heading text-2xl font-bold tracking-[0.2em] text-white select-none mb-2">
+            <span className="relative inline-block">
+              A
+              <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-2 w-2 rounded-full bg-asco-teal" />
+            </span>
+            SCO
+          </span>
+          <p className="text-sm text-pale-blue">Ansattportal</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-white/80">
-              E-post
-            </Label>
+            <Label htmlFor="email" className="text-white/80">E-post</Label>
             <Input
               id="email"
               type="email"
@@ -55,9 +53,7 @@ const Auth = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-white/80">
-              Passord
-            </Label>
+            <Label htmlFor="password" className="text-white/80">Passord</Label>
             <Input
               id="password"
               type="password"
