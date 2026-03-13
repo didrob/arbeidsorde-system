@@ -613,7 +613,7 @@ export const WorkOrderCompletionDialog = ({
               </p>
             </div>
 
-            <Card className="border-green-200 dark:border-green-800">
+            <Card className="border-status-complete">
               <CardContent className="pt-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
