@@ -628,7 +628,7 @@ export const WorkOrderCompletionDialog = ({
                 
                 {completionData.timeAdjustments.length > 0 && (
                   <div className="mt-4 pt-4 border-t">
-                    <p className="font-medium text-sm text-amber-600">
+                    <p className="font-medium text-sm text-status-active">
                       {completionData.timeAdjustments.length} tidsjustering(er) registrert
                     </p>
                   </div>
