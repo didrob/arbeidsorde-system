@@ -16,13 +16,15 @@ import {
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useSiteFilter } from "@/hooks/useSiteFilter";
 import { useUserAccessibleSites } from "@/hooks/useOrganizations";
+import { useCustomers } from "@/hooks/useApi";
 
 const navigationItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Arbeidsordrer", url: "/work-orders", icon: FileText },
-  { title: "Kunder", url: "/customers", icon: Users },
+  { title: "Kunder", url: "/customers", icon: Users, badgeKey: 'customers' as const },
   { title: "Materialer", url: "/materials", icon: Package },
   { title: "Ressurser", url: "/resources", icon: Wrench },
   { title: "Planlegger", url: "/planner", icon: Calendar },
@@ -38,6 +40,9 @@ export function SimpleSidebar() {
   const { signOut } = useAuth();
   const { selectedSiteId } = useSiteFilter();
   const { data: accessibleSites } = useUserAccessibleSites();
+  const { data: customers } = useCustomers();
+
+  const pendingCount = customers?.filter((c: any) => c.registration_status === 'pending_approval').length || 0;
 
   const currentSiteName = selectedSiteId
     ? accessibleSites?.find(s => s.site_id === selectedSiteId)?.site_name
@@ -76,7 +81,12 @@ export function SimpleSidebar() {
             }
           >
             <item.icon className="h-5 w-5" />
-            <span>{item.title}</span>
+            <span className="flex-1">{item.title}</span>
+            {item.badgeKey === 'customers' && pendingCount > 0 && (
+              <Badge variant="default" className="h-5 min-w-[1.25rem] px-1 text-xs">
+                {pendingCount}
+              </Badge>
+            )}
           </NavLink>
         ))}
       </nav>

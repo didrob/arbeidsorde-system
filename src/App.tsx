@@ -98,6 +98,7 @@ const App = () => (
               <GlobalWorkOrderWizardPortal />
               <Routes>
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/register-customer" element={<RegisterCustomer />} />
                 <Route path="/field" element={<FieldWorker />} />
                 <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                 <Route path="/work-orders" element={<ProtectedRoute><WorkOrders /></ProtectedRoute>} />
