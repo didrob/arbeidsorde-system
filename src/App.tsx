@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -12,38 +13,57 @@ import { useSmartRouting } from "@/hooks/useSmartRouting";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { UserOnboarding } from "@/components/onboarding/UserOnboarding";
+import { CustomerLayout } from "@/components/portal/CustomerLayout";
 import { ThemeProvider } from "next-themes";
-import Index from "./pages/Index";
+
+// Eager-loaded pages
+import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
-import FieldWorker from "./pages/FieldWorker";
 import NotFound from "./pages/NotFound";
-import WorkOrders from "./pages/WorkOrders";
-import Customers from "./pages/Customers";
-import Materials from "./pages/Materials";
-import TimeTracking from "./pages/TimeTracking";
-import Map from "./pages/Map";
-import Reports from "./pages/Reports";
-import Resources from './pages/Resources';
-import Settings from './pages/Settings';
-import CustomerAgreements from './pages/CustomerAgreements';
-import Invoices from './pages/Invoices';
-import Planner from './pages/Planner';
-import RegisterCustomer from './pages/RegisterCustomer';
+
+// Lazy-loaded employee pages
+const Index = lazy(() => import("./pages/Index"));
+const FieldWorker = lazy(() => import("./pages/FieldWorker"));
+const WorkOrders = lazy(() => import("./pages/WorkOrders"));
+const Customers = lazy(() => import("./pages/Customers"));
+const Materials = lazy(() => import("./pages/Materials"));
+const TimeTracking = lazy(() => import("./pages/TimeTracking"));
+const Map = lazy(() => import("./pages/Map"));
+const Reports = lazy(() => import("./pages/Reports"));
+const Resources = lazy(() => import("./pages/Resources"));
+const Settings = lazy(() => import("./pages/Settings"));
+const CustomerAgreements = lazy(() => import("./pages/CustomerAgreements"));
+const Invoices = lazy(() => import("./pages/Invoices"));
+const Planner = lazy(() => import("./pages/Planner"));
+const RegisterCustomer = lazy(() => import("./pages/RegisterCustomer"));
+
+// Lazy-loaded portal pages
+const PortalLogin = lazy(() => import("./pages/portal/PortalLogin"));
+const CustomerDashboard = lazy(() => import("./pages/portal/CustomerDashboard"));
+const CustomerOrders = lazy(() => import("./pages/portal/CustomerOrders"));
+const NewOrder = lazy(() => import("./pages/portal/NewOrder"));
 
 const queryClient = new QueryClient();
 
-// PWA Install Prompt wrapper - only show when not on auth pages
+function LazyFallback() {
+  return (
+    <div className="flex min-h-[200px] items-center justify-center">
+      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+    </div>
+  );
+}
+
+// PWA Install Prompt wrapper
 function PWAWrapper() {
   const location = useLocation();
-  const isAuthPage = location.pathname.startsWith('/auth');
-  
+  const isAuthPage = location.pathname.startsWith('/auth') || location.pathname === '/';
   if (isAuthPage) return null;
   return <PWAInstallPrompt />;
 }
 
-// Protected route wrapper with role-based routing and onboarding
+// Protected route for employees
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, userRole, loading, isFieldWorker, needsOnboarding } = useAuth();
+  const { user, userRole, loading, isCustomer, needsOnboarding } = useAuth();
   const isMobile = useIsMobile();
   
   useSmartRouting();
@@ -59,21 +79,36 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
+  if (!user) return <Navigate to="/" replace />;
+  if (isCustomer) return <Navigate to="/portal" replace />;
 
   if (needsOnboarding && userRole !== 'system_admin') {
     return <UserOnboarding />;
   }
 
-  // Mobile: show mobile nav for all users
-  // Desktop: show sidebar layout for all users (including field workers)
   return (
     <ResponsiveLayout showMobileNav={isMobile}>
       {children}
     </ResponsiveLayout>
   );
+}
+
+// Protected route for customers
+function CustomerProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading, isCustomer } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/portal/login" replace />;
+  if (!isCustomer) return <Navigate to="/dashboard" replace />;
+
+  return <CustomerLayout>{children}</CustomerLayout>;
 }
 
 const App = () => (
@@ -88,24 +123,36 @@ const App = () => (
               <Sonner />
               <PWAWrapper />
               <GlobalWorkOrderWizardPortal />
-              <Routes>
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/register-customer" element={<RegisterCustomer />} />
-                <Route path="/field" element={<FieldWorker />} />
-                <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                <Route path="/work-orders" element={<ProtectedRoute><WorkOrders /></ProtectedRoute>} />
-                <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
-                <Route path="/customer-agreements" element={<ProtectedRoute><CustomerAgreements /></ProtectedRoute>} />
-                <Route path="/materials" element={<ProtectedRoute><Materials /></ProtectedRoute>} />
-                <Route path="/resources" element={<ProtectedRoute><Resources /></ProtectedRoute>} />
-                <Route path="/planner" element={<ProtectedRoute><Planner /></ProtectedRoute>} />
-                <Route path="/time-tracking" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
-                <Route path="/map" element={<ProtectedRoute><Map /></ProtectedRoute>} />
-                <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
-                <Route path="/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
-                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <Suspense fallback={<LazyFallback />}>
+                <Routes>
+                  {/* Public */}
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/register-customer" element={<RegisterCustomer />} />
+
+                  {/* Customer portal */}
+                  <Route path="/portal/login" element={<PortalLogin />} />
+                  <Route path="/portal" element={<CustomerProtectedRoute><CustomerDashboard /></CustomerProtectedRoute>} />
+                  <Route path="/portal/orders" element={<CustomerProtectedRoute><CustomerOrders /></CustomerProtectedRoute>} />
+                  <Route path="/portal/new-order" element={<CustomerProtectedRoute><NewOrder /></CustomerProtectedRoute>} />
+
+                  {/* Employee */}
+                  <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/field" element={<FieldWorker />} />
+                  <Route path="/work-orders" element={<ProtectedRoute><WorkOrders /></ProtectedRoute>} />
+                  <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
+                  <Route path="/customer-agreements" element={<ProtectedRoute><CustomerAgreements /></ProtectedRoute>} />
+                  <Route path="/materials" element={<ProtectedRoute><Materials /></ProtectedRoute>} />
+                  <Route path="/resources" element={<ProtectedRoute><Resources /></ProtectedRoute>} />
+                  <Route path="/planner" element={<ProtectedRoute><Planner /></ProtectedRoute>} />
+                  <Route path="/time-tracking" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
+                  <Route path="/map" element={<ProtectedRoute><Map /></ProtectedRoute>} />
+                  <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+                  <Route path="/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
+                  <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
               </BrowserRouter>
             </SiteFilterProvider>
           </WorkOrderWizardProvider>
@@ -114,6 +161,5 @@ const App = () => (
     </TooltipProvider>
   </ThemeProvider>
 );
-
 
 export default App;

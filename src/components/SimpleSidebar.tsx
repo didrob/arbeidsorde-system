@@ -22,7 +22,7 @@ import { useUserAccessibleSites } from "@/hooks/useOrganizations";
 import { useCustomers } from "@/hooks/useApi";
 
 const navigationItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Arbeidsordrer", url: "/work-orders", icon: FileText },
   { title: "Kunder", url: "/customers", icon: Users, badgeKey: 'customers' as const },
   { title: "Materialer", url: "/materials", icon: Package },
@@ -49,7 +49,7 @@ export function SimpleSidebar() {
     : 'Alle lokasjoner';
 
   const isActive = (path: string) => {
-    if (path === "/") return location.pathname === "/";
+    if (path === "/dashboard") return location.pathname === "/dashboard";
     return location.pathname.startsWith(path);
   };
 

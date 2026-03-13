@@ -17,7 +17,7 @@ const Auth = () => {
 
   // Redirect if already authenticated
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

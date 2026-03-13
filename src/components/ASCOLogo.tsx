@@ -9,7 +9,7 @@ export function ASCOLogo({ variant = 'light', className = '' }: ASCOLogoProps) {
   const logoSrc = variant === 'light' ? '/logo-light.png' : '/logo-dark.png';
 
   return (
-    <Link to="/" className={`block shrink-0 ${className}`} aria-label="ASCO — Gå til forsiden">
+    <Link to="/dashboard" className={`block shrink-0 ${className}`} aria-label="ASCO — Gå til forsiden">
       <img
         src={logoSrc}
         alt="ASCO"
