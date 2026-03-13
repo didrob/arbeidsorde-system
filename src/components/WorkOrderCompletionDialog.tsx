@@ -599,8 +599,8 @@ export const WorkOrderCompletionDialog = ({
         return (
           <div className="space-y-6 text-center">
             <div className="flex justify-center">
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-10 w-10 text-green-600" />
+              <div className="w-16 h-16 bg-status-complete-subtle rounded-full flex items-center justify-center">
+                <CheckCircle className="h-10 w-10 text-status-complete" />
               </div>
             </div>
             
