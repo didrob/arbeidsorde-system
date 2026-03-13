@@ -87,14 +87,13 @@ export default function Customers() {
         registered_by: 'admin',
         approved_by: user?.id,
         approved_at: new Date().toISOString(),
-        org_form: brregResult?.org_form || null,
-        industry_code: brregResult?.industry_code || null,
+        org_form: createBrregResult?.org_form || null,
+        industry_code: createBrregResult?.industry_code || null,
       });
       toast({ title: 'Kunde opprettet', description: 'Ny kunde er lagt til' });
       setIsCreateDialogOpen(false);
       reset();
-      resetBrreg();
-      setCreateOrgInput('');
+      setCreateBrregResult(null);
     } catch (error) {
       console.error('Failed to create customer:', error);
     }
