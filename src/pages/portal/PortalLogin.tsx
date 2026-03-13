@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin, Loader2 } from 'lucide-react';
+import { MapPin, Loader2, KeyRound } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PublicLayout } from '@/components/public/PublicLayout';
 import { GlassCard } from '@/components/public/GlassCard';
@@ -17,10 +17,17 @@ interface Site {
   name: string;
 }
 
+const testCustomers = [
+  { label: '🔑 Kari Koordinator', sub: 'Alcoa', email: 'kari@alcoa-test.no', password: 'Test1234!' },
+  { label: '🔑 Ole Driftsen', sub: 'Equinor', email: 'ole@equinor-test.no', password: 'Test1234!' },
+];
+
 const PortalLogin = () => {
   const navigate = useNavigate();
   const { user, isCustomer } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const showTest = searchParams.get('test') === 'true';
   const [step, setStep] = useState<'location' | 'login'>('location');
   const [sites, setSites] = useState<Site[]>([]);
   const [selectedSite, setSelectedSite] = useState<string | null>(null);
@@ -65,6 +72,20 @@ const PortalLogin = () => {
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        toast({ variant: 'destructive', title: 'Innlogging feilet', description: error.message });
+      }
+    } catch {
+      toast({ variant: 'destructive', title: 'Feil', description: 'Noe gikk galt' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleQuickLogin = async (testEmail: string, testPassword: string) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: testEmail, password: testPassword });
       if (error) {
         toast({ variant: 'destructive', title: 'Innlogging feilet', description: error.message });
       }
@@ -156,6 +177,28 @@ const PortalLogin = () => {
             </button>
           </div>
         </GlassCard>
+      )}
+
+      {showTest && (
+        <div className="w-full max-w-md mt-6 rounded-lg border border-white/10 bg-white/5 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <KeyRound className="h-4 w-4 text-white/40" />
+            <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Testbrukere — kun for utvikling</span>
+          </div>
+          <div className="grid gap-2">
+            {testCustomers.map((u) => (
+              <button
+                key={u.email}
+                onClick={() => handleQuickLogin(u.email, u.password)}
+                disabled={loading}
+                className="flex items-center justify-between w-full px-3 py-2 rounded-md text-sm text-white/70 bg-white/5 hover:bg-white/10 transition-colors disabled:opacity-50 text-left"
+              >
+                <span>{u.label}</span>
+                <span className="text-xs text-white/30">{u.sub}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       )}
     </PublicLayout>
   );
