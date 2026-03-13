@@ -45,15 +45,7 @@ export function SimpleSidebar() {
     <div className="w-64 bg-card border-r border-border flex flex-col h-full">
       {/* Logo/Header */}
       <div className="p-6 border-b border-border">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <FileText className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">WorkFlow</h2>
-            <p className="text-sm text-muted-foreground">Admin Panel</p>
-          </div>
-        </div>
+        <ASCOLogo variant="dark" />
       </div>
 
       {/* Navigation */}
