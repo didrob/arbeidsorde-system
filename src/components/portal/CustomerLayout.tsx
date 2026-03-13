@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTheme } from '@/hooks/useTheme';
 import { LayoutDashboard, FileText, PlusCircle, User, LogOut, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
