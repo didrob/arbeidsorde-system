@@ -49,9 +49,11 @@ export function PublicLayout({ children, showBack = false, showFooter = false, v
       />
 
       {/* Gradient overlay for landing */}
-      {isLanding && (
-        <div className="absolute inset-0 bg-gradient-to-b from-[rgba(30,32,48,0.95)] via-[rgba(41,44,63,0.80)] to-[rgba(41,44,63,0.75)]" />
-      )}
+      <div className={`absolute inset-0 bg-gradient-to-b ${
+        isLanding
+          ? 'from-[rgba(30,32,48,0.95)] via-[rgba(41,44,63,0.80)] to-[rgba(41,44,63,0.75)]'
+          : 'from-[rgba(30,32,48,0.95)] via-transparent to-[rgba(41,44,63,0.85)]'
+      }`} />
 
       {/* Topbar */}
       <header className="relative z-10 flex items-center justify-between px-4 md:px-8 py-4">
