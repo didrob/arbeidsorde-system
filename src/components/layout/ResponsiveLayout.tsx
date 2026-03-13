@@ -23,23 +23,7 @@ export function ResponsiveLayout({
   notificationCount = 0 
 }: ResponsiveLayoutProps) {
   const isMobile = useIsMobile();
-  const { isFieldWorker } = useAuth();
   const { selectedSiteId, setSelectedSiteId } = useSiteFilter();
-
-  // Field workers ALWAYS get mobile interface
-  if (isFieldWorker) {
-    return (
-      <div className="min-h-screen bg-background">
-        <header className="flex items-center justify-between bg-cobalt px-4 py-3">
-          <ASCOLogo variant="light" />
-        </header>
-        <main className={cn("flex-1", showMobileNav && "pb-24")}>
-          {children}
-        </main>
-        {showMobileNav && <MobileNav notificationCount={notificationCount} />}
-      </div>
-    );
-  }
 
   // Mobile layout
   if (isMobile && showMobileNav) {

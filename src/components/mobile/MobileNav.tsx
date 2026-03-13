@@ -70,8 +70,8 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
             : 'text-muted-grey hover:text-foreground'
         )}
       >
-        <Icon className="h-5 w-5 mb-0.5" />
-        <span className="text-[10px] font-medium">{item.label}</span>
+        <Icon className="h-6 w-6 mb-0.5" />
+        <span className="text-xs font-medium">{item.label}</span>
       </NavLink>
     );
   };

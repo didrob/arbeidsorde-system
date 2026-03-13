@@ -475,7 +475,7 @@ export const MobileFieldWorker = () => {
 
               {/* Show message when no orders */}
               {workOrders.length === 0 && (
-                <Card className="animate-fade-in">
+                <Card className="animate-fade-in shadow-brand-sm">
                   <CardContent className="p-8 text-center">
                     <h3 className="text-lg font-medium mb-2">Ingen tildelte ordrer</h3>
                     <p className="text-muted-foreground mb-4">

@@ -43,8 +43,8 @@ function PWAWrapper() {
 // Protected route wrapper with role-based routing and onboarding
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, userRole, loading, isFieldWorker, needsOnboarding } = useAuth();
+  const isMobile = useIsMobile();
   
-  // Use smart routing for field workers
   useSmartRouting();
 
   if (loading) {
@@ -62,23 +62,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/auth" replace />;
   }
 
-  // Show onboarding for users who need it (unless they're system admins who can manage themselves)
   if (needsOnboarding && userRole !== 'system_admin') {
     return <UserOnboarding />;
   }
 
-  // Field workers should use mobile interface
-  if (isFieldWorker) {
-    return (
-      <ResponsiveLayout showMobileNav={true}>
-        {children}
-      </ResponsiveLayout>
-    );
-  }
-
-  // Admin/Manager users get responsive layout with sidebar on desktop
+  // Mobile: show mobile nav for all users
+  // Desktop: show sidebar layout for all users (including field workers)
   return (
-    <ResponsiveLayout showMobileNav={false}>
+    <ResponsiveLayout showMobileNav={isMobile}>
       {children}
     </ResponsiveLayout>
   );
