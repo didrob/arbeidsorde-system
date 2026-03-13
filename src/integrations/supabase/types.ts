@@ -703,30 +703,42 @@ export type Database = {
       sites: {
         Row: {
           address: string | null
+          contact_email: string | null
+          contact_phone: string | null
           created_at: string
           id: string
           is_active: boolean
+          latitude: number | null
           location: string | null
+          longitude: number | null
           name: string
           organization_id: string
           updated_at: string
         }
         Insert: {
           address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           name: string
           organization_id: string
           updated_at?: string
         }
         Update: {
           address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           name?: string
           organization_id?: string
           updated_at?: string
