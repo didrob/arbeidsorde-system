@@ -209,7 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Du er nå logget ut av systemet.",
       });
       
-      window.location.href = '/auth';
+      window.location.href = '/';
     }
   };
 
