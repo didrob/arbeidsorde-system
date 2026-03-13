@@ -195,7 +195,11 @@ export default function Customers() {
   };
 
   const renderCustomerCard = (customer: any, showActions = false) => (
-    <Card key={customer.id} className="hover:shadow-lg transition-shadow">
+    <Card
+      key={customer.id}
+      className="hover:shadow-lg transition-shadow cursor-pointer group"
+      onClick={() => !showActions && navigate(`/customers/${customer.id}`)}
+    >
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div>
@@ -204,11 +208,16 @@ export default function Customers() {
               <p className="text-xs text-muted-foreground mt-1">Org.nr: {customer.org_number}</p>
             )}
           </div>
-          {!showActions && (
-            <Button variant="ghost" size="sm" onClick={() => handleEditClick(customer)}>
-              <Edit className="h-4 w-4" />
-            </Button>
-          )}
+          <div className="flex items-center gap-1">
+            {!showActions && (
+              <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleEditClick(customer); }}>
+                <Edit className="h-4 w-4" />
+              </Button>
+            )}
+            {!showActions && (
+              <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
