@@ -676,7 +676,7 @@ export const WorkOrderCompletionDialog = ({
                   </div>
                   {index < steps.length - 1 && (
                     <div className={`w-4 sm:w-8 h-0.5 mx-1 sm:mx-2 ${
-                      isCompleted ? 'bg-green-500' : 'bg-muted'
+                      isCompleted ? 'bg-status-complete' : 'bg-muted'
                     }`} />
                   )}
                 </div>
