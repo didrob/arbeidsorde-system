@@ -246,7 +246,7 @@ class ApiClient {
     return this.handleResponse(data || [], error);
   }
 
-  async createCustomer(customerData: Omit<Customer, 'id' | 'created_at' | 'updated_at'>): Promise<ApiResponse<Customer>> {
+  async createCustomer(customerData: Record<string, any>): Promise<ApiResponse<any>> {
     const { data, error } = await supabase
       .from('customers')
       .insert(customerData)
